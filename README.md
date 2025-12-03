@@ -24,8 +24,6 @@ Dashboard aplikasi untuk guru berbasis Laravel 12 dengan template Sneat Bootstra
 
 ## Installation
 
-### Local Development
-
 ```bash
 # Clone repository
 git clone https://github.com/lavieenbleau/dashboard-guru-app.git
@@ -50,65 +48,6 @@ npm run build
 php artisan serve
 ```
 
-## Deploy to Railway
-
-1. Fork this repository
-2. Go to [Railway.app](https://railway.app)
-3. Click "New Project"
-4. Select "Deploy from GitHub repo"
-5. Select this repository
-6. Add MySQL database service
-7. Set environment variables:
-   - `APP_KEY` (generate with `php artisan key:generate --show`)
-   - `DB_CONNECTION=mysql`
-   - `DB_HOST=${{MySQL.RAILWAY_PRIVATE_DOMAIN}}`
-   - `DB_PORT=${{MySQL.RAILWAY_TCP_PORT}}`
-   - `DB_DATABASE=${{MySQL.MYSQL_DATABASE}}`
-   - `DB_USERNAME=${{MySQL.MYSQL_USER}}`
-   - `DB_PASSWORD=${{MySQL.MYSQL_PASSWORD}}`
-8. Deploy!
-
-## Deploy to Heroku
-
-```bash
-# Login to Heroku
-heroku login
-
-# Create app
-heroku create dashboard-guru-app
-
-# Add MySQL addon
-heroku addons:create jawsdb:kitefin
-
-# Set APP_KEY
-heroku config:set APP_KEY=$(php artisan key:generate --show)
-
-# Deploy
-git push heroku main
-
-# Run migrations
-heroku run php artisan migrate --force
-```
-
-## Environment Variables
-
-Required variables:
-- `APP_KEY` - Laravel encryption key
-- `DB_CONNECTION` - Database driver (mysql)
-- `DB_HOST` - Database host
-- `DB_PORT` - Database port
-- `DB_DATABASE` - Database name
-- `DB_USERNAME` - Database username
-- `DB_PASSWORD` - Database password
-
 ## License
 
 Open source. Free to use.
-
-## Screenshots
-
-(Add screenshots here)
-
-## Support
-
-For issues or questions, please open an issue on GitHub.
