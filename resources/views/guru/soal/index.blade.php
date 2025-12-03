@@ -1,0 +1,46 @@
+@extends('layouts.sneat')
+
+@section('content')
+<div class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="fw-bold py-3 mb-4">
+        <span class="text-muted fw-light">Materi / Soal /</span> Pilih Kategori
+    </h4>
+
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    <div class="row">
+        @foreach($categories as $category)
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card h-100 hover-card border-{{ $category['color'] }}">
+                    <div class="card-body text-center">
+                        <div class="avatar avatar-lg mx-auto mb-3">
+                            <span class="avatar-initial rounded bg-label-{{ $category['color'] }}">
+                                <i class='bx {{ $category['icon'] }} fs-1'></i>
+                            </span>
+                        </div>
+                        <h5 class="card-title mb-3">{{ $category['name'] }}</h5>
+                        <a href="{{ route('guru.soal.tema', [$serial->id, $category['id']]) }}" class="btn btn-{{ $category['color'] }} btn-sm w-100">
+                            <i class='bx bx-right-arrow-alt me-1'></i>Lihat Soal
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
+</div>
+
+<style>
+.hover-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+</style>
+@endsection
