@@ -1,0 +1,60 @@
+@startuml Business Process - Tugas
+
+title Business Process: Pemberian dan Pengerjaan Tugas
+
+|Guru|
+start
+:Buat Postingan/Tugas;
+:Input Judul;
+:Input Deskripsi Tugas;
+:Upload Attachment (opsional);
+:Input Link (opsional);
+:Set Kategori;
+:Set Flag "Adalah Tugas";
+:Set Deadline;
+:Pilih Kelas Tujuan;
+note right
+  Bisa dibagikan ke
+  multiple classes
+end note
+:Publish Tugas;
+
+|Sistem|
+:Notifikasi ke Siswa;
+:Generate Kode Tugas;
+
+|Siswa|
+:Terima Notifikasi;
+:Buka Dashboard;
+:Lihat Daftar Tugas;
+:Pilih Tugas;
+:Baca Instruksi;
+:Download Attachment (jika ada);
+
+:Kerjakan Tugas;
+:Tulis Deskripsi Jawaban;
+:Upload File Jawaban;
+:Submit Tugas;
+
+|Sistem|
+:Simpan Jawaban Siswa;
+:Notifikasi ke Guru;
+
+|Guru|
+:Terima Notifikasi;
+:Buka Daftar Tugas Masuk;
+:Lihat Jawaban Siswa;
+:Review Jawaban;
+:Input Nilai;
+:Simpan Nilai;
+
+|Sistem|
+:Update Status Tugas;
+:Notifikasi ke Siswa;
+
+|Siswa|
+:Terima Notifikasi Nilai;
+:Lihat Nilai Tugas;
+stop
+
+@enduml

@@ -1,0 +1,82 @@
+@startuml BP07-Laporan-Siswa
+
+skinparam defaultTextAlignment center
+skinparam activity {
+  BackgroundColor White
+  BorderColor Black
+  FontSize 12
+}
+
+start
+
+:Awal;
+
+:Siswa login
+ke sistem;
+
+:Pilih menu
+"Laporan";
+
+:Klik "Buat
+Laporan Baru";
+
+:Tulis isi laporan:
+- Kendala belajar
+- Feedback
+- Pertanyaan;
+
+if (Ada bukti/screenshot?) then (Ya)
+  :Upload gambar
+  pendukung;
+endif
+
+:Submit laporan;
+
+:Sistem simpan
+ke database;
+
+:Notifikasi
+ke guru;
+
+:Guru buka menu
+"Laporan Siswa";
+
+:Guru lihat
+daftar laporan;
+
+:Filter by siswa
+atau tanggal;
+
+:Guru baca
+detail laporan;
+
+if (Ada gambar?) then (Ya)
+  :Lihat gambar
+  pendukung;
+endif
+
+if (Perlu tindak lanjut?) then (Ya)
+  :Guru hubungi siswa;
+  :Berikan solusi
+  atau feedback;
+  :Catat tindakan
+  yang dilakukan;
+else (Tidak)
+  :Tandai laporan
+  sudah dibaca;
+endif
+
+:Update status
+laporan;
+
+:Guru generate
+laporan bulanan;
+
+:Export ke
+PDF/Excel;
+
+:Awal;
+
+stop
+
+@enduml

@@ -1,0 +1,92 @@
+@startuml ImportStudent-Sequence
+!theme plain
+scale 0.75
+skinparam dpi 150
+title Sequence Diagram: Import Data Siswa dari CSV
+
+actor "Guru" as Guru
+control ":KelasController" as Controller <<control>>
+control ":CSVFile" as File <<control>>
+entity ":Student" as Student <<entity>>
+database ":Database" as DB
+
+== Download Template CSV ==
+Guru -> Controller: Download Template
+activate Controller
+
+Controller -> Controller: Generate Template
+
+Controller --> Guru: File CSV Template
+deactivate Controller
+
+== Upload & Import CSV ==
+Guru -> Controller: Upload File CSV
+activate Controller
+
+Controller -> Controller: Validasi File
+
+alt Validasi Gagal
+  Controller --> Guru: Error: File Invalid
+else Validasi Berhasil
+  
+  Controller -> File: Baca File CSV
+  activate File
+  File --> Controller: Data CSV (Array)
+  deactivate File
+  
+  Controller -> Controller: Parse Header
+  Controller -> Controller: Normalize Header
+  Controller -> Controller: Initialize Counters
+  
+  loop Untuk Setiap Baris CSV
+    
+    Controller -> Controller: Skip Jika Kosong
+    
+    alt Baris Kosong
+      Controller -> Controller: Continue
+    else Baris Ada Data
+      
+      Controller -> Controller: Extract Data
+      
+      alt Nama Tidak Ada
+        Controller -> Controller: Add to Error List
+      else Nama Ada
+        
+        Controller -> Controller: Generate Username
+        
+        Controller -> Student: Cek Duplikat
+        activate Student
+        Student -> DB: Check Existing
+        activate DB
+        DB --> Student: Result
+        deactivate DB
+        Student --> Controller: Hasil Pengecekan
+        deactivate Student
+        
+        alt Student Sudah Ada
+          Controller -> Controller: Add to Error List
+        else Student Baru
+          
+          Controller -> Student: Simpan Siswa
+          activate Student
+          Student -> DB: Save
+          activate DB
+          DB --> Student: Saved
+          deactivate DB
+          Student --> Controller: Siswa Tersimpan
+          deactivate Student
+          
+          Controller -> Controller: Increment Imported
+        end
+      end
+    end
+  end
+  
+  Controller -> Controller: Build Summary
+  
+  Controller --> Guru: Tampilkan Hasil Import
+end
+
+deactivate Controller
+
+@enduml

@@ -42,9 +42,12 @@
 
         // Dashboard URL
         $dashboardUrl = $serialId ? route('guru.dashboard', ['serial' => $serialId]) : route('pilih.aplikasi');
+
+        // Check if on pilih aplikasi page
+        $isPilihAplikasi = request()->is('aplikasi') || request()->is('pilih-aplikasi');
         @endphp
 
-
+        @if(!$isPilihAplikasi)
         <!-- Dashboard -->
         <li class="menu-item {{ request()->is('aplikasi/'.$serialId) ? 'active' : '' }}">
             <a href="{{ $dashboardUrl }}" class="menu-link">
@@ -86,12 +89,19 @@
             </a>
         </li>
 
-        <!-- Online Class -->
-        <li class="menu-item {{ request()->is('aplikasi/'.$serialId.'/online-class*') ? 'active' : '' }}">
-            <a href="{{ $serialId ? route('guru.onlineclass', $serialId) : route('pilih.aplikasi') }}"
-                class="menu-link">
+        <!-- Rekap Nilai -->
+        <li class="menu-item {{ request()->is('aplikasi/'.$serialId.'/rekap-nilai*') ? 'active' : '' }}">
+            <a href="{{ $serialId ? route('guru.rekapnilai', $serialId) : route('pilih.aplikasi') }}" class="menu-link">
+                <span class="menu-icon"><i class='bx bx-list-check'></i></span>
+                <div class="menu-text">Rekap Nilai</div>
+            </a>
+        </li>
+
+        <!-- Kelas Online (Jitsi Meet) -->
+        <li class="menu-item {{ request()->is('aplikasi/'.$serialId.'/meeting*') ? 'active' : '' }}">
+            <a href="{{ $serialId ? route('guru.meeting', $serialId) : route('pilih.aplikasi') }}" class="menu-link">
                 <span class="menu-icon"><i class='bx bx-video'></i></span>
-                <div class="menu-text">Online Class</div>
+                <div class="menu-text">Kelas Online</div>
             </a>
         </li>
 
@@ -103,19 +113,7 @@
                 <div class="menu-text">Kelas</div>
             </a>
         </li>
-
-        <!-- Pengaduan -->
-        @php
-        $pengaduanUrl = $serialId && Route::has('guru.pengaduan')
-        ? route('guru.pengaduan', $serialId)
-        : route('pilih.aplikasi');
-        @endphp
-        <li class="menu-item">
-            <a href="{{ $pengaduanUrl }}" class="menu-link">
-                <span class="menu-icon"><i class='bx bx-help-circle'></i></span>
-                <div class="menu-text">Pengaduan</div>
-            </a>
-        </li>
+        @endif
 
         <!-- Pengaturan -->
         @php
@@ -133,13 +131,26 @@
             </a>
         </li>
 
-
-
-
-
-
-
     </ul>
+
+    <!-- Bottom Actions -->
+    <div class="menu-bottom px-3 py-3 border-top">
+        <div class="d-flex flex-column gap-2">
+            @if(!$isPilihAplikasi)
+            <a href="{{ route('guru.aplikasi') }}" class="btn btn-sm btn-outline-primary w-100">
+                <i class='bx bx-grid-alt me-1'></i>
+                <span class="menu-text">Pilih Aplikasi</span>
+            </a>
+            @endif
+            <form method="POST" action="{{ route('logout') }}" class="w-100">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                    <i class='bx bx-log-out me-1'></i>
+                    <span class="menu-text">Logout</span>
+                </button>
+            </form>
+        </div>
+    </div>
 </div>
 
 
@@ -149,6 +160,11 @@
     transition: width 0.25s ease-in-out;
     overflow-x: hidden;
     overflow-y: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1000;
 }
 
 #sidebar.collapsed {
@@ -165,6 +181,19 @@
     display: none !important;
 }
 
+/* hide buttons text when collapsed, keep icons */
+#sidebar.collapsed .menu-bottom .btn span.menu-text {
+    display: none !important;
+}
+
+#sidebar.collapsed .menu-bottom .btn {
+    padding: 0.375rem 0.5rem;
+}
+
+#sidebar.collapsed .menu-bottom .btn i {
+    margin: 0 !important;
+}
+
 /* rotate chevron */
 #sidebar.collapsed #btnCollapse i {
     transform: rotate(180deg);
@@ -172,6 +201,20 @@
 
 .menu-icon i {
     font-size: 20px;
+}
+
+/* Bottom actions fixed at bottom */
+.menu-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: inherit;
+}
+
+/* Add padding to menu-inner to prevent overlap with bottom actions */
+.menu-inner {
+    padding-bottom: 120px !important;
 }
 
 /* shift content based on sidebar state */

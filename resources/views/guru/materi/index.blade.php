@@ -6,38 +6,47 @@
     <div class="card mb-4">
         <div class="card-body">
             <h4 class="mb-1">Materi – {{ $serial->product->name }}</h4>
-            <p class="text-muted mb-0">Pilih mata pelajaran untuk mulai mengelola materi</p>
+            <p class="text-muted mb-0">Pilih kategori materi yang ingin diakses</p>
         </div>
     </div>
 
-    <!-- Theme (Mata Pelajaran) Cards -->
-    <div class="row g-3">
-        @forelse ($themes as $theme)
-        <div class="col-md-6 col-lg-4">
-            <a href="{{ route('guru.materi.tema', [$serial->id, $theme->id]) }}" class="text-decoration-none">
-                <div class="card h-100 shadow-sm hover-shadow-lg transition">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="avatar avatar-md me-3">
-                                <span class="avatar-initial rounded bg-label-info">
-                                    <i class='bx bx-book-open'></i>
-                                </span>
-                            </div>
-                            <h5 class="mb-0">{{ $theme->name }}</h5>
+    <!-- Category Cards -->
+    <div class="row g-4 mb-4">
+        <!-- Materi dari Admin -->
+        <div class="col-md-6">
+            <a href="{{ route('guru.materi.admin', $serial->id) }}" class="text-decoration-none">
+                <div class="card h-100 shadow-sm hover-shadow-lg transition border-primary" style="border-width: 2px;">
+                    <div class="card-body text-center py-5">
+                        <div class="avatar avatar-xl mb-3 mx-auto">
+                            <span class="avatar-initial rounded bg-label-primary" style="width: 80px; height: 80px;">
+                                <i class='bx bx-book-bookmark' style="font-size: 48px;"></i>
+                            </span>
                         </div>
-                        <p class="text-muted small mb-0">Klik untuk melihat sub tema dan materi</p>
+                        <h4 class="mb-2">Materi</h4>
+                        <p class="text-muted mb-0">Materi yang disediakan oleh admin</p>
+                        <span class="badge bg-label-primary mt-2">Dari Admin</span>
                     </div>
                 </div>
             </a>
         </div>
-        @empty
-        <div class="col-12">
-            <div class="alert alert-info">
-                <i class='bx bx-info-circle me-2'></i>
-                Belum ada mata pelajaran tersedia untuk aplikasi ini.
-            </div>
+
+        <!-- Materi Tambahan (Buatan Guru) -->
+        <div class="col-md-6">
+            <a href="{{ route('guru.materi.custom', $serial->id) }}" class="text-decoration-none">
+                <div class="card h-100 shadow-sm hover-shadow-lg transition border-success" style="border-width: 2px;">
+                    <div class="card-body text-center py-5">
+                        <div class="avatar avatar-xl mb-3 mx-auto">
+                            <span class="avatar-initial rounded bg-label-success" style="width: 80px; height: 80px;">
+                                <i class='bx bx-book-add' style="font-size: 48px;"></i>
+                            </span>
+                        </div>
+                        <h4 class="mb-2">Materi Tambahan</h4>
+                        <p class="text-muted mb-0">Materi yang Anda buat sendiri</p>
+                        <span class="badge bg-label-success mt-2">Buatan Guru</span>
+                    </div>
+                </div>
+            </a>
         </div>
-        @endforelse
     </div>
 </div>
 
@@ -48,7 +57,7 @@
 
 .hover-shadow-lg:hover {
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-    transform: translateY(-2px);
+    transform: translateY(-5px);
 }
 </style>
 @endsection

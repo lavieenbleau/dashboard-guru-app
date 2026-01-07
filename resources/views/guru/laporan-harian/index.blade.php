@@ -143,6 +143,7 @@
                                         </div>
                                         <form action="{{ route('guru.laporan.grade', [$serial->id, $activity->id]) }}" method="POST">
                                             @csrf
+                                            <input type="hidden" name="source_type" value="{{ $activity->source_type }}">
                                             <div class="modal-body">
                                                 <div class="mb-3">
                                                     <label class="form-label fw-bold">{{ $activity->activity_type }}:</label>

@@ -1,0 +1,71 @@
+@startuml UseCase-DashboardGuru-Simple
+
+title Use Case Diagram: Sistem Pembelajaran
+
+top to bottom direction
+
+skinparam actorStyle awesome
+skinparam usecase {
+    BackgroundColor WhiteSmoke
+    BorderColor Gray
+    ArrowColor Black
+}
+
+' Actors
+actor Guru
+actor Siswa
+
+rectangle "Sistem Pembelajaran" {
+  
+  ' Guru Use Cases
+  usecase "Bagikan Soal" as UC_BagikanSoal
+  usecase "Kelola Soal" as UC_KelolaSoal
+  
+  usecase "Unduh Rekap PDF" as UC_UnduhPDF
+  usecase "Rekap Nilai" as UC_RekapNilai
+  
+  usecase "Kelola Kelas" as UC_KelolaKelas
+  usecase "Kelola Tugas" as UC_KelolaTugas
+  usecase "Penilaian Tugas & Soal" as UC_Penilaian
+  
+  usecase "Import Data Siswa" as UC_ImportSiswa
+  usecase "Kelola Siswa" as UC_KelolaSiswa
+  
+  usecase "Bagikan Materi" as UC_BagikanMateri
+  usecase "Kelola Materi" as UC_KelolaMateri
+  
+  usecase "Login" as UC_Login
+  
+  ' Siswa Use Cases
+  usecase "Lihat Nilai" as UC_LihatNilai
+  usecase "Akses Materi" as UC_AksesMateri
+  usecase "Kerjakan Tugas" as UC_KerjakanTugas
+  usecase "Kerjakan Soal" as UC_KerjakanSoal
+}
+
+' Guru Connections
+Guru --> UC_BagikanSoal
+Guru --> UC_UnduhPDF
+Guru --> UC_KelolaKelas
+Guru --> UC_KelolaTugas
+Guru --> UC_Penilaian
+Guru --> UC_ImportSiswa
+Guru --> UC_BagikanMateri
+Guru --> UC_Login
+
+' Siswa Connections
+Siswa --> UC_Login
+Siswa --> UC_LihatNilai
+Siswa --> UC_AksesMateri
+Siswa --> UC_KerjakanTugas
+Siswa --> UC_KerjakanSoal
+
+' Extend Relationships
+UC_BagikanSoal <.. UC_KelolaSoal : <<extend>>
+UC_UnduhPDF <.. UC_RekapNilai : <<extend>>
+UC_BagikanMateri <.. UC_KelolaMateri : <<extend>>
+
+' Include Relationships
+UC_ImportSiswa ..> UC_KelolaSiswa : <<include>>
+
+@enduml

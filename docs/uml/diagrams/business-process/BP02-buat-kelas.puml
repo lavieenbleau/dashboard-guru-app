@@ -1,0 +1,67 @@
+@startuml BP02-Buat-Kelas
+
+skinparam defaultTextAlignment center
+skinparam activity {
+  BackgroundColor White
+  BorderColor Black
+  FontSize 12
+}
+
+start
+
+:Awal;
+
+:Guru login
+ke sistem;
+
+:Pilih menu
+"Kelola Kelas";
+
+:Klik tombol
+"Buat Kelas Baru";
+
+:Input data kelas:
+- Nama kelas
+- Tingkat/Grade;
+
+:Sistem generate
+kode kelas unik;
+
+:Simpan data kelas;
+
+:Tampilkan kode kelas
+ke guru;
+
+:Guru bagikan
+kode kelas ke siswa
+(WA/print/tulis);
+
+:Siswa registrasi
+dengan kode kelas;
+
+:Sistem validasi
+kode kelas;
+
+if (Kode valid?) then (Ya)
+  :Link siswa
+  ke kelas;
+  :Buat akun siswa;
+  :Kirim username
+  & password ke siswa;
+else (Tidak)
+  :Tampilkan error
+  "Kode kelas salah";
+  stop
+endif
+
+:Siswa login
+& akses dashboard;
+
+:Guru lihat daftar
+siswa di kelas;
+
+:Awal;
+
+stop
+
+@enduml

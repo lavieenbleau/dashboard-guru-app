@@ -1,0 +1,89 @@
+@startuml OnlineMeeting-Activity
+
+title Activity Diagram: Kelas Online
+
+|Guru|
+start
+:Akses menu Kelas Online;
+
+|Sistem|
+:Tampilkan daftar meeting;
+
+|Guru|
+if (Aksi?) then (Quick Start)
+  :Klik "Mulai Sekarang";
+  :Input judul meeting;
+  :Submit;
+  
+  |Sistem|
+  :Generate room name;
+  :Create meeting record;
+  :Generate JWT token;
+  :Redirect ke meeting room;
+  
+  |Guru|
+  :Masuk meeting;
+  :Mengajar online;
+  :Klik "End Meeting";
+  
+  |Sistem|
+  :Update status ended;
+  :Tampilkan success;
+  |Guru|
+  stop
+
+else (Schedule)
+  :Klik "Jadwalkan Meeting";
+  :Input judul & deskripsi;
+  :Set tanggal & waktu;
+  :Pilih kelas;
+  :Submit;
+  
+  |Sistem|
+  :Validasi data;
+  
+  if (Valid?) then (ya)
+    :Simpan meeting;
+    :Tampilkan success;
+    |Guru|
+    stop
+  else (tidak)
+    :Tampilkan error;
+    |Guru|
+    stop
+  endif
+
+else (Join Scheduled)
+  :Pilih meeting;
+  :Klik "Join";
+  
+  |Sistem|
+  :Check waktu;
+  
+  if (Sudah waktunya?) then (ya)
+    :Update status active;
+    :Generate JWT token;
+    :Redirect ke room;
+    
+    |Guru|
+    :Masuk meeting;
+    stop
+  else (tidak)
+    :Error: Belum waktunya;
+    |Guru|
+    stop
+  endif
+
+else (Hapus)
+  :Pilih meeting;
+  :Klik "Hapus";
+  :Konfirmasi;
+  
+  |Sistem|
+  :Delete meeting;
+  :Tampilkan success;
+  |Guru|
+  stop
+endif
+
+@enduml

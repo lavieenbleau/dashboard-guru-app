@@ -24,7 +24,7 @@
                             </span>
                         </div>
                         <h5 class="card-title mb-3">{{ $category['name'] }}</h5>
-                        <a href="{{ route('guru.soal.tema', [$serial->id, $category['id']]) }}" class="btn btn-{{ $category['color'] }} btn-sm w-100">
+                        <a href="{{ route('guru.soal.list-direct', [$serial->id, $category['id']]) }}" class="btn btn-{{ $category['color'] }} btn-sm w-100">
                             <i class='bx bx-right-arrow-alt me-1'></i>Lihat Soal
                         </a>
                     </div>

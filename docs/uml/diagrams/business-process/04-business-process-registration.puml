@@ -1,0 +1,36 @@
+@startuml Business Process - Registrasi dan Aktivasi Serial
+
+title Business Process: Registrasi dan Aktivasi Serial
+
+|Admin/Sales|
+start
+:Buat Produk Baru;
+:Generate Serial Code;
+:Set Paket dan Expired Date;
+:Kirim Serial ke User;
+
+|User/Guru|
+:Terima Serial Code;
+:Registrasi Akun;
+:Login ke Sistem;
+:Input Serial Code;
+
+|Sistem|
+:Validasi Serial Code;
+
+if (Serial Valid?) then (ya)
+  :Aktivasi Serial;
+  :Link Serial ke User;
+  :Set Status Active;
+  :Redirect ke Dashboard;
+else (tidak)
+  :Tampilkan Error;
+  stop
+endif
+
+|User/Guru|
+:Akses Dashboard;
+:Buat Kelas Pertama;
+stop
+
+@enduml

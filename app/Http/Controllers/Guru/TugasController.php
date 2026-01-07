@@ -10,6 +10,7 @@ use App\Models\Lesson;
 use App\Models\Theme;
 use App\Models\Subtheme;
 use App\Models\Post;
+use App\Models\Classroom;
 use Illuminate\Support\Str;
 
 class TugasController extends Controller
@@ -18,180 +19,165 @@ class TugasController extends Controller
     {
         $serial = Serial::findOrFail($serial);
         
-        // Get unique themes (mata pelajaran) as main menu
-        $themes = Theme::select('id', 'name')
-            ->distinct()
-            ->get()
-            ->unique('name');
+        // Get all mapels
+        $mapels = Mapel::all();
 
-        return view('guru.tugas.index', compact('serial', 'themes'));
+        return view('guru.tugas.index', compact('serial', 'mapels'));
     }
 
-    public function subtema($serial, $tema)
+    public function listByMapel($serial, $mapel)
     {
         $serial = Serial::findOrFail($serial);
-        $tema = Theme::findOrFail($tema);
+        $mapel = Mapel::findOrFail($mapel);
         
-        // Get subthemes for this theme
-        $subthemes = Subtheme::where('theme_id', $tema->id)->get();
-        
-        // Get tugas for each subtheme
-        $tugasData = [];
-        foreach ($subthemes as $subtheme) {
-            $lessons = Lesson::where('category', Lesson::CATEGORY_TUGAS)
-                ->where('grade', $subtheme->id)
-                ->orderBy('created_at', 'desc')
-                ->get();
-            
-            $tugasData[$subtheme->id] = $lessons;
-        }
-
-        return view('guru.tugas.subtema', compact('serial', 'tema', 'subthemes', 'tugasData'));
-    }
-
-    public function list($serial, $tema, $subtema)
-    {
-        $serial   = Serial::findOrFail($serial);
-        $tema     = Theme::findOrFail($tema);
-        $subtema  = Subtheme::findOrFail($subtema);
-
-        // Get tugas (lessons with category=2) for this subtheme
-        $lessons = Lesson::where('category', Lesson::CATEGORY_TUGAS)
-            ->where('grade', $subtema->id)
-            ->orderBy('created_at', 'desc')
+        // Get all posts (tugas) for this mapel and serial
+        $tugas = Post::where('serial_id', $serial->id)
+            ->where('mapel_id', $mapel->id)
+            ->where('is_task', 1)
+            ->latest()
             ->get();
 
-        return view('guru.tugas.list', compact('serial', 'tema', 'subtema', 'lessons'));
+        return view('guru.tugas.list', compact('serial', 'mapel', 'tugas'));
     }
 
-    public function show($serial, $tema, $subtema, $id)
+    public function create($serial, $mapel)
     {
-        $serial   = Serial::findOrFail($serial);
-        $tema     = Theme::findOrFail($tema);
-        $subtema  = Subtheme::findOrFail($subtema);
-        $lesson   = Lesson::findOrFail($id);
-        
-        // Get items/questions for this tugas from posts table using category JSON
-        $items = Post::where('serial_id', $serial->id)
-            ->where('is_task', 1)
-            ->orderBy('created_at', 'asc')
-            ->get()
-            ->filter(function($post) use ($lesson) {
-                $category = json_decode($post->category, true);
-                return isset($category['lesson_id']) && $category['lesson_id'] == $lesson->id;
-            });
+        $serial = Serial::findOrFail($serial);
+        $mapel = Mapel::findOrFail($mapel);
+        $classrooms = Classroom::where('serial_id', $serial->id)->orderBy('name')->get();
 
-        return view('guru.tugas.show', compact('serial', 'tema', 'subtema', 'lesson', 'items'));
+        return view('guru.tugas.create', compact('serial', 'mapel', 'classrooms'));
     }
 
-    public function create($serial, $tema, $subtema)
-    {
-        $serial   = Serial::findOrFail($serial);
-        $tema     = Theme::findOrFail($tema);
-        $subtema  = Subtheme::findOrFail($subtema);
-
-        return view('guru.tugas.create', compact('serial', 'tema', 'subtema'));
-    }
-
-    public function store(Request $request, $serial, $tema, $subtema)
+    public function store(Request $request, $serial, $mapel)
     {
         $request->validate([
-            'name' => 'required|max:255',
-            'semester' => 'nullable|integer',
+            'title' => 'required|max:255',
             'description' => 'nullable',
-            'questions.*' => 'nullable|string',
             'link' => 'nullable|url',
-        ]);
-
-        $lesson = Lesson::create([
-            'mapel_id' => null,
-            'name' => $request->name,
-            'grade' => $subtema,
-            'semester' => $request->semester ?? 1,
-            'category' => Lesson::CATEGORY_TUGAS,
+            'deadline' => 'nullable|date',
+            'attachment' => 'nullable|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,zip,rar,jpg,jpeg,png',
+            'classrooms' => 'nullable|array',
+            'classrooms.*' => 'exists:classrooms,id',
         ]);
         
-        // Save description and link as posts
-        if ($request->description || $request->link) {
-            $category = json_encode([
-                'lesson_id' => $lesson->id,
-                'type' => 'description',
-            ]);
-            
-            Post::create([
-                'serial_id' => $serial,
-                'user_id' => auth()->id(),
-                'mapel_id' => null,
-                'title' => 'Deskripsi Tugas',
-                'description' => $request->description,
-                'slug' => Str::slug($request->name) . '-desc-' . time(),
-                'link' => $request->link,
-                'category' => $category,
-                'is_task' => 1,
-            ]);
+        $serial = Serial::findOrFail($serial);
+        $mapel = Mapel::findOrFail($mapel);
+        
+        // Handle file upload
+        $attachmentPath = null;
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $attachmentPath = $file->storeAs('tugas', $filename, 'public');
         }
         
-        // Save questions
-        if ($request->questions) {
-            foreach ($request->questions as $index => $question) {
-                if (!empty($question)) {
-                    $category = json_encode([
-                        'lesson_id' => $lesson->id,
-                        'type' => 'question',
-                        'number' => $index + 1,
-                    ]);
-                    
-                    Post::create([
-                        'serial_id' => $serial,
-                        'user_id' => auth()->id(),
-                        'mapel_id' => null,
-                        'title' => 'Soal ' . ($index + 1),
-                        'description' => $question,
-                        'slug' => Str::slug($request->name) . '-q' . ($index + 1) . '-' . time(),
-                        'category' => $category,
-                        'is_task' => 1,
-                    ]);
-                }
-            }
-        }
+        // Create tugas post
+        Post::create([
+            'serial_id' => $serial->id,
+            'user_id' => auth()->id(),
+            'mapel_id' => $mapel->id,
+            'title' => $request->title,
+            'description' => $request->description,
+            'slug' => Str::slug($request->title) . '-' . time(),
+            'link' => $request->link,
+            'attachment' => $attachmentPath,
+            'deadline' => $request->deadline,
+            'category' => null,
+            'shared_to_classes' => $request->classrooms,
+            'is_task' => 1,
+        ]);
 
-        return redirect()->route('guru.tugas.list', [$serial, $tema, $subtema])
+        return redirect()->route('guru.tugas.mapel', [$serial->id, $mapel->id])
             ->with('success', 'Tugas berhasil ditambahkan!');
     }
 
-    public function edit($serial, $tema, $subtema, $id)
+    public function show($serial, $mapel, $id)
     {
-        $serial   = Serial::findOrFail($serial);
-        $tema     = Theme::findOrFail($tema);
-        $subtema  = Subtheme::findOrFail($subtema);
-        $lesson   = Lesson::findOrFail($id);
+        $serial = Serial::findOrFail($serial);
+        $mapel = Mapel::findOrFail($mapel);
+        $task = Post::findOrFail($id);
 
-        return view('guru.tugas.edit', compact('serial', 'tema', 'subtema', 'lesson'));
+        return view('guru.tugas.show', compact('serial', 'mapel', 'task'));
     }
 
-    public function update(Request $request, $serial, $tema, $subtema, $id)
+    public function edit($serial, $mapel, $id)
+    {
+        $serial = Serial::findOrFail($serial);
+        $mapel = Mapel::findOrFail($mapel);
+        $task = Post::findOrFail($id);
+        $classrooms = Classroom::where('serial_id', $serial->id)->orderBy('name')->get();
+        
+        $sharedClasses = $task->shared_to_classes ?? [];
+
+        return view('guru.tugas.edit', compact('serial', 'mapel', 'task', 'classrooms', 'sharedClasses'));
+    }
+
+    public function update(Request $request, $serial, $mapel, $id)
     {
         $request->validate([
-            'name' => 'required|max:255',
-            'semester' => 'nullable|integer',
+            'title' => 'required|max:255',
+            'description' => 'nullable',
+            'link' => 'nullable|url',
+            'deadline' => 'nullable|date',
+            'attachment' => 'nullable|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,zip,rar,jpg,jpeg,png',
+            'remove_attachment' => 'nullable|boolean',
+            'classrooms' => 'nullable|array',
+            'classrooms.*' => 'exists:classrooms,id',
         ]);
 
-        $lesson = Lesson::findOrFail($id);
-        $lesson->update([
-            'name' => $request->name,
-            'semester' => $request->semester ?? 1,
+        $serial = Serial::findOrFail($serial);
+        $mapel = Mapel::findOrFail($mapel);
+        $task = Post::findOrFail($id);
+        
+        // Handle attachment
+        $attachmentPath = $task->attachment;
+        
+        if ($request->hasFile('attachment')) {
+            // Delete old file if exists
+            if ($attachmentPath && \Storage::disk('public')->exists($attachmentPath)) {
+                \Storage::disk('public')->delete($attachmentPath);
+            }
+            
+            $file = $request->file('attachment');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $attachmentPath = $file->storeAs('tugas', $filename, 'public');
+        } elseif ($request->remove_attachment) {
+            // Remove attachment if requested
+            if ($attachmentPath && \Storage::disk('public')->exists($attachmentPath)) {
+                \Storage::disk('public')->delete($attachmentPath);
+            }
+            $attachmentPath = null;
+        }
+        
+        // Update task
+        $task->update([
+            'title' => $request->title,
+            'description' => $request->description,
+            'link' => $request->link,
+            'deadline' => $request->deadline,
+            'attachment' => $attachmentPath,
+            'shared_to_classes' => $request->classrooms,
         ]);
 
-        return redirect()->route('guru.tugas.list', [$serial, $tema, $subtema])
-            ->with('success', 'Tugas berhasil diperbarui!');
+        return redirect()->route('guru.tugas.mapel', [$serial->id, $mapel->id])
+            ->with('success', 'Tugas berhasil diupdate!');
     }
 
-    public function destroy($serial, $tema, $subtema, $id)
+    public function destroy($serial, $mapel, $id)
     {
-        $lesson = Lesson::findOrFail($id);
-        $lesson->delete();
+        $serial = Serial::findOrFail($serial);
+        $mapel = Mapel::findOrFail($mapel);
+        $task = Post::where('is_task', 1)->findOrFail($id);
+        
+        // Delete attachment file if exists
+        if ($task->attachment && \Storage::disk('public')->exists($task->attachment)) {
+            \Storage::disk('public')->delete($task->attachment);
+        }
+        
+        $task->delete();
 
-        return redirect()->route('guru.tugas.list', [$serial, $tema, $subtema])
+        return redirect()->route('guru.tugas.mapel', [$serial->id, $mapel->id])
             ->with('success', 'Tugas berhasil dihapus!');
     }
 }

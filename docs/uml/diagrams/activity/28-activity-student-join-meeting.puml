@@ -1,0 +1,145 @@
+@startuml StudentJoinMeeting-Activity
+
+title Activity Diagram: Siswa Join Kelas Online
+
+|Siswa|
+start
+:Login ke aplikasi;
+:Pilih kelas;
+:Akses menu "Kelas Online";
+
+|Sistem|
+:Tampilkan daftar meeting;
+
+note right
+Menampilkan:
+- Meeting yang sedang berlangsung (badge: LIVE)
+- Meeting yang dijadwalkan
+- Info: judul, waktu, nama guru
+end note
+
+|Siswa|
+:Pilih meeting;
+:Klik "Join Meeting";
+
+|Sistem|
+:Check status meeting;
+
+if (Status?) then (Ended)
+  :Tampilkan error:\n"Meeting sudah berakhir";
+  |Siswa|
+  stop
+
+else (Scheduled)
+  :Check waktu sekarang;
+  
+  if (Waktu < scheduled - 10 menit?) then (ya)
+    :Tampilkan error:\n"Meeting belum bisa dimulai\nSilakan tunggu 10 menit sebelum jadwal";
+    |Siswa|
+    stop
+  else (tidak)
+    :Update status → active;
+    :Set started_at = now();
+    :Generate JWT token untuk siswa;
+    
+    note right
+    Token settings untuk siswa:
+    - moderator: false
+    - features: limited
+    - exp: 24 hours
+    end note
+    
+    :Redirect ke meeting room;
+  endif
+
+else (Active)
+  :Generate JWT token untuk siswa;
+  :Redirect ke meeting room;
+endif
+
+|Siswa|
+:Tampil halaman join;
+:Klik "Masuk Kelas";
+
+|Jitsi Server|
+:Verify JWT token;
+
+if (Token valid?) then (tidak)
+  :Error: Token tidak valid;
+  |Siswa|
+  stop
+else (ya)
+  :Load Jitsi interface;
+  :Connect audio/video;
+  
+  |Siswa|
+  :Setting mic & camera;
+  
+  note right
+  Siswa dapat:
+  ✓ On/off mic
+  ✓ On/off camera
+  ✓ Pilih device
+  end note
+  
+  :Join meeting room;
+  
+  |Jitsi Server|
+  :Display meeting room;
+  
+  note right
+  Fitur untuk siswa:
+  ✓ Lihat & dengar guru
+  ✓ Lihat screen sharing guru
+  ✓ Chat
+  ✓ Raise hand
+  ✓ Share screen (jika enabled)
+  ✗ Kick/mute others
+  ✗ Recording
+  ✗ End meeting
+  end note
+  
+  |Siswa|
+  :Mengikuti kelas online;
+  
+  while (Masih di meeting?) is (ya)
+    fork
+      :Mendengarkan penjelasan guru;
+    fork again
+      :Bertanya via chat atau raise hand;
+    fork again
+      :Melihat screen sharing;
+    fork again
+      :Interaksi dengan teman;
+    end fork
+  endwhile (tidak)
+  
+  if (Cara keluar?) then (Guru end meeting)
+    |Jitsi Server|
+    :Meeting ended by moderator;
+    :Auto disconnect semua peserta;
+    
+    |Sistem|
+    :Redirect ke daftar meeting;
+    |Siswa|
+    stop
+    
+  else (Siswa leave sendiri)
+    :Klik "Leave Meeting";
+    
+    |Jitsi Server|
+    :Disconnect siswa;
+    
+    note right
+    Siswa lain & guru
+    tetap di meeting
+    end note
+    
+    |Sistem|
+    :Redirect ke daftar meeting;
+    |Siswa|
+    stop
+  endif
+endif
+
+@enduml

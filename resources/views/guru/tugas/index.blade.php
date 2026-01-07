@@ -14,7 +14,7 @@
     @endif
 
     <div class="row">
-        @forelse($themes as $theme)
+        @forelse($mapels as $mapel)
             <div class="col-md-6 col-lg-4 mb-3">
                 <div class="card h-100 hover-card">
                     <div class="card-body">
@@ -25,11 +25,11 @@
                                 </span>
                             </div>
                             <div>
-                                <h5 class="card-title mb-0">{{ $theme->name }}</h5>
+                                <h5 class="card-title mb-0">{{ $mapel->name }}</h5>
                             </div>
                         </div>
-                        <a href="{{ route('guru.tugas.tema', [$serial->id, $theme->id]) }}" class="btn btn-warning btn-sm w-100">
-                            <i class='bx bx-right-arrow-alt me-1'></i>Lihat Sub Tema
+                        <a href="{{ route('guru.tugas.mapel', [$serial->id, $mapel->id]) }}" class="btn btn-warning btn-sm w-100">
+                            <i class='bx bx-right-arrow-alt me-1'></i>Lihat Tugas
                         </a>
                     </div>
                 </div>
@@ -37,7 +37,7 @@
         @empty
             <div class="col-12">
                 <div class="alert alert-info">
-                    Belum ada mata pelajaran dengan tugas.
+                    Belum ada mata pelajaran.
                 </div>
             </div>
         @endforelse

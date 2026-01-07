@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Guru - Lo-Fi Wireframe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #fafafa;
+            padding: 40px;
+        }
+        
+        .wireframe {
+            max-width: 1400px;
+            margin: 0 auto;
+            border: 2px solid #333;
+            background-color: #fff;
+        }
+        
+        /* Header */
+        .header {
+            border-bottom: 2px solid #333;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-box {
+            border: 2px solid #666;
+            padding: 8px 16px;
+            font-size: 11px;
+            color: #666;
+        }
+        
+        .header-box.logo {
+            width: 100px;
+        }
+        
+        .header-box.user {
+            width: 150px;
+        }
+        
+        /* Main Layout */
+        .main {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            min-height: 600px;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            border-right: 2px solid #333;
+            padding: 30px 20px;
+        }
+        
+        .nav-title {
+            font-size: 10px;
+            color: #999;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .nav-item {
+            border: 1px solid #999;
+            padding: 10px;
+            margin-bottom: 8px;
+            font-size: 11px;
+            color: #666;
+        }
+        
+        .nav-item.active {
+            border: 2px solid #333;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        /* Content Area */
+        .content {
+            padding: 30px 40px;
+        }
+        
+        /* Title Section */
+        .page-title {
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .title-text {
+            height: 30px;
+            border: 2px solid #333;
+            width: 300px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle-text {
+            height: 15px;
+            border: 1px solid #999;
+            width: 400px;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-box {
+            border: 2px solid #666;
+            padding: 25px 20px;
+            position: relative;
+        }
+        
+        .stat-label {
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background-color: #fff;
+            padding: 0 8px;
+            font-size: 9px;
+            color: #666;
+            text-transform: uppercase;
+        }
+        
+        .stat-number {
+            height: 40px;
+            border-bottom: 2px solid #333;
+            margin-bottom: 10px;
+        }
+        
+        .stat-desc {
+            height: 12px;
+            border: 1px solid #ccc;
+            width: 80%;
+        }
+        
+        /* Info Cards */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .info-card {
+            border: 1px solid #999;
+            padding: 20px;
+            background-color: #fafafa;
+        }
+        
+        .info-title {
+            height: 15px;
+            border-bottom: 2px solid #999;
+            margin-bottom: 15px;
+        }
+        
+        .info-line {
+            height: 10px;
+            border: 1px solid #ccc;
+            margin-bottom: 8px;
+        }
+        
+        .info-line:last-child {
+            width: 60%;
+        }
+        
+        /* Two Column Layout */
+        .two-col {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+        
+        /* Activity Box */
+        .activity-box {
+            border: 2px solid #333;
+        }
+        
+        .box-header {
+            border-bottom: 2px solid #333;
+            padding: 15px 20px;
+            background-color: #f9f9f9;
+        }
+        
+        .box-title {
+            height: 16px;
+            border: 2px solid #666;
+            width: 180px;
+        }
+        
+        .box-content {
+            padding: 20px;
+        }
+        
+        .activity-item {
+            display: grid;
+            grid-template-columns: 40px 1fr 80px;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-avatar {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #999;
+            border-radius: 50%;
+        }
+        
+        .activity-text {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .activity-line {
+            height: 10px;
+            border: 1px solid #ccc;
+        }
+        
+        .activity-line.name {
+            width: 70%;
+            border-color: #666;
+        }
+        
+        .activity-badge {
+            height: 25px;
+            border: 1px solid #999;
+        }
+        
+        /* Quick Access Box */
+        .quick-box {
+            border: 2px solid #333;
+        }
+        
+        .quick-content {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .quick-icon {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #999;
+            margin: 20px auto;
+        }
+        
+        .quick-text {
+            height: 12px;
+            border: 1px solid #ccc;
+            width: 150px;
+            margin: 0 auto 20px;
+        }
+        
+        .quick-button {
+            height: 35px;
+            border: 2px solid #333;
+            width: 120px;
+            margin: 0 auto;
+            background-color: #f5f5f5;
+        }
+        
+    </style>
+</head>
+<body>
+    
+    <div class="wireframe">
+        
+        <!-- Header -->
+        <header class="header">
+            <div class="header-box logo">LOGO</div>
+            <div class="header-box user">USER INFO</div>
+        </header>
+        
+        <!-- Main Layout -->
+        <div class="main">
+            
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="nav-title">Navigation</div>
+                <div class="nav-item active">Dashboard</div>
+                <div class="nav-item">Materi</div>
+                <div class="nav-item">Soal</div>
+                <div class="nav-item">Tugas</div>
+                <div class="nav-item">Kelas</div>
+                <div class="nav-item">Siswa</div>
+                <div class="nav-item">Laporan</div>
+                <div class="nav-item">Rekap</div>
+            </aside>
+            
+            <!-- Content -->
+            <main class="content">
+                
+                <!-- Page Title -->
+                <div class="page-title">
+                    <div class="title-text"></div>
+                    <div class="subtitle-text"></div>
+                </div>
+                
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Card 1</div>
+                        <div class="stat-number"></div>
+                        <div class="stat-desc"></div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Card 2</div>
+                        <div class="stat-number"></div>
+                        <div class="stat-desc"></div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Card 3</div>
+                        <div class="stat-number"></div>
+                        <div class="stat-desc"></div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Card 4</div>
+                        <div class="stat-number"></div>
+                        <div class="stat-desc"></div>
+                    </div>
+                </div>
+                
+                <!-- Info Cards -->
+                <div class="info-grid">
+                    <div class="info-card">
+                        <div class="info-title"></div>
+                        <div class="info-line"></div>
+                        <div class="info-line"></div>
+                        <div class="info-line"></div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-title"></div>
+                        <div class="info-line"></div>
+                        <div class="info-line"></div>
+                        <div class="info-line"></div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-title"></div>
+                        <div class="info-line"></div>
+                        <div class="info-line"></div>
+                        <div class="info-line"></div>
+                    </div>
+                </div>
+                
+                <!-- Two Column Layout -->
+                <div class="two-col">
+                    
+                    <!-- Activity List -->
+                    <div class="activity-box">
+                        <div class="box-header">
+                            <div class="box-title"></div>
+                        </div>
+                        <div class="box-content">
+                            <div class="activity-item">
+                                <div class="activity-avatar"></div>
+                                <div class="activity-text">
+                                    <div class="activity-line name"></div>
+                                    <div class="activity-line"></div>
+                                    <div class="activity-line"></div>
+                                </div>
+                                <div class="activity-badge"></div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-avatar"></div>
+                                <div class="activity-text">
+                                    <div class="activity-line name"></div>
+                                    <div class="activity-line"></div>
+                                    <div class="activity-line"></div>
+                                </div>
+                                <div class="activity-badge"></div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-avatar"></div>
+                                <div class="activity-text">
+                                    <div class="activity-line name"></div>
+                                    <div class="activity-line"></div>
+                                    <div class="activity-line"></div>
+                                </div>
+                                <div class="activity-badge"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Access -->
+                    <div class="quick-box">
+                        <div class="box-header">
+                            <div class="box-title"></div>
+                        </div>
+                        <div class="quick-content">
+                            <div class="quick-icon"></div>
+                            <div class="quick-text"></div>
+                            <div class="quick-button"></div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+            </main>
+            
+        </div>
+        
+    </div>
+    
+</body>
+</html>

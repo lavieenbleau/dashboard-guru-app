@@ -1,0 +1,58 @@
+@startuml Grading-Activity
+!theme plain
+scale 0.75
+skinparam dpi 150
+
+title Activity Diagram: Penilaian Tugas & Soal
+
+|Guru|
+start
+:Akses Laporan Harian;
+
+|Sistem|
+:Tampilkan kalender pengumpulan;
+
+|Guru|
+:Pilih tanggal;
+
+|Sistem|
+:Query tasks untuk tanggal ini;
+:Query exercise_points untuk tanggal ini;
+:Merge collections dengan source_type;
+:Kategorisasi berdasarkan lesson.category\n(Tugas/UH/PTS/PAS/Soal Tambahan);
+:Tampilkan list pengumpulan\ndengan badges;
+
+|Guru|
+:Pilih pengumpulan siswa;
+:Klik "Beri Nilai";
+
+|Sistem|
+:Tampilkan detail pengumpulan;
+:Load source_type (task/exercise);
+
+|Guru|
+:Review file/jawaban siswa;
+:Input nilai (0-100);
+:Input feedback;
+:Submit;
+
+|Sistem|
+:Validasi nilai;
+
+if (Valid?) then (ya)
+  if (source_type = task?) then (ya)
+    :Update tasks.point;
+  else (exercise)
+    :Update exercise_points.exercise_point;
+  endif
+  :Simpan nilai & feedback;
+  :Tampilkan success;
+  |Guru|
+  stop
+else (tidak)
+  :Tampilkan error;
+  |Guru|
+  stop
+endif
+
+@enduml

@@ -1,0 +1,84 @@
+@startuml Authentication-Sequence
+!theme plain
+scale 0.75
+skinparam dpi 150
+title Sequence Diagram: Autentikasi Login & Logout
+
+actor "Guru" as Guru
+control ":AuthController" as Auth <<control>>
+entity ":User" as User <<entity>>
+boundary ":SessionManager" as Session <<boundary>>
+database ":Database" as DB
+
+== Login Process ==
+Guru -> Auth: Akses Halaman Login
+activate Auth
+Auth --> Guru: Form Login
+deactivate Auth
+
+Guru -> Auth: Submit Email & Password
+activate Auth
+
+Auth -> Auth: Validasi Input
+
+alt Validasi Gagal
+  Auth --> Guru: Tampilkan Error Validasi
+else Validasi Berhasil
+  
+  Auth -> User: Cari User by Email
+  activate User
+  User -> DB: Retrieve
+  activate DB
+  DB --> User: User Data
+  deactivate DB
+  User --> Auth: Data User
+  deactivate User
+  
+  alt User Tidak Ditemukan
+    Auth --> Guru: Error: Email Tidak Terdaftar
+  else User Ditemukan
+    
+    Auth -> Auth: Verifikasi Password
+    
+    alt Password Salah
+      Auth --> Guru: Error: Password Salah
+    else Password Benar
+      
+      Auth -> Session: Buat Session Login
+      activate Session
+      Session -> Session: Simpan User ID
+      Session -> Session: Regenerate Session ID
+      Session --> Auth: Session Aktif
+      deactivate Session
+      
+      Auth -> User: Update Last Login
+      activate User
+      User -> DB: Update
+      activate DB
+      DB --> User: Updated
+      deactivate DB
+      User --> Auth: Updated
+      deactivate User
+      
+      Auth --> Guru: Redirect ke Dashboard
+    end
+  end
+end
+
+deactivate Auth
+
+== Logout Process ==
+Guru -> Auth: Klik Logout
+activate Auth
+
+Auth -> Session: Hapus Session
+activate Session
+Session -> Session: Invalidate Session
+Session -> Session: Regenerate Token
+Session --> Auth: Logout Berhasil
+deactivate Session
+
+Auth --> Guru: Redirect ke Login
+deactivate Auth
+
+@enduml

@@ -1,0 +1,83 @@
+@startuml BP04-Buat-Tugas
+
+skinparam defaultTextAlignment center
+skinparam activity {
+  BackgroundColor White
+  BorderColor Black
+  FontSize 12
+}
+
+start
+
+:Awal;
+
+:Guru pilih menu
+"Postingan/Tugas";
+
+:Klik "Buat
+Tugas Baru";
+
+:Input data tugas:
+- Judul
+- Deskripsi instruksi
+- Deadline;
+
+if (Ada file instruksi?) then (Ya)
+  :Upload file
+  lampiran;
+endif
+
+:Pilih kelas tujuan;
+
+:Set flag
+"Adalah Tugas";
+
+:Publish tugas;
+
+:Sistem kirim notifikasi
+ke siswa;
+
+:Siswa buka
+daftar tugas;
+
+:Siswa baca
+instruksi tugas;
+
+if (Ada file lampiran?) then (Ya)
+  :Download file
+  instruksi;
+endif
+
+:Siswa kerjakan
+tugas;
+
+:Siswa upload
+file jawaban;
+
+:Submit tugas;
+
+:Sistem notifikasi
+ke guru;
+
+:Guru buka
+daftar tugas masuk;
+
+:Guru review
+jawaban siswa;
+
+:Guru input nilai
+& feedback;
+
+:Simpan penilaian;
+
+:Sistem notifikasi
+nilai ke siswa;
+
+:Siswa lihat nilai
+& feedback;
+
+:Awal;
+
+stop
+
+@enduml

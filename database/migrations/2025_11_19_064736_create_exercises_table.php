@@ -13,6 +13,13 @@ return new class extends Migration
     {
         Schema::create('exercises', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('lesson_id');
+            $table->unsignedBigInteger('serial_id')->nullable();
+            $table->unsignedBigInteger('exercise_type_id');
+            $table->string('title', 200)->nullable();
+            $table->text('description')->nullable();
+            $table->tinyInteger('is_admin')->default(1);
+            $table->json('shared_to_classes')->nullable();
             $table->timestamps();
         });
     }

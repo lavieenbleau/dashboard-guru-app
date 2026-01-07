@@ -1,0 +1,67 @@
+@startuml StateDiagram-Material
+
+title State Diagram: Lifecycle Materi/Lesson
+
+[*] --> Created : Admin membuat materi
+
+state Created {
+  [*] --> Draft
+  Draft : is_admin = 1
+  Draft : serial_id = NULL
+  Draft : Belum dibagikan ke kelas
+}
+
+Created --> Shared : Guru membagikan\nke kelas tertentu
+
+state Shared {
+  state "Dibagikan ke Kelas" as SharedToClasses
+  
+  SharedToClasses : Relasi via pivot table
+  SharedToClasses : lesson_classroom
+  
+  state "Update Sharing" as UpdateShare {
+    [*] --> CheckClassrooms
+    CheckClassrooms --> AddClasses : Tambah kelas baru
+    CheckClassrooms --> RemoveClasses : Hapus kelas
+    AddClasses --> Synced
+    RemoveClasses --> Synced
+    Synced --> [*]
+  }
+  
+  SharedToClasses --> UpdateShare : Guru update\npilihan kelas
+}
+
+Shared --> NotShared : Hapus semua\nsharing (sync([]))
+
+state NotShared {
+  [*] --> Available
+  Available : Materi masih ada
+  Available : Tapi tidak dibagikan\nke kelas manapun
+}
+
+NotShared --> Shared : Bagikan lagi
+
+Shared --> Deleted : Admin hapus materi
+NotShared --> Deleted : Admin hapus materi
+Created --> Deleted : Admin hapus materi
+
+Deleted --> [*]
+
+note right of Shared
+  Ketika materi dibagikan:
+  - Pivot table lesson_classroom
+    berisi record relasi
+  - Guru bisa lihat badge
+    "Dibagikan ke X Kelas"
+  - Siswa di kelas tersebut
+    bisa akses materi
+end note
+
+note right of UpdateShare
+  Laravel sync() method:
+  1. Hapus relasi lama
+  2. Insert relasi baru
+  3. Atomic operation
+end note
+
+@enduml

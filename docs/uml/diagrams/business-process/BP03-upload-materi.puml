@@ -1,0 +1,71 @@
+@startuml BP03-Upload-Materi
+
+skinparam defaultTextAlignment center
+skinparam activity {
+  BackgroundColor White
+  BorderColor Black
+  FontSize 12
+}
+
+start
+
+:Awal;
+
+:Guru pilih menu
+"Pelajaran";
+
+:Klik "Buat
+Pelajaran Baru";
+
+:Pilih mata pelajaran;
+
+:Input data:
+- Nama pelajaran
+- Tingkat & semester
+- Kategori;
+
+if (Gunakan tema?) then (Ya)
+  :Buat tema
+  & subtema;
+endif
+
+:Tambah item materi;
+
+if (Tipe konten?) then (Video)
+  :Input embed
+  video YouTube;
+else if (File) then
+  :Upload file
+  (PDF/PPT/DOC);
+else if (Link) then
+  :Input URL
+  link eksternal;
+else (Teks)
+  :Input deskripsi
+  teks materi;
+endif
+
+:Pilih kelas tujuan
+(bisa multiple);
+
+:Preview materi;
+
+if (Sudah benar?) then (Tidak)
+  :Edit materi;
+else (Ya)
+  :Publish materi;
+endif
+
+:Sistem kirim notifikasi
+ke siswa;
+
+:Siswa buka dashboard;
+
+:Siswa akses
+& baca materi;
+
+:Awal;
+
+stop
+
+@enduml

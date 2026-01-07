@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('serial_id');
+            $table->unsignedBigInteger('student_id');
+            $table->text('report');
+            $table->string('img', 50)->nullable();
             $table->timestamps();
         });
     }

@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('competences', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('lesson_id');
+            $table->unsignedBigInteger('mapel_id');
+            $table->string('point', 10);
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

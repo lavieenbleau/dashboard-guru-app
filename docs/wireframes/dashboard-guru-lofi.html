@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Guru - Wireframe Lo-Fi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e8e8e8;
+        }
+        
+        /* Header */
+        .header {
+            background-color: #d0d0d0;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .logo {
+            background-color: #fff;
+            width: 80px;
+            height: 40px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+        
+        .menu-label {
+            background-color: #b8b8b8;
+            width: 60px;
+            height: 40px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color: #b8b8b8;
+        }
+        
+        .user-info {
+            font-size: 11px;
+            color: #666;
+        }
+        
+        /* Container */
+        .container {
+            display: flex;
+            height: calc(100vh - 70px);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 180px;
+            background-color: #d8d8d8;
+            padding: 20px 0;
+        }
+        
+        .menu-item {
+            padding: 10px 20px;
+            font-size: 13px;
+            color: #555;
+            cursor: pointer;
+        }
+        
+        .menu-item.active {
+            background-color: #c0e8c0;
+        }
+        
+        .menu-text {
+            height: 12px;
+            background-color: #b0b0b0;
+            width: 100px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            background-color: #e8e8e8;
+        }
+        
+        /* Cards Row 1 - 4 Cards */
+        .cards-row-1 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card-small {
+            background-color: #fff;
+            padding: 30px 20px;
+            text-align: center;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .card-label {
+            height: 12px;
+            background-color: #e0e0e0;
+            width: 80px;
+        }
+        
+        /* Cards Row 2 - 3 Cards */
+        .cards-row-2 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card-medium {
+            background-color: #fff;
+            padding: 30px 20px;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .card-text {
+            height: 12px;
+            background-color: #e0e0e0;
+            width: 100px;
+        }
+        
+        /* Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+        }
+        
+        /* Section */
+        .section {
+            background-color: #fff;
+            padding: 20px;
+        }
+        
+        .section-header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .section-title {
+            height: 14px;
+            background-color: #d0d0d0;
+            width: 150px;
+        }
+        
+        /* Activity Items */
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .activity-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-line {
+            height: 12px;
+            background-color: #f0f0f0;
+            margin-bottom: 5px;
+            width: 70%;
+        }
+        
+        .activity-line.short {
+            width: 40%;
+        }
+        
+        .activity-badge {
+            width: 60px;
+            height: 25px;
+            background-color: #f0f0f0;
+        }
+        
+        /* Meeting Empty */
+        .meeting-content {
+            text-align: center;
+            padding: 50px 20px;
+        }
+        
+        .meeting-text {
+            height: 12px;
+            background-color: #e0e0e0;
+            width: 180px;
+            margin: 0 auto 15px;
+        }
+        
+        .meeting-button {
+            height: 12px;
+            background-color: #d0d0d0;
+            width: 120px;
+            margin: 0 auto;
+        }
+        
+    </style>
+</head>
+<body>
+    
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">GURU</div>
+            <div class="menu-label">Menu</div>
+        </div>
+        <div class="header-right">
+            <div class="user-avatar"></div>
+            <div class="user-info">
+                <div>Nama</div>
+                <div>Role</div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Container -->
+    <div class="container">
+        
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="menu-item active">
+                <div class="menu-text"></div>
+            </div>
+            <div class="menu-item">
+                <div class="menu-text"></div>
+            </div>
+            <div class="menu-item">
+                <div class="menu-text"></div>
+            </div>
+            <div class="menu-item">
+                <div class="menu-text"></div>
+            </div>
+            <div class="menu-item">
+                <div class="menu-text"></div>
+            </div>
+            <div class="menu-item">
+                <div class="menu-text"></div>
+            </div>
+            <div class="menu-item">
+                <div class="menu-text"></div>
+            </div>
+            <div class="menu-item">
+                <div class="menu-text"></div>
+            </div>
+            <div class="menu-item">
+                <div class="menu-text"></div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- 4 Cards Row -->
+            <div class="cards-row-1">
+                <div class="card-small">
+                    <div class="card-label"></div>
+                </div>
+                <div class="card-small">
+                    <div class="card-label"></div>
+                </div>
+                <div class="card-small">
+                    <div class="card-label"></div>
+                </div>
+                <div class="card-small">
+                    <div class="card-label"></div>
+                </div>
+            </div>
+            
+            <!-- 3 Cards Row -->
+            <div class="cards-row-2">
+                <div class="card-medium">
+                    <div class="card-text"></div>
+                </div>
+                <div class="card-medium">
+                    <div class="card-text"></div>
+                </div>
+                <div class="card-medium">
+                    <div class="card-text"></div>
+                </div>
+            </div>
+            
+            <!-- Content Grid -->
+            <div class="content-grid">
+                
+                <!-- Aktivitas Terbaru -->
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-title"></div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-avatar"></div>
+                        <div class="activity-content">
+                            <div class="activity-line"></div>
+                            <div class="activity-line short"></div>
+                        </div>
+                        <div class="activity-badge"></div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-avatar"></div>
+                        <div class="activity-content">
+                            <div class="activity-line"></div>
+                            <div class="activity-line short"></div>
+                        </div>
+                        <div class="activity-badge"></div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-avatar"></div>
+                        <div class="activity-content">
+                            <div class="activity-line"></div>
+                            <div class="activity-line short"></div>
+                        </div>
+                        <div class="activity-badge"></div>
+                    </div>
+                </div>
+                
+                <!-- Meeting Mendatang -->
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-title"></div>
+                    </div>
+                    
+                    <div class="meeting-content">
+                        <div class="meeting-text"></div>
+                        <div class="meeting-button"></div>
+                    </div>
+                </div>
+                
+            </div>
+            
+        </main>
+        
+    </div>
+    
+</body>
+</html>

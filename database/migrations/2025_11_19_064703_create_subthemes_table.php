@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('subthemes', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('lesson_id')->nullable();
+            $table->unsignedBigInteger('theme_id');
+            $table->integer('subtheme');
+            $table->string('name');
             $table->timestamps();
         });
     }

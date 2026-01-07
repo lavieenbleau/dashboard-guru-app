@@ -1,0 +1,67 @@
+@startuml Business Process - Pembelajaran
+
+title Business Process: Pembuatan dan Akses Pelajaran
+
+|Guru|
+start
+:Pilih Mata Pelajaran;
+:Buat Pelajaran Baru;
+:Input Nama Pelajaran;
+:Input Tingkat & Semester;
+:Pilih Kategori Pelajaran;
+
+if (Gunakan Tema?) then (ya)
+  :Buat Tema;
+  :Input Nomor & Nama Tema;
+  
+  if (Gunakan Subtema?) then (ya)
+    :Buat Subtema;
+    :Input Nomor & Nama Subtema;
+  endif
+endif
+
+:Buat Item Pelajaran;
+:Input Judul & Deskripsi;
+
+if (Tipe Konten?) then (Link)
+  :Input URL Link;
+elseif (Video) then
+  :Input Embed Video;
+elseif (File) then
+  :Upload File;
+else (Teks)
+  :Input Deskripsi;
+endif
+
+:Pilih Kelas Tujuan;
+note right
+  Bisa dibagikan ke
+  beberapa kelas sekaligus
+end note
+
+:Publish Pelajaran;
+
+|Sistem|
+:Notifikasi ke Siswa;
+
+|Siswa|
+:Terima Notifikasi;
+:Buka Dashboard;
+:Lihat Daftar Pelajaran;
+:Pilih Pelajaran;
+:Baca Materi;
+
+if (Tipe Konten?) then (Link)
+  :Klik Link External;
+elseif (Video) then
+  :Tonton Video;
+elseif (File) then
+  :Download File;
+else (Teks)
+  :Baca Deskripsi;
+endif
+
+:Selesai Belajar;
+stop
+
+@enduml

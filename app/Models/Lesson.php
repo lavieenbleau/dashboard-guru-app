@@ -11,9 +11,13 @@ class Lesson extends Model
     protected $fillable = [
         'mapel_id',
         'name',
+        'description',
+        'questions',
+        'file',
         'grade',
         'semester',
         'category',
+        'deadline',
     ];
 
     // Category constants
@@ -36,5 +40,10 @@ class Lesson extends Model
     public function themes()
     {
         return $this->hasMany(Theme::class, 'lesson_id');
+    }
+
+    public function classrooms()
+    {
+        return $this->belongsToMany(Classroom::class, 'lesson_classroom');
     }
 }

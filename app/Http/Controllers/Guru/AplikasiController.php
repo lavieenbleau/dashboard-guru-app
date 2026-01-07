@@ -22,11 +22,37 @@ class AplikasiController extends Controller
     {
         $serial = Serial::with('product')->findOrFail($serial);
         
-        // Get statistics
+        // Get statistics - using Posts for Materi & Tugas, Exercises for Soal
         $stats = [
-            'materi' => \App\Models\Lesson::where('category', 1)->count(),
-            'tugas' => \App\Models\Lesson::where('category', 2)->count(),
-            'soal' => \App\Models\Lesson::where('category', 3)->count(),
+            // Materi: posts with is_task = 0
+            'materi' => \App\Models\Post::where('serial_id', $serial->id)
+                ->where('is_task', 0)
+                ->count(),
+            
+            // Tugas: posts with is_task = 1
+            'tugas' => \App\Models\Post::where('serial_id', $serial->id)
+                ->where('is_task', 1)
+                ->count(),
+            
+            // Soal: exercises (custom soal from teacher + admin soal shared to classrooms)
+            'soal' => \App\Models\Exercise::where(function($q) use ($serial) {
+                // Custom soal created by teacher for this serial
+                $q->where('serial_id', $serial->id)
+                  ->where('is_admin', 0);
+                
+                // OR admin soal that have been shared to this serial's classrooms
+                $classroomIds = \App\Models\Classroom::where('serial_id', $serial->id)->pluck('id');
+                if ($classroomIds->isNotEmpty()) {
+                    $q->orWhere(function($subQ) use ($classroomIds) {
+                        $subQ->where('is_admin', 1)
+                             ->whereHas('classrooms', function($query) use ($classroomIds) {
+                                 $query->whereIn('classrooms.id', $classroomIds);
+                             });
+                    });
+                }
+            })
+            ->count(),
+            
             'classrooms' => \App\Models\Classroom::where('serial_id', $serial->id)->count(),
             'students' => \App\Models\Student::whereHas('classroom', function($q) use ($serial) {
                 $q->where('serial_id', $serial->id);
@@ -47,7 +73,7 @@ class AplikasiController extends Controller
             ->limit(3)
             ->get();
         
-        // Recent activities (from tasks)
+        // Recent activities (from tasks) - only for this serial
         $recentActivities = \App\Models\Task::with(['student', 'post'])
             ->where('serial_id', $serial->id)
             ->latest()

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soal - Lo-Fi Wireframe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #fafafa;
+            padding: 40px;
+        }
+        
+        .wireframe {
+            max-width: 1400px;
+            margin: 0 auto;
+            border: 2px solid #333;
+            background-color: #fff;
+        }
+        
+        .header {
+            border-bottom: 2px solid #333;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-box {
+            border: 2px solid #666;
+            padding: 8px 16px;
+            font-size: 11px;
+            color: #666;
+        }
+        
+        .header-box.logo {
+            width: 100px;
+        }
+        
+        .header-box.user {
+            width: 150px;
+        }
+        
+        .main {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            min-height: 600px;
+        }
+        
+        .sidebar {
+            border-right: 2px solid #333;
+            padding: 30px 20px;
+        }
+        
+        .nav-title {
+            font-size: 10px;
+            color: #999;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .nav-item {
+            border: 1px solid #999;
+            padding: 10px;
+            margin-bottom: 8px;
+            font-size: 11px;
+            color: #666;
+        }
+        
+        .nav-item.active {
+            border: 2px solid #333;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .content {
+            padding: 30px 40px;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed #ccc;
+        }
+        
+        .page-title {
+            height: 25px;
+            border: 2px solid #333;
+            width: 200px;
+        }
+        
+        /* Category Grid */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .category-box {
+            border: 2px solid #666;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .category-box:hover {
+            background-color: #fafafa;
+        }
+        
+        .category-icon {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #999;
+            border-radius: 8px;
+            margin: 0 auto 20px;
+        }
+        
+        .category-title {
+            height: 16px;
+            border-bottom: 2px solid #666;
+            width: 70%;
+            margin: 0 auto 25px;
+        }
+        
+        .category-button {
+            border: 2px solid #666;
+            padding: 8px 20px;
+            font-size: 11px;
+            color: #666;
+            width: 100%;
+        }
+        
+    </style>
+</head>
+<body>
+    
+    <div class="wireframe">
+        
+        <header class="header">
+            <div class="header-box logo">LOGO</div>
+            <div class="header-box user">USER INFO</div>
+        </header>
+        
+        <div class="main">
+            
+            <aside class="sidebar">
+                <div class="nav-title">Navigation</div>
+                <div class="nav-item">Dashboard</div>
+                <div class="nav-item">Materi</div>
+                <div class="nav-item active">Soal</div>
+                <div class="nav-item">Tugas</div>
+                <div class="nav-item">Kelas</div>
+                <div class="nav-item">Siswa</div>
+                <div class="nav-item">Laporan</div>
+                <div class="nav-item">Rekap</div>
+            </aside>
+            
+            <main class="content">
+                
+                <div class="page-header">
+                    <div class="page-title"></div>
+                </div>
+                
+                <div class="category-grid">
+                    
+                    <div class="category-box">
+                        <div class="category-icon"></div>
+                        <div class="category-title"></div>
+                        <div class="category-button">LIHAT SOAL</div>
+                    </div>
+                    
+                    <div class="category-box">
+                        <div class="category-icon"></div>
+                        <div class="category-title"></div>
+                        <div class="category-button">LIHAT SOAL</div>
+                    </div>
+                    
+                    <div class="category-box">
+                        <div class="category-icon"></div>
+                        <div class="category-title"></div>
+                        <div class="category-button">LIHAT SOAL</div>
+                    </div>
+                    
+                    <div class="category-box">
+                        <div class="category-icon"></div>
+                        <div class="category-title"></div>
+                        <div class="category-button">LIHAT SOAL</div>
+                    </div>
+                    
+                </div>
+                
+            </main>
+            
+        </div>
+        
+    </div>
+    
+</body>
+</html>

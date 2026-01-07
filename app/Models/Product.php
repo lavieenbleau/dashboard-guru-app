@@ -8,8 +8,6 @@ class Product extends Model
 {
     protected $table = 'products';
 
-    public $timestamps = false;
-
     protected $fillable = [
         'lesson_id',
         'name',
@@ -17,4 +15,9 @@ class Product extends Model
         'grade_category',
         'semester'
     ];
+
+    public function serials()
+    {
+        return $this->hasMany(Serial::class);
+    }
 }

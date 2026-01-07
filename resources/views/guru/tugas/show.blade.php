@@ -5,21 +5,20 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('guru.tugas', $serial->id) }}">Tugas</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('guru.tugas.tema', [$serial->id, $tema->id]) }}">{{ $tema->name }}</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('guru.tugas.list', [$serial->id, $tema->id, $subtema->id]) }}">{{ $subtema->name }}</a></li>
-            <li class="breadcrumb-item active">{{ $lesson->name }}</li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.tugas.mapel', [$serial->id, $mapel->id]) }}">{{ $mapel->name }}</a></li>
+            <li class="breadcrumb-item active">{{ $task->title }}</li>
         </ol>
     </nav>
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="fw-bold mb-0">
-            <i class='bx bx-edit text-primary me-2'></i>{{ $lesson->name }}
+            <i class='bx bx-edit text-primary me-2'></i>{{ $task->title }}
         </h4>
         <div class="d-flex gap-2">
-            <a href="{{ route('guru.tugas.edit', [$serial->id, $tema->id, $subtema->id, $lesson->id]) }}" class="btn btn-primary">
+            <a href="{{ route('guru.tugas.edit', [$serial->id, $mapel->id, $task->id]) }}" class="btn btn-primary">
                 <i class='bx bx-edit me-1'></i>Edit Tugas
             </a>
-            <a href="{{ route('guru.tugas.list', [$serial->id, $tema->id, $subtema->id]) }}" class="btn btn-outline-secondary">
+            <a href="{{ route('guru.tugas.mapel', [$serial->id, $mapel->id]) }}" class="btn btn-outline-secondary">
                 <i class='bx bx-arrow-back me-1'></i>Kembali
             </a>
         </div>
@@ -41,23 +40,40 @@
                     <ul class="list-unstyled mb-0">
                         <li class="mb-3">
                             <strong class="d-block text-muted small">Mata Pelajaran</strong>
-                            {{ $tema->name }}
+                            {{ $mapel->name }}
                         </li>
                         <li class="mb-3">
-                            <strong class="d-block text-muted small">Sub Tema</strong>
-                            {{ $subtema->name }}
+                            <strong class="d-block text-muted small">Serial</strong>
+                            {{ $serial->product->name }}
                         </li>
+                        @if($task->deadline)
                         <li class="mb-3">
-                            <strong class="d-block text-muted small">Semester</strong>
-                            <span class="badge bg-label-primary">Semester {{ $lesson->semester ?? 1 }}</span>
+                            <strong class="d-block text-muted small">Deadline Pengumpulan</strong>
+                            <div class="d-flex align-items-center">
+                                <i class='bx bx-time-five me-2 text-warning'></i>
+                                <span>{{ \Carbon\Carbon::parse($task->deadline)->format('d M Y, H:i') }}</span>
+                            </div>
+                            @php
+                                $now = \Carbon\Carbon::now();
+                                $deadline = \Carbon\Carbon::parse($task->deadline);
+                                $diff = $now->diffInHours($deadline, false);
+                            @endphp
+                            @if($diff < 0)
+                                <small class="text-danger">Sudah lewat {{ abs($diff) }} jam</small>
+                            @elseif($diff < 24)
+                                <small class="text-warning">Tersisa {{ $diff }} jam lagi</small>
+                            @else
+                                <small class="text-muted">Tersisa {{ floor($diff/24) }} hari lagi</small>
+                            @endif
                         </li>
+                        @endif
                         <li class="mb-3">
                             <strong class="d-block text-muted small">Dibuat</strong>
-                            {{ $lesson->created_at->format('d M Y H:i') }}
+                            {{ $task->created_at->format('d M Y H:i') }}
                         </li>
                         <li class="mb-0">
                             <strong class="d-block text-muted small">Terakhir Diupdate</strong>
-                            {{ $lesson->updated_at->format('d M Y H:i') }}
+                            {{ $task->updated_at->format('d M Y H:i') }}
                         </li>
                     </ul>
                 </div>
@@ -90,74 +106,59 @@
         <!-- Konten Tugas -->
         <div class="col-md-8">
             <!-- Deskripsi & File -->
-            @php
-                $descItem = $items->where('title', 'Deskripsi Tugas')->first();
-            @endphp
-            
-            @if($descItem)
             <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">Deskripsi Tugas</h5>
                 </div>
                 <div class="card-body">
-                    @if($descItem->description)
-                        <p class="mb-3">{{ $descItem->description }}</p>
+                    @if($task->description)
+                        <div class="mb-3">{!! nl2br(e($task->description)) !!}</div>
+                    @else
+                        <p class="text-muted">Tidak ada deskripsi untuk tugas ini.</p>
                     @endif
                     
-                    @if($descItem->link)
+                    @if($task->attachment)
+                        <div class="alert alert-light d-flex align-items-center mb-3">
+                            <i class='bx bx-file text-primary me-3' style="font-size: 2rem;"></i>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">Lampiran File</h6>
+                                <small class="text-muted">{{ basename($task->attachment) }}</small>
+                            </div>
+                            <a href="{{ asset('storage/' . $task->attachment) }}" target="_blank" class="btn btn-sm btn-primary" download>
+                                <i class='bx bx-download me-1'></i>Download
+                            </a>
+                        </div>
+                    @endif
+                    
+                    @if($task->link)
                         <div class="mt-3">
-                            <a href="{{ $descItem->link }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <a href="{{ $task->link }}" target="_blank" class="btn btn-sm btn-outline-primary">
                                 <i class='bx bx-link-external me-1'></i>Buka Link Materi
                             </a>
                         </div>
                     @endif
                 </div>
             </div>
-            @else
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Deskripsi Tugas</h5>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted mb-0">
-                        Belum ada deskripsi untuk tugas ini. Klik tombol "Edit Tugas" untuk menambahkan deskripsi.
-                    </p>
-                </div>
-            </div>
-            @endif
 
-            <!-- Soal Tugas -->
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Soal Tugas</h5>
-                    <span class="badge bg-label-primary">{{ $items->where('title', '!=', 'Deskripsi Tugas')->count() }} Soal</span>
-                </div>
-                <div class="card-body">
-                    @php
-                        $questions = $items->where('title', '!=', 'Deskripsi Tugas');
-                    @endphp
-                    
-                    @if($questions->count() > 0)
-                        <div class="list-group list-group-flush">
-                            @foreach($questions as $index => $question)
-                            <div class="list-group-item px-0">
-                                <div class="d-flex align-items-start">
-                                    <span class="badge bg-label-warning me-3">{{ $index + 1 }}</span>
-                                    <div class="flex-grow-1">
-                                        {{ $question->description }}
-                                    </div>
-                                </div>
-                            </div>
+            <!-- Shared to Classes -->
+            @if($task->shared_to_classes && count($task->shared_to_classes) > 0)
+                @php
+                    $sharedClasses = \App\Models\Classroom::whereIn('id', $task->shared_to_classes)->get();
+                @endphp
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Dibagikan ke Kelas</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach($sharedClasses as $classroom)
+                                <span class="badge bg-label-primary">{{ $classroom->name }}</span>
                             @endforeach
                         </div>
-                    @else
-                        <div class="text-center py-4">
-                            <i class='bx bx-clipboard display-1 text-muted'></i>
-                            <p class="text-muted mt-3">Belum ada soal untuk tugas ini.</p>
-                        </div>
-                    @endif
+                    </div>
                 </div>
-            </div>
+            @endif
         </div>
     </div>
 </div>

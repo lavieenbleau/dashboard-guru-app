@@ -12,6 +12,35 @@
     <link rel="stylesheet" href="{{ asset('sneat/assets/vendor/css/core.css') }}">
     <link rel="stylesheet" href="{{ asset('sneat/assets/vendor/css/theme-default.css') }}">
     <link rel="stylesheet" href="{{ asset('sneat/assets/css/demo.css') }}">
+    
+    <style>
+        /* Prevent horizontal scroll */
+        html, body {
+            overflow-x: hidden;
+            max-width: 100vw;
+        }
+        
+        .layout-wrapper {
+            overflow-x: hidden;
+        }
+        
+        .layout-page {
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .content-wrapper {
+            padding: 1.5rem;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
+        /* Ensure content doesn't overflow */
+        .container-xxl, .container-fluid {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+    </style>
 </head>
 
 <body>

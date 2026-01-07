@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('exercise_types', function (Blueprint $table) {
             $table->id();
+            $table->string('kode', 10);
+            $table->string('name', 50);
             $table->timestamps();
         });
     }

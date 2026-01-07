@@ -1,0 +1,271 @@
+@startuml ManageTugas-Activity
+
+title Activity Diagram: Kelola Tugas
+
+|Guru|
+start
+:Akses menu Tugas;
+:Pilih mapel;
+
+|Sistem|
+:Tampilkan daftar tugas;
+
+|Guru|
+if (Aksi?) then (Buat)
+  :Klik "Tambah Tugas";
+  :Input judul & deskripsi;
+  :Upload file (optional);
+  :Set deadline;
+  :Submit;
+  
+  |Sistem|
+  :Validasi data;
+  
+  if (Valid?) then (ya)
+    :Simpan tugas;
+    :Tampilkan success;
+    |Guru|
+    stop
+  else (tidak)
+    :Tampilkan error;
+    |Guru|
+    stop
+  endif
+
+else (Edit)
+  :Pilih tugas;
+  :Klik "Edit";
+  :Update data;
+  :Submit;
+  
+  |Sistem|
+  :Validasi data;
+  
+  if (Valid?) then (ya)
+    :Update tugas;
+    :Tampilkan success;
+    |Guru|
+    stop
+  else (tidak)
+    :Tampilkan error;
+    |Guru|
+    stop
+  endif
+
+else (Hapus)
+  :Pilih tugas;
+  :Klik "Hapus";
+  :Konfirmasi;
+  
+  |Sistem|
+  :Delete tugas;
+  :Hapus file;
+  :Tampilkan success;
+  |Guru|
+  stop
+
+else (Bagikan)
+  :Pilih tugas;
+  :Klik "Bagikan";
+  :Pilih kelas;
+  :Submit;
+  
+  |Sistem|
+  :Simpan ke lesson_items;
+  :Tampilkan success;
+  |Guru|
+  stop
+endif
+
+@enduml
+  
+  |System|
+  :Tampilkan form input tugas;
+  
+  |Guru|
+  :Input data tugas:\n- Judul\n- Deskripsi\n- Deadline\n- Max Point;
+  
+  if (Lampirkan file?) then (ya)
+    :Upload file tugas\n(PDF, DOC, PPT);
+    
+    |System|
+    :Validasi file:\n- Format: pdf,doc,docx,ppt,pptx\n- Size: max 10MB;
+    
+    if (File valid?) then (tidak)
+      :Error: File tidak valid;
+      |Guru|
+      stop
+    else (ya)
+      :Store file ke storage/posts/tugas;
+    endif
+  endif
+  
+  :Submit form;
+  
+  |System|
+  :Validasi semua input;
+  
+  if (Valid?) then (tidak)
+    :Tampilkan errors;
+    |Guru|
+    stop
+  else (ya)
+    :Simpan tugas ke posts table\n(type = 'tugas');
+    :Success: Tugas berhasil dibuat;
+    
+    note right
+    Tugas yang dibuat akan
+    otomatis tersedia untuk
+    dibagikan ke kelas
+    end note
+    
+    |Guru|
+    :Lihat daftar tugas terupdate;
+    stop
+  endif
+
+else (Edit Tugas)
+  :Pilih tugas dari list;
+  :Klik "Edit";
+  
+  |System|
+  :Load data tugas;
+  :Tampilkan form edit;
+  
+  |Guru|
+  :Update data yang diperlukan;
+  
+  if (Ganti file?) then (ya)
+    :Upload file baru;
+    
+    |System|
+    :Validasi file baru;
+    
+    if (Valid?) then (tidak)
+      :Error: File tidak valid;
+      |Guru|
+      stop
+    else (ya)
+      if (File lama ada?) then (ya)
+        :Hapus file lama dari storage;
+      endif
+      :Store file baru;
+    endif
+  endif
+  
+  :Submit form;
+  
+  |System|
+  :Validasi input;
+  
+  if (Valid?) then (tidak)
+    :Tampilkan errors;
+    |Guru|
+    stop
+  else (ya)
+    :Update tugas di database;
+    :Success: Tugas berhasil diupdate;
+    
+    |Guru|
+    stop
+  endif
+
+else (Hapus Tugas)
+  :Pilih tugas dari list;
+  :Klik "Hapus";
+  
+  |System|
+  :Tampilkan konfirmasi;
+  
+  note right
+  Warning: Menghapus tugas
+  akan menghapus semua
+  pengumpulan siswa
+  end note
+  
+  |Guru|
+  if (Konfirmasi hapus?) then (tidak)
+    stop
+  else (ya)
+    |System|
+    if (Tugas punya file?) then (ya)
+      :Hapus file dari storage;
+    endif
+    
+    :Delete tugas dari database;
+    
+    note right
+    Cascade delete:
+    - Tasks (student submissions)
+    end note
+    
+    :Success: Tugas berhasil dihapus;
+    
+    |Guru|
+    stop
+  endif
+
+else (Lihat Detail)
+  :Pilih tugas dari list;
+  :Klik "Lihat";
+  
+  |System|
+  :Tampilkan detail tugas:\n- Info tugas (judul, desc, deadline)\n- File lampiran\n- Statistik pengumpulan;
+  
+  fork
+    :Hitung total siswa yang mengumpulkan;
+  fork again
+    :Hitung yang sudah dinilai;
+  fork again
+    :Hitung yang belum dinilai;
+  fork again
+    :Hitung rata-rata nilai;
+  end fork
+  
+  :Tampilkan statistik;
+  
+  |Guru|
+  if (Ada pengumpulan?) then (ya)
+    :Klik "Lihat Pengumpulan";
+    
+    |System|
+    :Redirect ke Laporan Harian;
+    
+    |Guru|
+    stop
+  else (tidak)
+    stop
+  endif
+
+else (Bagikan ke Kelas)
+  :Pilih tugas dari list;
+  :Klik "Bagikan";
+  
+  |System|
+  :Tampilkan daftar kelas;
+  
+  |Guru|
+  :Pilih kelas tujuan;
+  :Set deadline (optional);
+  :Submit;
+  
+  |System|
+  fork
+    :Loop setiap kelas;
+    :Check sudah dibagikan?;
+  fork again
+    if (Sudah dibagikan?) then (ya)
+      :Skip kelas ini;
+    else (tidak)
+      :Insert ke lesson_items;
+      :Notifikasi siswa (optional);
+    endif
+  end fork
+  
+  :Success: Tugas berhasil dibagikan;
+  
+  |Guru|
+  stop
+endif
+
+@enduml

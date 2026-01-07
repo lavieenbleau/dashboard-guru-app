@@ -1,0 +1,114 @@
+@startuml ManageClassroom-Sequence
+!theme plain
+scale 0.75
+skinparam dpi 150
+title Sequence Diagram: Manage Kelas (CRUD Classroom)
+
+actor "Guru" as Guru
+control ":KelasController" as Controller <<control>>
+entity ":Serial" as Serial <<entity>>
+entity ":Classroom" as Classroom <<entity>>
+database ":Database" as DB
+
+== List Kelas ==
+Guru -> Controller: Buka Daftar Kelas
+activate Controller
+
+Controller -> Serial: Ambil Data Serial
+activate Serial
+Serial -> DB: Retrieve
+activate DB
+DB --> Serial: Data
+deactivate DB
+Serial --> Controller: Data Serial
+deactivate Serial
+
+Controller -> Classroom: Ambil Semua Kelas
+activate Classroom
+Classroom -> DB: Retrieve
+activate DB
+DB --> Classroom: Data
+deactivate DB
+Classroom --> Controller: List Kelas
+deactivate Classroom
+
+Controller --> Guru: Tampilkan Daftar Kelas
+deactivate Controller
+
+== Create Kelas ==
+Guru -> Controller: Buat Kelas Baru
+activate Controller
+
+Controller -> Controller: Validasi Input
+
+alt Validasi Gagal
+  Controller --> Guru: Tampilkan Error
+else Validasi Berhasil
+  
+  Controller -> Classroom: Simpan Kelas Baru
+  activate Classroom
+  Classroom -> DB: Save
+  activate DB
+  DB --> Classroom: Saved
+  deactivate DB
+  Classroom --> Controller: Kelas Tersimpan
+  deactivate Classroom
+  
+  Controller --> Guru: Redirect ke Daftar Kelas
+end
+
+deactivate Controller
+
+== Delete Kelas ==
+Guru -> Controller: Hapus Kelas
+activate Controller
+
+Controller -> Classroom: Cari Kelas
+activate Classroom
+Classroom -> DB: Retrieve
+activate DB
+DB --> Classroom: Data
+deactivate DB
+Classroom --> Controller: Data Kelas
+deactivate Classroom
+
+Controller -> Classroom: Hapus Kelas
+activate Classroom
+Classroom -> DB: Delete
+activate DB
+DB --> Classroom: Deleted
+deactivate DB
+Classroom --> Controller: Kelas Terhapus
+deactivate Classroom
+
+Controller --> Guru: Konfirmasi Penghapusan
+
+deactivate Controller
+
+== Show Dashboard Kelas ==
+Guru -> Controller: Buka Dashboard Kelas
+activate Controller
+
+Controller -> Classroom: Ambil Detail Kelas & Siswa
+activate Classroom
+Classroom -> DB: Retrieve with Relations
+activate DB
+DB --> Classroom: Data
+deactivate DB
+Classroom --> Controller: Data Kelas & Siswa
+deactivate Classroom
+
+Controller -> Serial: Ambil Data Serial
+activate Serial
+Serial -> DB: Retrieve
+activate DB
+DB --> Serial: Data
+deactivate DB
+Serial --> Controller: Data Serial
+deactivate Serial
+
+Controller --> Guru: Tampilkan Dashboard Kelas
+
+deactivate Controller
+
+@enduml

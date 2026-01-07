@@ -1,0 +1,150 @@
+@startuml GeneratePDF-Sequence
+!theme plain
+scale 0.75
+skinparam dpi 150
+title Sequence Diagram: Generate & Download PDF Rekap Nilai
+
+actor "Guru" as Guru
+control ":RekapNilaiController" as Controller <<control>>
+entity ":Serial" as Serial <<entity>>
+entity ":Classroom" as Classroom <<entity>>
+entity ":Student" as Student <<entity>>
+entity ":Mapel" as Mapel <<entity>>
+entity ":Task" as Task <<entity>>
+entity ":ExercisePoint" as Point <<entity>>
+control ":DomPDF" as PDF <<control>>
+database ":Database" as DB
+
+== Generate PDF Rekap Kelas ==
+Guru -> Controller: Request Download PDF
+activate Controller
+
+Controller -> Serial: Ambil Data Serial
+activate Serial
+Serial -> DB: Retrieve
+activate DB
+DB --> Serial: Data
+deactivate DB
+Serial --> Controller: Data Serial
+deactivate Serial
+
+Controller -> Classroom: Ambil Data Kelas
+activate Classroom
+Classroom -> DB: Retrieve
+activate DB
+DB --> Classroom: Data
+deactivate DB
+Classroom --> Controller: Data Kelas
+deactivate Classroom
+
+Controller -> Student: Ambil Semua Siswa
+activate Student
+Student -> DB: Retrieve
+activate DB
+DB --> Student: Data
+deactivate DB
+Student --> Controller: List Siswa
+deactivate Student
+
+Controller -> Mapel: Ambil Semua Mapel
+activate Mapel
+Mapel -> DB: Retrieve
+activate DB
+DB --> Mapel: Data
+deactivate DB
+Mapel --> Controller: List Mapel
+deactivate Mapel
+
+loop Untuk Setiap Siswa
+  
+  loop Untuk Setiap Mapel
+    
+    Controller -> Task: Hitung Statistik Tugas
+    activate Task
+    Task -> DB: Retrieve & Calculate
+    activate DB
+    DB --> Task: Stats
+    deactivate DB
+    Task --> Controller: Jumlah & Rata-rata Tugas
+    deactivate Task
+    
+    Controller -> Point: Hitung Statistik Soal
+    activate Point
+    Point -> DB: Retrieve & Calculate
+    activate DB
+    DB --> Point: Stats
+    deactivate DB
+    Point --> Controller: Jumlah & Rata-rata Soal
+    deactivate Point
+    
+    Controller -> Controller: Build Data Rekap
+  end
+end
+
+Controller -> Controller: Calculate Summary
+
+Controller -> PDF: Generate PDF
+activate PDF
+PDF -> PDF: Load Template
+PDF -> PDF: Inject Data
+PDF -> PDF: Render PDF
+PDF --> Controller: PDF File
+deactivate PDF
+
+Controller --> Guru: Download PDF Rekap
+deactivate Controller
+
+== Generate PDF Rekap Per Siswa ==
+Guru -> Controller: Request PDF Per Siswa
+activate Controller
+
+Controller -> Student: Ambil Data Siswa
+activate Student
+Student -> DB: Retrieve
+activate DB
+DB --> Student: Data
+deactivate DB
+Student --> Controller: Data Siswa
+deactivate Student
+
+Controller -> Mapel: Ambil Semua Mapel
+activate Mapel
+Mapel -> DB: Retrieve
+activate DB
+DB --> Mapel: Data
+deactivate DB
+Mapel --> Controller: List Mapel
+deactivate Mapel
+
+loop Untuk Setiap Mapel
+  
+  Controller -> Task: Ambil Semua Tugas Siswa
+  activate Task
+  Task -> DB: Retrieve
+  activate DB
+  DB --> Task: Data
+  deactivate DB
+  Task --> Controller: List Tugas dengan Nilai
+  deactivate Task
+  
+  Controller -> Point: Ambil Semua Point Siswa
+  activate Point
+  Point -> DB: Retrieve
+  activate DB
+  DB --> Point: Data
+  deactivate DB
+  Point --> Controller: List Point dengan Skor
+  deactivate Point
+  
+  Controller -> Controller: Build Detail Data
+end
+
+Controller -> PDF: Generate PDF Detail
+activate PDF
+PDF --> Controller: PDF File
+deactivate PDF
+
+Controller --> Guru: Download PDF Siswa
+deactivate Controller
+
+@enduml

@@ -5,8 +5,7 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('guru.tugas', $serial->id) }}">Tugas</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('guru.tugas.tema', [$serial->id, $tema->id]) }}">{{ $tema->name }}</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('guru.tugas.list', [$serial->id, $tema->id, $subtema->id]) }}">{{ $subtema->name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.tugas.mapel', [$serial->id, $mapel->id]) }}">{{ $mapel->name }}</a></li>
             <li class="breadcrumb-item active">Tambah Tugas</li>
         </ol>
     </nav>
@@ -18,14 +17,14 @@
                     <h5 class="mb-0"><i class='bx bx-task text-warning me-2'></i>Tambah Tugas Baru</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('guru.tugas.store', [$serial->id, $tema->id, $subtema->id]) }}" method="POST">
+                    <form action="{{ route('guru.tugas.store', [$serial->id, $mapel->id]) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         
                         <div class="mb-3">
-                            <label class="form-label">Nama Tugas <span class="text-danger">*</span></label>
-                            <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" 
-                                   value="{{ old('name') }}" required>
-                            @error('name')
+                            <label class="form-label">Judul Tugas <span class="text-danger">*</span></label>
+                            <input type="text" name="title" class="form-control @error('title') is-invalid @enderror" 
+                                   value="{{ old('title') }}" required>
+                            @error('title')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -49,42 +48,29 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Semester</label>
-                            <select name="semester" class="form-select @error('semester') is-invalid @enderror">
-                                <option value="1" {{ old('semester') == 1 ? 'selected' : '' }}>Semester 1</option>
-                                <option value="2" {{ old('semester') == 2 ? 'selected' : '' }}>Semester 2</option>
-                            </select>
-                            @error('semester')
+                            <label class="form-label">Lampiran File</label>
+                            <input type="file" name="attachment" class="form-control @error('attachment') is-invalid @enderror" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.jpg,.jpeg,.png">
+                            @error('attachment')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+                            <small class="text-muted">Upload file tugas (PDF, Word, Excel, PowerPoint, ZIP, atau gambar, max 10MB)</small>
                         </div>
 
                         <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <label class="form-label mb-0">Soal Tugas</label>
-                                <button type="button" class="btn btn-sm btn-outline-warning" id="addQuestion">
-                                    <i class='bx bx-plus'></i> Tambah Soal
-                                </button>
-                            </div>
-                            <div id="questionsContainer">
-                                <div class="question-item mb-2">
-                                    <div class="input-group">
-                                        <span class="input-group-text">1.</span>
-                                        <textarea name="questions[]" rows="2" class="form-control" placeholder="Tulis soal..."></textarea>
-                                        <button type="button" class="btn btn-outline-danger remove-question" style="display: none;">
-                                            <i class='bx bx-trash'></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <small class="text-muted">Tambahkan soal-soal untuk tugas ini (opsional)</small>
+                            <label class="form-label">Deadline Pengumpulan</label>
+                            <input type="datetime-local" name="deadline" class="form-control @error('deadline') is-invalid @enderror" 
+                                   value="{{ old('deadline') }}">
+                            @error('deadline')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">Batas waktu pengumpulan tugas (opsional)</small>
                         </div>
 
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-warning">
                                 <i class='bx bx-save me-1'></i>Simpan Tugas
                             </button>
-                            <a href="{{ route('guru.tugas.list', [$serial->id, $tema->id, $subtema->id]) }}" class="btn btn-secondary">
+                            <a href="{{ route('guru.tugas.mapel', [$serial->id, $mapel->id]) }}" class="btn btn-secondary">
                                 <i class='bx bx-x me-1'></i>Batal
                             </a>
                         </div>
@@ -94,19 +80,48 @@
         </div>
 
         <div class="col-md-4">
-            <div class="card">
+            <div class="card mb-3">
                 <div class="card-body">
                     <h6 class="card-title">Informasi</h6>
                     <ul class="list-unstyled mb-0">
                         <li class="mb-2">
-                            <strong>Tema:</strong><br>
-                            {{ $tema->name }}
+                            <strong>Mata Pelajaran:</strong><br>
+                            {{ $mapel->name }}
                         </li>
                         <li class="mb-2">
-                            <strong>Sub Tema:</strong><br>
-                            {{ $subtema->name }}
+                            <strong>Serial:</strong><br>
+                            {{ $serial->product->name }}
                         </li>
                     </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Bagikan ke Kelas</h6>
+                    <div class="form-check mb-0">
+                        <input class="form-check-input" type="checkbox" id="selectAllClasses">
+                        <label class="form-check-label small" for="selectAllClasses">
+                            Pilih Semua
+                        </label>
+                    </div>
+                </div>
+                <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                    @if($classrooms->count() > 0)
+                        @foreach($classrooms as $classroom)
+                            <div class="form-check mb-2">
+                                <input class="form-check-input classroom-checkbox" type="checkbox" 
+                                       name="classrooms[]" value="{{ $classroom->id }}" 
+                                       id="classroom{{ $classroom->id }}">
+                                <label class="form-check-label" for="classroom{{ $classroom->id }}">
+                                    {{ $classroom->name }}
+                                    <small class="text-muted">({{ $classroom->grade }})</small>
+                                </label>
+                            </div>
+                        @endforeach
+                    @else
+                        <p class="text-muted small mb-0">Belum ada kelas tersedia</p>
+                    @endif
                 </div>
             </div>
         </div>
@@ -159,6 +174,28 @@ function updateRemoveButtons() {
     } else {
         removeButtons.forEach(btn => btn.style.display = 'block');
     }
+}
+
+// Select all classrooms functionality
+const selectAllCheckbox = document.getElementById('selectAllClasses');
+const classroomCheckboxes = document.querySelectorAll('.classroom-checkbox');
+
+if (selectAllCheckbox) {
+    selectAllCheckbox.addEventListener('change', function() {
+        classroomCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+    });
+
+    classroomCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const allChecked = Array.from(classroomCheckboxes).every(cb => cb.checked);
+            const someChecked = Array.from(classroomCheckboxes).some(cb => cb.checked);
+            
+            selectAllCheckbox.checked = allChecked;
+            selectAllCheckbox.indeterminate = someChecked && !allChecked;
+        });
+    });
 }
 </script>
 @endsection

@@ -185,7 +185,7 @@
                 <div class="text-center py-4 text-muted">
                     <i class='bx bx-calendar-x fs-1'></i>
                     <p class="mt-2 small">Tidak ada meeting terjadwal</p>
-                    <a href="{{ route('guru.onlineclass.create', $serial->id) }}" class="btn btn-sm btn-primary mt-2">
+                    <a href="{{ route('guru.onlineclass', $serial->id) }}" class="btn btn-sm btn-primary mt-2">
                         <i class='bx bx-plus'></i> Buat Meeting
                     </a>
                 </div>

@@ -1,0 +1,106 @@
+@startuml SelectAplikasi-Sequence
+!theme plain
+scale 0.75
+skinparam dpi 150
+title Sequence Diagram: Pilih Aplikasi & Dashboard
+
+actor "Guru" as Guru
+control ":AplikasiController" as Controller <<control>>
+entity ":Serial" as Serial <<entity>>
+entity ":Classroom" as Classroom <<entity>>
+entity ":Student" as Student <<entity>>
+entity ":Post" as Post <<entity>>
+entity ":Task" as Task <<entity>>
+database ":Database" as DB
+
+== List Available Applications ==
+Guru -> Controller: Akses Daftar Aplikasi
+activate Controller
+
+Controller -> Serial: Ambil Semua Serial Aktif
+activate Serial
+Serial -> DB: Retrieve
+activate DB
+DB --> Serial: Data
+deactivate DB
+Serial --> Controller: List Serial
+deactivate Serial
+
+loop Untuk Setiap Serial
+  Controller -> Classroom: Hitung Kelas
+  activate Classroom
+  Classroom -> DB: Count
+  activate DB
+  DB --> Classroom: Total
+  deactivate DB
+  Classroom --> Controller: Jumlah Kelas
+  deactivate Classroom
+  
+  Controller -> Student: Hitung Siswa
+  activate Student
+  Student -> DB: Count
+  activate DB
+  DB --> Student: Total
+  deactivate DB
+  Student --> Controller: Jumlah Siswa
+  deactivate Student
+end
+
+Controller --> Guru: Tampilkan Daftar Aplikasi
+deactivate Controller
+
+== Open Application Dashboard ==
+Guru -> Controller: Pilih Aplikasi
+activate Controller
+
+Controller -> Serial: Ambil Data Serial
+activate Serial
+Serial -> DB: Retrieve
+activate DB
+DB --> Serial: Data
+deactivate DB
+Serial --> Controller: Data Serial
+deactivate Serial
+
+Controller -> Classroom: Hitung Total Kelas
+activate Classroom
+Classroom -> DB: Count
+activate DB
+DB --> Classroom: Total
+deactivate DB
+Classroom --> Controller: Total Kelas
+deactivate Classroom
+
+Controller -> Student: Hitung Total Siswa
+activate Student
+Student -> DB: Count
+activate DB
+DB --> Student: Total
+deactivate DB
+Student --> Controller: Total Siswa
+deactivate Student
+
+Controller -> Post: Hitung Total Posts
+activate Post
+Post -> DB: Count
+activate DB
+DB --> Post: Total
+deactivate DB
+Post --> Controller: Total Materi & Tugas
+deactivate Post
+
+Controller -> Task: Hitung Tugas Belum Dinilai
+activate Task
+Task -> DB: Count
+activate DB
+DB --> Task: Total
+deactivate DB
+Task --> Controller: Total Belum Dinilai
+deactivate Task
+
+Controller -> Controller: Build Dashboard Stats
+
+Controller --> Guru: Tampilkan Dashboard Aplikasi
+deactivate Controller
+
+@enduml

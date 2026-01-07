@@ -1,0 +1,271 @@
+@startuml ManageMateri-Activity
+
+title Activity Diagram: Kelola Materi
+
+|Guru|
+start
+:Akses menu Materi;
+
+|Sistem|
+:Tampilkan pilihan materi;
+
+|Guru|
+if (Jenis?) then (Admin)
+  :Pilih "Materi Admin";
+  
+  |Sistem|
+  :Tampilkan daftar materi admin;
+  
+  |Guru|
+  :Pilih materi;
+  :Pilih kelas tujuan;
+  :Klik "Bagikan";
+  
+  |Sistem|
+  :Simpan ke lesson_items;
+  :Tampilkan success;
+  |Guru|
+  stop
+
+else (Custom)
+  :Pilih "Materi Custom";
+  
+  |Sistem|
+  :Tampilkan materi custom;
+  
+  |Guru|
+  if (Aksi?) then (Buat)
+    :Klik "Tambah Materi";
+    :Input judul & deskripsi;
+    :Upload file (optional);
+    :Submit;
+    
+    |Sistem|
+    :Validasi data;
+    
+    if (Valid?) then (ya)
+      :Simpan materi;
+      :Tampilkan success;
+      |Guru|
+      stop
+    else (tidak)
+      :Tampilkan error;
+      |Guru|
+      stop
+    endif
+    
+  else (Edit)
+    :Pilih materi;
+    :Klik "Edit";
+    :Update data;
+    :Submit;
+    
+    |Sistem|
+    :Validasi data;
+    
+    if (Valid?) then (ya)
+      :Update materi;
+      :Tampilkan success;
+      |Guru|
+      stop
+    else (tidak)
+      :Tampilkan error;
+      |Guru|
+      stop
+    endif
+    
+  else (Hapus)
+    :Pilih materi;
+    :Klik "Hapus";
+    :Konfirmasi;
+    
+    |Sistem|
+    :Delete materi;
+    :Hapus file;
+    :Tampilkan success;
+    |Guru|
+    stop
+  endif
+endif
+
+@enduml
+  
+  |Guru|
+  :Pilih mapel;
+  
+  |System|
+  :Tampilkan materi admin\nper tema/subtema;
+  
+  |Guru|
+  :Pilih materi untuk dibagikan;
+  :Pilih kelas tujuan;
+  :Submit;
+  
+  |System|
+  fork
+    :Loop setiap kelas dipilih;
+    :Check apakah sudah dibagikan;
+  fork again
+    if (Sudah dibagikan?) then (ya)
+      :Skip kelas ini;
+    else (tidak)
+      :Insert ke lesson_items;
+      :sharedCount++;
+    endif
+  end fork
+  
+  :Build success message;
+  :Redirect dengan message;
+  
+  |Guru|
+  :Lihat materi yang dibagikan;
+  stop
+
+else (Custom)
+  :Pilih "Materi Custom";
+  
+  |System|
+  :Tampilkan daftar mapel;
+  
+  |Guru|
+  :Pilih mapel;
+  
+  |System|
+  :Tampilkan materi custom\nyang sudah dibuat;
+  
+  |Guru|
+  if (Aksi?) then (Buat Baru)
+    :Klik "Tambah Materi";
+    
+    |System|
+    :Tampilkan form input materi;
+    
+    |Guru|
+    :Input data:\n- Judul\n- Deskripsi\n- Tipe konten;
+    
+    if (Tipe konten?) then (File)
+      :Upload file\n(PDF, DOC, PPT, Video);
+      
+      |System|
+      :Validasi file:\n- Format\n- Ukuran (max 50MB);
+      
+      if (File valid?) then (tidak)
+        :Error: File tidak valid;
+        |Guru|
+        stop
+      else (ya)
+        :Store file ke storage;
+      endif
+      
+    else (Link)
+      :Input URL link;
+      
+      |System|
+      :Validasi URL format;
+      
+      if (URL valid?) then (tidak)
+        :Error: URL tidak valid;
+        |Guru|
+        stop
+      endif
+      
+    else (Text)
+      :Input konten text/HTML;
+    endif
+    
+    :Submit form;
+    
+    |System|
+    :Validasi semua input;
+    
+    if (Valid?) then (tidak)
+      :Tampilkan errors;
+      |Guru|
+      stop
+    else (ya)
+      :Simpan materi ke posts table\n(type = 'materi');
+      :Success: Materi berhasil dibuat;
+      
+      |Guru|
+      stop
+    endif
+    
+  else (Edit)
+    :Pilih materi dari list;
+    :Klik "Edit";
+    
+    |System|
+    :Load data materi;
+    :Tampilkan form edit;
+    
+    |Guru|
+    :Update data yang diperlukan;
+    
+    if (Ganti file?) then (ya)
+      :Upload file baru;
+      
+      |System|
+      :Validasi file baru;
+      
+      if (Valid?) then (tidak)
+        :Error: File tidak valid;
+        |Guru|
+        stop
+      else (ya)
+        :Hapus file lama;
+        :Store file baru;
+      endif
+    endif
+    
+    :Submit form;
+    
+    |System|
+    :Validasi input;
+    
+    if (Valid?) then (tidak)
+      :Tampilkan errors;
+      |Guru|
+      stop
+    else (ya)
+      :Update materi di database;
+      :Success message;
+      
+      |Guru|
+      stop
+    endif
+    
+  else (Hapus)
+    :Pilih materi dari list;
+    :Klik "Hapus";
+    
+    |System|
+    :Tampilkan konfirmasi;
+    
+    |Guru|
+    if (Konfirmasi?) then (tidak)
+      stop
+    else (ya)
+      |System|
+      if (Materi punya file?) then (ya)
+        :Hapus file dari storage;
+      endif
+      
+      :Delete materi dari database;
+      :Success: Materi berhasil dihapus;
+      
+      |Guru|
+      stop
+    endif
+    
+  else (Lihat)
+    :Pilih materi dari list;
+    
+    |System|
+    :Tampilkan detail materi:\n- Judul, deskripsi\n- File/link\n- Kelas yang dibagikan\n- Statistik views;
+    
+    |Guru|
+    stop
+  endif
+endif
+
+@enduml

@@ -11,8 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('online_meetings', function (Blueprint $table) {
+        Schema::create('serials', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('product_id');
+            $table->string('serial', 50);
+            $table->string('paket', 1);
+            $table->string('active', 3);
+            $table->timestamp('expired_at')->nullable();
             $table->timestamps();
         });
     }
@@ -22,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('online_meetings');
+        Schema::dropIfExists('serials');
     }
 };

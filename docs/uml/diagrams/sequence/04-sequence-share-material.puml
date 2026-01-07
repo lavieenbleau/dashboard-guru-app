@@ -1,0 +1,103 @@
+@startuml ShareMaterial-Sequence
+!theme plain
+scale 0.75
+skinparam dpi 150
+title Sequence Diagram: Guru Membagikan Materi ke Kelas (dengan Opsi Tugas)
+
+actor "Guru" as Guru
+control ":MateriController" as Controller <<control>>
+entity ":Lesson" as Lesson <<entity>>
+entity ":Post" as Post <<entity>>
+entity ":Classroom" as Classroom <<entity>>
+database ":Database" as DB
+
+== Lihat Materi Admin ==
+Guru -> Controller: Akses Materi Admin
+activate Controller
+
+Controller -> Lesson: Ambil Materi Admin
+activate Lesson
+Lesson -> DB: Retrieve Admin Materials
+activate DB
+DB --> Lesson: Materials Data
+deactivate DB
+Lesson --> Controller: List Materi Admin
+deactivate Lesson
+
+Controller -> Classroom: Ambil Semua Kelas
+activate Classroom
+Classroom -> DB: Retrieve Classrooms
+activate DB
+DB --> Classroom: Classrooms Data
+deactivate DB
+Classroom --> Controller: List Kelas
+deactivate Classroom
+
+Controller --> Guru: Tampilkan Materi & Kelas
+deactivate Controller
+
+== Buka Modal Share Materi ==
+Guru -> Controller: Klik Tombol Share
+activate Controller
+
+Controller --> Guru: Tampilkan Modal (Pilih Kelas, Toggle Tugas, Deadline)
+deactivate Controller
+
+Guru -> Guru: Centang "Pilih Semua Kelas" (opsional)
+Guru -> Guru: Pilih Kelas Individual
+Guru -> Guru: Aktifkan "Bagikan sebagai Tugas" (opsional)
+Guru -> Guru: Isi Deadline (opsional)
+
+== Membagikan Materi ke Kelas ==
+Guru -> Controller: Submit Form Share
+activate Controller
+
+Controller -> Controller: Validasi Input (classrooms, as_task, deadline)
+
+alt Validasi Gagal
+  Controller --> Guru: Tampilkan Error
+else Validasi Berhasil
+  
+  Controller -> Lesson: Cari Materi
+  activate Lesson
+  Lesson -> DB: Retrieve Material
+  activate DB
+  DB --> Lesson: Material Data
+  deactivate DB
+  Lesson --> Controller: Data Materi
+  deactivate Lesson
+  
+  Controller -> Lesson: Sync ke Kelas
+  activate Lesson
+  
+  loop Untuk Setiap Kelas
+    Lesson -> DB: Create/Update Relation
+    activate DB
+    DB --> Lesson: Saved
+    deactivate DB
+  end
+  
+  Lesson --> Controller: Sync Berhasil
+  deactivate Lesson
+  
+  alt Bagikan sebagai Tugas = Yes
+    loop Untuk Setiap Kelas
+      Controller -> Post: Buat Post sebagai Tugas
+      activate Post
+      Post -> DB: Save (is_task=1, deadline, category, shared_to_classes)
+      activate DB
+      DB --> Post: Saved
+      deactivate DB
+      Post --> Controller: Post Created
+      deactivate Post
+    end
+    
+    Controller --> Guru: Materi dibagikan sebagai tugas ke N kelas
+  else Bagikan sebagai Materi Biasa
+    Controller --> Guru: Materi dibagikan ke N kelas
+  end
+end
+
+deactivate Controller
+
+@enduml

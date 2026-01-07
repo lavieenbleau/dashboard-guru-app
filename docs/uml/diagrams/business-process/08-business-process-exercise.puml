@@ -1,0 +1,99 @@
+@startuml Business Process - Latihan/Exercise
+
+title Business Process: Pembuatan dan Pengerjaan Latihan
+
+|Guru|
+start
+:Pilih Pelajaran;
+:Buat Latihan Baru;
+:Input Judul Latihan;
+:Input Deskripsi;
+:Pilih Tipe Soal;
+note right
+  - Pilihan Ganda
+  - Essay
+  - Benar/Salah
+  - Isian Singkat
+end note
+
+repeat
+  :Buat Item Soal;
+  :Input Pertanyaan;
+  
+  if (Tipe Soal?) then (Pilihan Ganda)
+    :Input Opsi A, B, C, D;
+    :Set Jawaban Benar;
+  elseif (Essay) then
+    :Set Poin Maksimal;
+  elseif (Benar/Salah) then
+    :Set Jawaban Benar;
+  else (Isian Singkat)
+    :Input Jawaban Benar;
+  endif
+  
+  :Set Poin Soal;
+  
+repeat while (Tambah Soal Lagi?) is (ya)
+->tidak;
+
+:Pilih Kelas Tujuan;
+:Publish Latihan;
+
+|Sistem|
+:Notifikasi ke Siswa;
+
+|Siswa|
+:Terima Notifikasi;
+:Buka Dashboard;
+:Lihat Daftar Latihan;
+:Pilih Latihan;
+:Mulai Mengerjakan;
+
+repeat
+  :Baca Soal;
+  
+  if (Tipe Soal?) then (Pilihan Ganda)
+    :Pilih Jawaban;
+  elseif (Essay) then
+    :Tulis Essay;
+  elseif (Benar/Salah) then
+    :Pilih Benar/Salah;
+  else (Isian Singkat)
+    :Input Jawaban;
+  endif
+  
+repeat while (Ada Soal Lagi?) is (ya)
+->tidak;
+
+:Submit Latihan;
+
+|Sistem|
+:Auto Grading;
+note right
+  Sistem otomatis menilai
+  untuk Pilihan Ganda,
+  Benar/Salah, dan
+  Isian Singkat
+end note
+
+if (Ada Essay?) then (ya)
+  :Tandai untuk Review Manual;
+  
+  |Guru|
+  :Review Jawaban Essay;
+  :Input Nilai Essay;
+  :Simpan Nilai;
+endif
+
+|Sistem|
+:Hitung Total Nilai;
+:Simpan Exercise Point;
+:Notifikasi ke Siswa;
+
+|Siswa|
+:Terima Notifikasi;
+:Lihat Hasil & Nilai;
+:Lihat Pembahasan (jika ada);
+stop
+
+@enduml

@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('posts', function (Blueprint $table) {
-            $table->text('quiz_data')->nullable()->after('category'); // Store questions as JSON
-            $table->integer('time_limit')->nullable()->after('quiz_data'); // Time limit in minutes
-            $table->tinyInteger('is_quiz')->default(0)->after('is_task'); // 0=materi, 1=task, 2=quiz
+            $table->text('quiz_data')->nullable(); // Store questions as JSON
+            $table->integer('time_limit')->nullable(); // Time limit in minutes
+            $table->tinyInteger('is_quiz')->default(0); // 0=materi, 1=task, 2=quiz
         });
     }
 

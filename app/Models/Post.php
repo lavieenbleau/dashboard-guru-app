@@ -19,7 +19,14 @@ class Post extends Model
         'attachment',
         'embed',
         'category',
+        'shared_to_classes',
+        'deadline',
         'is_task',
+    ];
+
+    protected $casts = [
+        'category' => 'array',
+        'shared_to_classes' => 'array',
     ];
 
     public function serial()

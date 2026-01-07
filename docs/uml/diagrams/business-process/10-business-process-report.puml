@@ -1,0 +1,52 @@
+@startuml Business Process - Laporan
+
+title Business Process: Pelaporan dan Monitoring
+
+|Siswa|
+start
+:Buka Halaman Laporan;
+:Tulis Isi Laporan;
+note right
+  Laporan bisa berisi:
+  - Kendala belajar
+  - Feedback
+  - Pertanyaan
+  - dll
+end note
+:Upload Gambar (opsional);
+:Submit Laporan;
+
+|Sistem|
+:Simpan Laporan;
+:Notifikasi ke Guru;
+
+|Guru|
+:Terima Notifikasi;
+:Buka Daftar Laporan;
+:Filter by Siswa/Tanggal;
+:Baca Laporan Siswa;
+:Lihat Gambar (jika ada);
+
+if (Perlu Tindak Lanjut?) then (ya)
+  :Hubungi Siswa;
+  :Berikan Feedback;
+  :Catat Tindakan;
+else (tidak)
+  :Tandai Sudah Dibaca;
+endif
+
+:Generate Laporan Bulanan;
+note right
+  Laporan berisi:
+  - Jumlah siswa aktif
+  - Rata-rata nilai
+  - Tugas diselesaikan
+  - Kehadiran kelas online
+  - Laporan siswa
+end note
+
+:Review Performance;
+:Export PDF/Excel;
+stop
+
+@enduml

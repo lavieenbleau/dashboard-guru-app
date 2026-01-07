@@ -5,16 +5,15 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('guru.tugas', $serial->id) }}">Tugas</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('guru.tugas.tema', [$serial->id, $tema->id]) }}">{{ $tema->name }}</a></li>
-            <li class="breadcrumb-item active">{{ $subtema->name }}</li>
+            <li class="breadcrumb-item active">{{ $mapel->name }}</li>
         </ol>
     </nav>
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="fw-bold mb-0">
-            <i class='bx bx-task text-warning me-2'></i>Daftar Tugas
+            <i class='bx bx-task text-warning me-2'></i>Daftar Tugas - {{ $mapel->name }}
         </h4>
-        <a href="{{ route('guru.tugas.create', [$serial->id, $tema->id, $subtema->id]) }}" class="btn btn-warning">
+        <a href="{{ route('guru.tugas.create', [$serial->id, $mapel->id]) }}" class="btn btn-warning">
             <i class='bx bx-plus me-1'></i>Tambah Tugas
         </a>
     </div>
@@ -28,7 +27,7 @@
 
     <div class="card">
         <div class="card-body">
-            @forelse($lessons as $lesson)
+            @forelse($tugas as $task)
                 <div class="d-flex justify-content-between align-items-center border-bottom py-3">
                     <div class="d-flex align-items-center flex-grow-1">
                         <div class="avatar flex-shrink-0 me-3">
@@ -37,12 +36,14 @@
                             </span>
                         </div>
                         <div>
-                            <a href="{{ route('guru.tugas.show', [$serial->id, $tema->id, $subtema->id, $lesson->id]) }}" class="text-decoration-none">
-                                <h6 class="mb-0">{{ $lesson->name }}</h6>
+                            <a href="{{ route('guru.tugas.show', [$serial->id, $mapel->id, $task->id]) }}" class="text-decoration-none">
+                                <h6 class="mb-0">{{ $task->title }}</h6>
                             </a>
                             <small class="text-muted">
-                                Semester {{ $lesson->semester }} • 
-                                {{ $lesson->created_at->format('d M Y') }}
+                                {{ $task->created_at->format('d M Y') }}
+                                @if($task->deadline)
+                                    • <i class='bx bx-time-five'></i> Deadline: {{ \Carbon\Carbon::parse($task->deadline)->format('d M Y H:i') }}
+                                @endif
                             </small>
                         </div>
                     </div>
@@ -52,17 +53,17 @@
                         </button>
                         <ul class="dropdown-menu">
                             <li>
-                                <a class="dropdown-item" href="{{ route('guru.tugas.show', [$serial->id, $tema->id, $subtema->id, $lesson->id]) }}">
+                                <a class="dropdown-item" href="{{ route('guru.tugas.show', [$serial->id, $mapel->id, $task->id]) }}">
                                     <i class='bx bx-show me-1'></i> Lihat
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ route('guru.tugas.edit', [$serial->id, $tema->id, $subtema->id, $lesson->id]) }}">
+                                <a class="dropdown-item" href="{{ route('guru.tugas.edit', [$serial->id, $mapel->id, $task->id]) }}">
                                     <i class='bx bx-edit me-1'></i> Edit
                                 </a>
                             </li>
                             <li>
-                                <form action="{{ route('guru.tugas.destroy', [$serial->id, $tema->id, $subtema->id, $lesson->id]) }}" method="POST" onsubmit="return confirm('Hapus tugas ini?')">
+                                <form action="{{ route('guru.tugas.destroy', [$serial->id, $mapel->id, $task->id]) }}" method="POST" onsubmit="return confirm('Hapus tugas ini?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="dropdown-item text-danger">

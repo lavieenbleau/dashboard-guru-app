@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('post_child_comments', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('lessons', function (Blueprint $table) {
+            $table->dateTime('deadline')->nullable();
         });
     }
 
@@ -22,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('post_child_comments');
+        Schema::table('lessons', function (Blueprint $table) {
+            $table->dropColumn('deadline');
+        });
     }
 };

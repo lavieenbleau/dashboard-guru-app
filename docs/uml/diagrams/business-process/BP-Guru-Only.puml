@@ -1,0 +1,605 @@
+@startuml Business-Process-Guru
+
+skinparam defaultTextAlignment center
+skinparam activity {
+  BackgroundColor White
+  BorderColor Black
+  FontSize 11
+}
+
+title Business Process - Alur Kerja Guru
+
+start
+
+:Awal;
+
+partition "**1. AKTIVASI AKUN**" {
+  :Terima serial code
+  dari admin/sales;
+  
+  :Buka website
+  DashboardGuru;
+  
+  :Klik "Registrasi";
+  
+  :Input data:
+  - Nama lengkap
+  - Email
+  - Password
+  - No. telepon;
+  
+  :Input serial code;
+  
+  :Submit registrasi;
+  
+  if (Serial valid?) then (Ya)
+    :Akun berhasil dibuat;
+    :Serial terlink
+    ke akun;
+  else (Tidak)
+    :Tampilkan error;
+    :Hubungi admin;
+    stop
+  endif
+  
+  :Login ke sistem;
+  
+  :Akses dashboard guru;
+}
+
+partition "**2. SETUP KELAS**" {
+  :Klik menu
+  "Kelola Kelas";
+  
+  :Klik "Buat Kelas Baru";
+  
+  repeat
+    :Input data kelas:
+    - Nama kelas
+    - Tingkat/Grade;
+    
+    :Simpan kelas;
+    
+    :Sistem generate
+    kode kelas;
+    
+    :Catat/copy
+    kode kelas;
+    
+    :Bagikan kode
+    ke siswa
+    (WA/print/tulis);
+    
+  repeat while (Buat kelas lagi?) is (Ya)
+  ->Tidak;
+  
+  :Tunggu siswa
+  registrasi;
+  
+  :Lihat daftar siswa
+  yang sudah join;
+  
+  if (Verifikasi siswa?) then (Ada yang salah)
+    :Hapus/pindahkan siswa;
+  else (Semua benar)
+    :Lanjut ke pembelajaran;
+  endif
+}
+
+partition "**3. KELOLA MATA PELAJARAN**" {
+  :Klik menu
+  "Mata Pelajaran";
+  
+  if (Mapel sudah ada?) then (Tidak)
+    :Buat mata pelajaran baru;
+    :Input nama mapel;
+    :Simpan;
+  endif
+}
+
+partition "**4. BUAT PELAJARAN & MATERI**" {
+  :Klik menu "Pelajaran";
+  
+  :Klik "Buat Pelajaran";
+  
+  :Pilih mata pelajaran;
+  
+  :Input data:
+  - Nama pelajaran
+  - Tingkat
+  - Semester
+  - Kategori;
+  
+  if (Gunakan struktur tema?) then (Ya)
+    repeat
+      :Buat tema;
+      :Input nomor & nama tema;
+      
+      if (Perlu subtema?) then (Ya)
+        repeat
+          :Buat subtema;
+          :Input nomor & nama;
+        repeat while (Tambah subtema?) is (Ya)
+        ->Tidak;
+      endif
+      
+    repeat while (Tambah tema?) is (Ya)
+    ->Tidak;
+  endif
+  
+  repeat
+    :Tambah item materi;
+    
+    :Input judul item;
+    
+    :Pilih tipe konten;
+    
+    if (Tipe konten?) then (Video YouTube)
+      :Copy link video YouTube;
+      :Paste di field embed;
+    else if (File PDF/PPT/DOC) then
+      :Klik upload file;
+      :Pilih file dari komputer;
+      :Upload file;
+    else if (Link eksternal) then
+      :Input URL link;
+    else (Teks deskripsi)
+      :Tulis deskripsi materi
+      di text editor;
+    endif
+    
+    :Preview item materi;
+    
+  repeat while (Tambah item lagi?) is (Ya)
+  ->Tidak;
+  
+  :Pilih kelas tujuan
+  (bisa pilih multiple);
+  
+  :Klik "Publish";
+  
+  :Materi tersedia
+  untuk siswa;
+}
+
+partition "**5. BUAT & KELOLA TUGAS**" {
+  :Klik menu
+  "Postingan/Tugas";
+  
+  :Klik "Buat Tugas";
+  
+  :Input data:
+  - Judul tugas
+  - Deskripsi instruksi
+  - Deadline;
+  
+  if (Ada file instruksi?) then (Ya)
+    :Upload file
+    (PDF/DOC/gambar);
+  endif
+  
+  if (Ada link referensi?) then (Ya)
+    :Input URL link;
+  endif
+  
+  :Centang checkbox
+  "Adalah Tugas";
+  
+  :Pilih kelas tujuan;
+  
+  :Pilih mata pelajaran;
+  
+  :Klik "Publish";
+  
+  :Tugas terkirim
+  ke siswa;
+  
+  note right
+    Siswa akan dapat
+    notifikasi tugas baru
+  end note
+  
+  :Tunggu siswa
+  mengerjakan;
+  
+  :Klik "Lihat
+  Tugas Masuk";
+  
+  :Filter by kelas
+  atau siswa;
+  
+  repeat
+    :Pilih tugas siswa;
+    
+    :Baca jawaban siswa;
+    
+    if (Ada file?) then (Ya)
+      :Download & review
+      file jawaban;
+    endif
+    
+    :Input nilai (0-100);
+    
+    :Tulis feedback
+    (opsional);
+    
+    :Klik "Simpan Nilai";
+    
+  repeat while (Ada tugas lain?) is (Ya)
+  ->Tidak;
+  
+  :Siswa terima
+  notifikasi nilai;
+}
+
+partition "**6. BUAT LATIHAN/EXERCISE**" {
+  :Klik menu "Latihan";
+  
+  :Pilih pelajaran;
+  
+  :Klik "Buat Latihan";
+  
+  :Input judul & deskripsi;
+  
+  :Pilih tipe soal:
+  - Pilihan ganda
+  - Essay
+  - Benar/Salah
+  - Isian singkat;
+  
+  repeat
+    :Klik "Tambah Soal";
+    
+    :Input nomor soal;
+    
+    :Tulis pertanyaan;
+    
+    if (Tipe soal?) then (Pilihan Ganda)
+      :Input opsi A;
+      :Input opsi B;
+      :Input opsi C;
+      :Input opsi D;
+      :Tandai jawaban benar;
+    else if (Essay) then
+      :Set poin maksimal;
+      note right
+        Essay dinilai
+        manual oleh guru
+      end note
+    else if (Benar/Salah) then
+      :Pilih jawaban:
+      Benar atau Salah;
+    else (Isian Singkat)
+      :Input jawaban
+      yang benar;
+    endif
+    
+    :Input poin soal;
+    
+    :Simpan soal;
+    
+  repeat while (Tambah soal lagi?) is (Ya)
+  ->Tidak;
+  
+  :Review semua soal;
+  
+  :Pilih kelas tujuan;
+  
+  :Klik "Publish Latihan";
+  
+  :Latihan tersedia
+  untuk siswa;
+  
+  note right
+    Sistem auto-grading
+    untuk pilgan, B/S,
+    dan isian singkat
+  end note
+  
+  :Tunggu siswa
+  mengerjakan;
+  
+  if (Ada soal essay?) then (Ya)
+    :Klik "Review
+    Jawaban Essay";
+    
+    repeat
+      :Baca jawaban
+      essay siswa;
+      
+      :Input nilai essay;
+      
+      :Tulis feedback;
+      
+      :Simpan nilai;
+      
+    repeat while (Ada lagi?) is (Ya)
+    ->Tidak;
+  endif
+  
+  :Sistem hitung
+  total nilai;
+  
+  :Siswa lihat
+  hasil & nilai;
+}
+
+partition "**7. JADWALKAN KELAS ONLINE**" {
+  :Klik menu
+  "Kelas Online";
+  
+  :Klik "Jadwalkan
+  Pertemuan";
+  
+  :Input data:
+  - Judul pertemuan
+  - Tanggal
+  - Jam mulai
+  - Durasi (menit);
+  
+  :Sistem generate
+  room name Jitsi;
+  
+  :Pilih kelas/siswa
+  yang ikut;
+  
+  :Klik "Simpan Jadwal";
+  
+  :Siswa terima
+  notifikasi jadwal;
+  
+  :Tunggu waktu
+  pertemuan;
+  
+  if (Waktu sudah tiba?) then (Ya)
+    :Klik "Mulai
+    Pertemuan";
+    
+    :Browser buka
+    Jitsi Meeting;
+    
+    :Join room dengan
+    nama guru;
+    
+    :Aktifkan kamera
+    & mikrofon;
+    
+    :Tunggu siswa join;
+    
+    :Mulai pembelajaran:
+    - Presentasi materi
+    - Share screen
+    - Diskusi
+    - Tanya jawab;
+    
+    :Interaksi dengan
+    siswa via chat/voice;
+    
+    if (Pembelajaran selesai?) then (Ya)
+      :Klik "End Meeting";
+      
+      :Sistem tutup room;
+      
+      :Sistem catat
+      kehadiran siswa;
+    endif
+  else (Belum)
+    :Edit jadwal
+    jika perlu;
+  endif
+}
+
+partition "**8. BACA & RESPON LAPORAN**" {
+  :Klik menu
+  "Laporan Siswa";
+  
+  :Lihat daftar
+  laporan masuk;
+  
+  :Filter by:
+  - Siswa tertentu
+  - Tanggal
+  - Status;
+  
+  repeat
+    :Buka laporan;
+    
+    :Baca isi laporan:
+    - Kendala belajar
+    - Feedback
+    - Pertanyaan;
+    
+    if (Ada gambar?) then (Ya)
+      :Lihat screenshot/
+      foto pendukung;
+    endif
+    
+    if (Perlu ditindaklanjuti?) then (Ya)
+      :Hubungi siswa
+      via WA/telepon;
+      
+      :Berikan solusi
+      atau penjelasan;
+      
+      :Catat tindakan
+      yang dilakukan;
+      
+      :Tandai "Sudah
+      Ditindaklanjuti";
+    else (Tidak)
+      :Tandai "Sudah Dibaca";
+    endif
+    
+  repeat while (Ada laporan lain?) is (Ya)
+  ->Tidak;
+}
+
+partition "**9. MONITORING & ANALYTICS**" {
+  :Klik menu "Monitoring
+  & Laporan";
+  
+  :Pilih kelas
+  yang dimonitor;
+  
+  :Lihat dashboard:
+  - Total siswa
+  - Siswa aktif
+  - Rata-rata nilai
+  - Tugas selesai
+  - Kehadiran online;
+  
+  :Lihat grafik
+  performa kelas;
+  
+  if (Lihat detail siswa?) then (Ya)
+    :Pilih siswa;
+    
+    :Lihat riwayat:
+    - Semua nilai tugas
+    - Hasil latihan
+    - Kehadiran
+    - Laporan dibuat
+    - Aktivitas terakhir;
+    
+    if (Performa rendah?) then (Ya)
+      :Tandai siswa
+      "Perlu Perhatian";
+      
+      :Buat catatan khusus;
+      
+      :Hubungi siswa
+      atau orang tua;
+      
+      :Buat rencana
+      remedial;
+    else (Baik)
+      :Berikan apresiasi
+      atau reward;
+    endif
+  endif
+  
+  if (Bandingkan kelas?) then (Ya)
+    :Pilih 2+ kelas
+    untuk dibandingkan;
+    
+    :Lihat grafik
+    perbandingan:
+    - Rata-rata nilai
+    - Tingkat keaktifan
+    - Completion rate;
+    
+    :Analisis perbedaan;
+    
+    :Identifikasi
+    best practice;
+  endif
+  
+  if (Export data?) then (Ya)
+    :Pilih periode
+    (bulan/semester);
+    
+    :Pilih format:
+    PDF atau Excel;
+    
+    :Pilih data yang
+    akan diexport;
+    
+    :Klik "Generate
+    Report";
+    
+    :Download file;
+    
+    :Gunakan untuk
+    laporan ke sekolah;
+  endif
+}
+
+partition "**10. EVALUASI & IMPROVEMENT**" {
+  :Review laporan
+  bulanan/semester;
+  
+  :Evaluasi:
+  - Efektivitas materi
+  - Tingkat pemahaman
+  - Engagement siswa
+  - Metode pembelajaran;
+  
+  :Identifikasi:
+  - Materi sulit
+  - Siswa bermasalah
+  - Gap pembelajaran;
+  
+  :Buat action plan:
+  - Update materi
+  - Remedial khusus
+  - Perubahan metode;
+  
+  :Diskusi dengan
+  guru lain (jika ada);
+  
+  :Implementasi
+  perbaikan;
+}
+
+partition "**11. RENEWAL SERIAL**" {
+  if (Serial akan expired?) then (Ya)
+    :Terima notifikasi
+    dari sistem;
+    
+    :Hubungi admin/sales
+    untuk renewal;
+    
+    :Terima serial
+    baru;
+    
+    :Input serial baru
+    di menu profile;
+    
+    :Sistem validasi
+    & aktivasi;
+    
+    :Extend masa aktif;
+  else (Masih aktif)
+    :Lanjut mengajar;
+  endif
+}
+
+:Lanjut ke periode
+pembelajaran berikutnya;
+
+:Awal;
+
+stop
+
+legend right
+  **FITUR GURU:**
+  
+  **Content Management:**
+  ✓ Upload berbagai tipe materi
+  ✓ Buat tugas dengan deadline
+  ✓ Buat latihan auto-grading
+  ✓ Struktur tema & subtema
+  
+  **Class Management:**
+  ✓ Multi-class support
+  ✓ Generate kode kelas otomatis
+  ✓ Kelola daftar siswa
+  
+  **Penilaian:**
+  ✓ Auto-grading untuk objektif
+  ✓ Manual grading untuk essay
+  ✓ Feedback untuk siswa
+  
+  **Interaksi:**
+  ✓ Kelas online via Jitsi
+  ✓ Baca laporan siswa
+  ✓ Komunikasi langsung
+  
+  **Monitoring:**
+  ✓ Dashboard analytics
+  ✓ Detail per siswa
+  ✓ Perbandingan antar kelas
+  ✓ Export report
+endlegend
+
+@enduml

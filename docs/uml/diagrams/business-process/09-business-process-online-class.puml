@@ -1,0 +1,82 @@
+@startuml Business Process - Kelas Online
+
+title Business Process: Kelas Online (Jitsi Meeting)
+
+|Guru|
+start
+:Buat Kelas Online Baru;
+:Input Judul Pertemuan;
+:Set Jadwal Pertemuan;
+:Set Durasi (menit);
+:Generate Room Name;
+note right
+  Room name otomatis
+  generate berdasarkan
+  judul dan timestamp
+end note
+:Pilih Kelas/Siswa;
+:Simpan & Publish;
+
+|Sistem|
+:Notifikasi ke Siswa;
+:Set Status "Scheduled";
+
+|Siswa|
+:Terima Notifikasi;
+:Lihat Jadwal Kelas Online;
+:Tunggu Waktu Mulai;
+
+|Guru|
+if (Waktu Mulai?) then (sudah)
+  :Klik "Mulai Pertemuan";
+  
+  |Sistem|
+  :Buka Jitsi Meeting;
+  :Set Room Name;
+  :Set Display Name = Guru;
+  :Set Status "Ongoing";
+  
+  |Guru|
+  :Join Room;
+  :Tunggu Siswa;
+endif
+
+|Siswa|
+:Klik "Join Pertemuan";
+
+|Sistem|
+:Validasi Siswa;
+
+if (Siswa Valid?) then (ya)
+  :Buka Jitsi Meeting;
+  :Set Display Name = Nama Siswa;
+  
+  |Siswa|
+  :Join Room;
+  :Aktifkan Kamera (opsional);
+  :Aktifkan Mic (opsional);
+  :Ikuti Pembelajaran;
+  
+  |Guru|
+  :Mulai Pembelajaran;
+  :Share Screen (opsional);
+  :Presentasi Materi;
+  :Interaksi dengan Siswa;
+  :Chat Discussion;
+  
+  if (Selesai?) then (ya)
+    :End Meeting;
+    
+    |Sistem|
+    :Set Status "Completed";
+    :Record Attendance;
+    :Close Room;
+  endif
+else (tidak)
+  :Tampilkan Error;
+  stop
+endif
+
+stop
+
+@enduml

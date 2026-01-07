@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('lessons', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('mapel_id');
+            $table->string('name', 50);
+            $table->string('grade', 10);
+            $table->integer('semester');
+            $table->integer('category')->default(1);
             $table->timestamps();
         });
     }

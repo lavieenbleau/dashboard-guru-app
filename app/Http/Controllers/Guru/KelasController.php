@@ -30,13 +30,30 @@ class KelasController extends Controller
             'grade' => 'nullable|string|max:50',
         ]);
 
+        // Generate unique classroom code
+        $code = $this->generateClassroomCode();
+
         $classroom = new Classroom();
         $classroom->serial_id = $serial->id;
         $classroom->name = $data['name'];
         $classroom->grade = $data['grade'] ?? null;
+        $classroom->code = $code;
         $classroom->save();
 
         return redirect()->route('guru.kelas.pilih', ['serial' => $serial->id])->with('success', 'Kelas berhasil ditambahkan.');
+    }
+
+    /**
+     * Generate unique classroom code
+     */
+    private function generateClassroomCode()
+    {
+        do {
+            // Generate random code: format CLS-XXXXXX (CLS + 6 random chars)
+            $code = 'CLS-' . strtoupper(\Illuminate\Support\Str::random(6));
+        } while (Classroom::where('code', $code)->exists());
+
+        return $code;
     }
 
     // remove a classroom
@@ -57,7 +74,7 @@ class KelasController extends Controller
         
         // Get students in this classroom
         $students = \App\Models\Student::where('classroom_id', $classroom->id)
-            ->orderBy('absen', 'asc')
+            ->orderBy('name', 'asc')
             ->get();
 
         return view('guru.kelas.dashboard', compact('serial', 'classroom', 'students'));
@@ -67,25 +84,32 @@ class KelasController extends Controller
     public function storeStudent(Request $request, $serial, $classroom)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'nis' => 'nullable|string|max:50',
-            'absen' => 'nullable|string|max:10',
+            'name' => 'required|string|max:200',
+            'nis' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:100',
+            'phone' => 'nullable|string|max:20',
         ]);
         
         $serial = Serial::findOrFail($serial);
         $classroom = Classroom::findOrFail($classroom);
+        
+        // Generate username from NIS or name
+        $username = $request->nis ?? strtolower(str_replace(' ', '', $request->name));
+        
+        // Default password
+        $defaultPassword = '12345678';
         
         \App\Models\Student::create([
             'serial_id' => $serial->id,
             'user_id' => auth()->id(),
             'classroom_id' => $classroom->id,
             'name' => $request->name,
+            'username' => $username,
+            'password' => bcrypt($defaultPassword),
+            'password_text' => $defaultPassword,
             'nis' => $request->nis,
-            'absen' => $request->absen,
-            'username' => $request->nis ?? strtolower(str_replace(' ', '', $request->name)),
-            'password' => bcrypt('12345678'),
-            'password_text' => '12345678',
-            'role' => 0,
+            'email' => $request->email,
+            'phone' => $request->phone,
         ]);
         
         return redirect()->route('guru.kelas.dashboard', [$serial->id, $classroom->id])
@@ -100,5 +124,113 @@ class KelasController extends Controller
         
         return redirect()->route('guru.kelas.dashboard', [$serial, $classroom])
             ->with('success', 'Siswa berhasil dihapus!');
+    }
+    
+    // Import students from CSV
+    public function importStudents(Request $request, $serial, $classroom)
+    {
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt|max:2048',
+        ]);
+        
+        $serial = Serial::findOrFail($serial);
+        $classroom = Classroom::findOrFail($classroom);
+        
+        $file = $request->file('csv_file');
+        $path = $file->getRealPath();
+        
+        // Read CSV file
+        $csv = array_map('str_getcsv', file($path));
+        
+        // Get header row
+        $header = array_shift($csv);
+        
+        // Normalize header (trim and lowercase)
+        $header = array_map(function($h) {
+            return strtolower(trim($h));
+        }, $header);
+        
+        $imported = 0;
+        $errors = [];
+        $defaultPassword = '12345678';
+        
+        foreach ($csv as $index => $row) {
+            // Skip empty rows
+            if (empty(array_filter($row))) {
+                continue;
+            }
+            
+            // Combine header with row values
+            $data = array_combine($header, $row);
+            
+            // Validate required fields
+            if (empty($data['nama'] ?? $data['name'])) {
+                $errors[] = "Baris " . ($index + 2) . ": Nama siswa wajib diisi";
+                continue;
+            }
+            
+            $name = $data['nama'] ?? $data['name'];
+            $nis = $data['nis'] ?? null;
+            $email = $data['email'] ?? null;
+            $phone = $data['telepon'] ?? $data['phone'] ?? $data['hp'] ?? null;
+            
+            // Generate username from NIS or name
+            $username = $nis ?? strtolower(str_replace(' ', '', $name));
+            
+            // Check if student already exists
+            $existingStudent = \App\Models\Student::where('classroom_id', $classroom->id)
+                ->where(function($q) use ($username, $nis) {
+                    $q->where('username', $username);
+                    if ($nis) {
+                        $q->orWhere('nis', $nis);
+                    }
+                })
+                ->first();
+            
+            if ($existingStudent) {
+                $errors[] = "Baris " . ($index + 2) . ": Siswa dengan username/NIS '{$username}' sudah ada";
+                continue;
+            }
+            
+            try {
+                \App\Models\Student::create([
+                    'serial_id' => $serial->id,
+                    'user_id' => auth()->id(),
+                    'classroom_id' => $classroom->id,
+                    'name' => $name,
+                    'username' => $username,
+                    'password' => bcrypt($defaultPassword),
+                    'password_text' => $defaultPassword,
+                    'nis' => $nis,
+                    'email' => $email,
+                    'phone' => $phone,
+                ]);
+                
+                $imported++;
+            } catch (\Exception $e) {
+                $errors[] = "Baris " . ($index + 2) . ": " . $e->getMessage();
+            }
+        }
+        
+        $message = "{$imported} siswa berhasil diimpor.";
+        if (!empty($errors)) {
+            $message .= " Namun ada " . count($errors) . " baris yang gagal diimpor.";
+        }
+        
+        return redirect()->route('guru.kelas.dashboard', [$serial->id, $classroom->id])
+            ->with('success', $message)
+            ->with('import_errors', $errors);
+    }
+    
+    // Download CSV template
+    public function downloadTemplate()
+    {
+        $csv = "nama,nis,email,telepon\n";
+        $csv .= "Contoh Siswa 1,12345,siswa1@email.com,081234567890\n";
+        $csv .= "Contoh Siswa 2,12346,siswa2@email.com,081234567891\n";
+        
+        return response($csv)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', 'attachment; filename="template-import-siswa.csv"');
     }
 }

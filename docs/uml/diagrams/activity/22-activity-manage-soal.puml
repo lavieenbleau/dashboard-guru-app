@@ -1,0 +1,85 @@
+@startuml ManageSoal-Activity
+
+title Activity Diagram: Kelola Soal
+
+|Guru|
+start
+:Akses menu Soal;
+:Pilih kategori;
+
+|Sistem|
+:Tampilkan daftar soal;
+
+|Guru|
+if (Aksi?) then (Buat)
+  :Klik "Tambah Soal";
+  :Input judul soal;
+  :Pilih tipe soal;
+  :Tambah item soal;
+  :Input pertanyaan;
+  :Input opsi jawaban;
+  :Tandai jawaban benar;
+  :Submit;
+  
+  |Sistem|
+  :Validasi data;
+  
+  if (Valid?) then (ya)
+    :Simpan soal & items;
+    :Tampilkan success;
+    |Guru|
+    stop
+  else (tidak)
+    :Tampilkan error;
+    |Guru|
+    stop
+  endif
+
+else (Edit)
+  :Pilih soal;
+  :Klik "Edit";
+  :Update data soal;
+  :Update items;
+  :Submit;
+  
+  |Sistem|
+  :Validasi data;
+  
+  if (Valid?) then (ya)
+    :Update soal;
+    :Tampilkan success;
+    |Guru|
+    stop
+  else (tidak)
+    :Tampilkan error;
+    |Guru|
+    stop
+  endif
+
+else (Hapus)
+  :Pilih soal;
+  :Klik "Hapus";
+  :Konfirmasi;
+  
+  |Sistem|
+  :Delete soal & items;
+  :Tampilkan success;
+  |Guru|
+  stop
+
+else (Bagikan)
+  :Pilih soal;
+  :Klik "Bagikan";
+  :Pilih kelas;
+  :Set deadline;
+  :Submit;
+  
+  |Sistem|
+  :Simpan lesson_items;
+  :Create exercise_points;
+  :Tampilkan success;
+  |Guru|
+  stop
+endif
+
+@enduml

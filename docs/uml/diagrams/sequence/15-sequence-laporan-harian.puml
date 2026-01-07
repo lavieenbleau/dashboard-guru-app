@@ -1,0 +1,147 @@
+@startuml LaporanHarian-Sequence
+!theme plain
+scale 0.75
+skinparam dpi 150
+title Sequence Diagram: Laporan Harian Pengumpulan Tugas & Soal
+
+actor "Guru" as Guru
+control ":LaporanHarianController" as Controller <<control>>
+entity ":Serial" as Serial <<entity>>
+entity ":Task" as Task <<entity>>
+entity ":ExercisePoint" as ExercisePoint <<entity>>
+entity ":Student" as Student <<entity>>
+entity ":Lesson" as Lesson <<entity>>
+database ":Database" as DB
+
+== View Laporan Harian Index ==
+Guru -> Controller: Buka Laporan Harian
+activate Controller
+
+Controller -> Serial: Ambil Data Serial
+activate Serial
+Serial -> DB: Retrieve
+activate DB
+DB --> Serial: Data
+deactivate DB
+Serial --> Controller: Data Serial
+deactivate Serial
+
+Controller -> Task: Ambil Tasks untuk Tanggal
+activate Task
+Task -> DB: Retrieve with Join (Students, Posts, Lessons)
+activate DB
+DB --> Task: Data
+deactivate DB
+Task --> Controller: Task Activities
+deactivate Task
+
+Controller -> ExercisePoint: Ambil Exercise Points untuk Tanggal
+activate ExercisePoint
+ExercisePoint -> DB: Retrieve with Join (Students, Exercises, Lessons)
+activate DB
+DB --> ExercisePoint: Data
+deactivate DB
+ExercisePoint --> Controller: Exercise Activities
+deactivate ExercisePoint
+
+Controller -> Controller: Gabung & Sort Activities
+Controller -> Controller: Kategorisasi (Tugas, UH, PTS, PAS)
+
+Controller -> Task: Hitung Aktivitas per Tanggal (Tugas)
+activate Task
+Task -> DB: Retrieve & Group by Date
+activate DB
+DB --> Task: Data
+deactivate DB
+Task --> Controller: Task Dates
+deactivate Task
+
+Controller -> ExercisePoint: Hitung Aktivitas per Tanggal (Soal)
+activate ExercisePoint
+ExercisePoint -> DB: Retrieve & Group by Date
+activate DB
+DB --> ExercisePoint: Data
+deactivate DB
+ExercisePoint --> Controller: Exercise Dates
+deactivate ExercisePoint
+
+Controller -> Controller: Merge & Transform untuk Kalender
+
+Controller --> Guru: Tampilkan Kalender Laporan
+deactivate Controller
+
+== View Detail Aktivitas Siswa ==
+Guru -> Controller: Lihat Detail Aktivitas
+activate Controller
+
+Controller --> Guru: Tampilkan Detail (Nama, NIS, Kelas, Nilai)
+deactivate Controller
+
+== Beri Nilai dari Laporan ==
+Guru -> Controller: Buka Modal Penilaian
+activate Controller
+
+Controller --> Guru: Tampilkan Form Nilai
+deactivate Controller
+
+Guru -> Controller: Submit Nilai (dengan source_type)
+activate Controller
+
+Controller -> Controller: Validasi Input (point, source_type)
+
+alt Source Type = Task
+  Controller -> Task: Update Nilai Tugas
+  activate Task
+  Task -> DB: Update point
+  activate DB
+  DB --> Task: Success
+  deactivate DB
+  Task --> Controller: Updated
+  deactivate Task
+else Source Type = Exercise
+  Controller -> ExercisePoint: Update Nilai Soal
+  activate ExercisePoint
+  ExercisePoint -> DB: Update exercise_point
+  activate DB
+  DB --> ExercisePoint: Success
+  deactivate DB
+  ExercisePoint --> Controller: Updated
+  deactivate ExercisePoint
+end
+
+Controller --> Guru: Nilai Berhasil Disimpan
+deactivate Controller
+
+@enduml
+  deactivate Task
+  
+  Controller --> Guru: Konfirmasi Penilaian
+end
+
+deactivate Controller
+
+== Filter & Export Laporan ==
+Guru -> Controller: Filter Laporan
+activate Controller
+
+Controller -> Controller: Terapkan Filter
+
+Controller -> Task: Query dengan Filter
+activate Task
+Task -> DB: Retrieve with Filter
+activate DB
+DB --> Task: Data
+deactivate DB
+Task --> Controller: Filtered Tasks
+deactivate Task
+
+alt Request Export
+  Controller -> Controller: Generate Excel/PDF
+  Controller --> Guru: Download File Laporan
+else View Only
+  Controller --> Guru: Tampilkan Hasil Filter
+end
+
+deactivate Controller
+
+@enduml

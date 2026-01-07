@@ -1,0 +1,155 @@
+@startuml ManageMateriCustom-Sequence
+!theme plain
+scale 0.75
+skinparam dpi 150
+title Sequence Diagram: Manage Materi Custom (CRUD)
+
+actor "Guru" as Guru
+control ":MateriController" as Controller <<control>>
+entity ":Serial" as Serial <<entity>>
+entity ":Mapel" as Mapel <<entity>>
+entity ":Post" as Post <<entity>>
+control ":Storage" as Storage <<control>>
+database ":Database" as DB
+
+== List Materi Custom by Mapel ==
+Guru -> Controller: Lihat Daftar Materi
+activate Controller
+
+Controller -> Serial: Ambil Data Serial
+activate Serial
+Serial -> DB: Retrieve
+activate DB
+DB --> Serial: Data
+deactivate DB
+Serial --> Controller: Data Serial
+deactivate Serial
+
+Controller -> Mapel: Ambil Data Mapel
+activate Mapel
+Mapel -> DB: Retrieve
+activate DB
+DB --> Mapel: Data
+deactivate DB
+Mapel --> Controller: Data Mapel
+deactivate Mapel
+
+Controller -> Post: Ambil Semua Materi
+activate Post
+Post -> DB: Retrieve
+activate DB
+DB --> Post: Data
+deactivate DB
+Post --> Controller: List Materi
+deactivate Post
+
+Controller --> Guru: Tampilkan Daftar Materi
+deactivate Controller
+
+== Create Materi Custom ==
+Guru -> Controller: Buat Materi Baru
+activate Controller
+
+Controller -> Controller: Validasi Input
+
+alt Validasi Gagal
+  Controller --> Guru: Tampilkan Error
+else Validasi Berhasil
+  
+  alt Tipe Konten = File
+    Controller -> Storage: Upload File
+    activate Storage
+    Storage --> Controller: Path File
+    deactivate Storage
+  end
+  
+  Controller -> Post: Simpan Materi
+  activate Post
+  Post -> DB: Save
+  activate DB
+  DB --> Post: Saved
+  deactivate DB
+  Post --> Controller: Materi Tersimpan
+  deactivate Post
+  
+  Controller --> Guru: Konfirmasi Berhasil
+end
+
+deactivate Controller
+
+== Update Materi Custom ==
+Guru -> Controller: Edit Materi
+activate Controller
+
+Controller -> Controller: Validasi Input
+
+alt Validasi Gagal
+  Controller --> Guru: Tampilkan Error
+else Validasi Berhasil
+  
+  Controller -> Post: Cari Materi
+  activate Post
+  Post -> DB: Retrieve
+  activate DB
+  DB --> Post: Data
+  deactivate DB
+  Post --> Controller: Data Materi
+  deactivate Post
+  
+  alt Ganti File
+    Controller -> Storage: Hapus File Lama
+    activate Storage
+    Storage --> Controller: File Lama Terhapus
+    Storage -> Storage: Upload File Baru
+    Storage --> Controller: Path File Baru
+    deactivate Storage
+  end
+  
+  Controller -> Post: Update Materi
+  activate Post
+  Post -> DB: Update
+  activate DB
+  DB --> Post: Updated
+  deactivate DB
+  Post --> Controller: Materi Terupdate
+  deactivate Post
+  
+  Controller --> Guru: Konfirmasi Berhasil
+end
+
+deactivate Controller
+
+== Delete Materi Custom ==
+Guru -> Controller: Hapus Materi
+activate Controller
+
+Controller -> Post: Cari Materi
+activate Post
+Post -> DB: Retrieve
+activate DB
+DB --> Post: Data
+deactivate DB
+Post --> Controller: Data Materi
+deactivate Post
+
+alt Ada File Terlampir
+  Controller -> Storage: Hapus File
+  activate Storage
+  Storage --> Controller: File Terhapus
+  deactivate Storage
+end
+
+Controller -> Post: Hapus Materi
+activate Post
+Post -> DB: Delete
+activate DB
+DB --> Post: Deleted
+deactivate DB
+Post --> Controller: Materi Terhapus
+deactivate Post
+
+Controller --> Guru: Konfirmasi Penghapusan
+
+deactivate Controller
+
+@enduml

@@ -2,6 +2,16 @@
 
 @section('content')
 
+<style>
+    #sidebar {
+        display: none !important;
+    }
+    
+    .layout-page {
+        margin-left: 0 !important;
+    }
+</style>
+
 <div class="text-center mb-4">
     <!-- Profile Guru -->
     <img src="{{ asset('images/default-user.png') }}"
@@ -9,6 +19,23 @@
 
     <h4 class="mt-3">Halo, {{ auth()->user()->name }}</h4>
     <p class="text-muted">Silakan pilih aplikasi kurikulum yang ingin digunakan</p>
+</div>
+
+<!-- Pengaturan & Logout Buttons -->
+<div class="d-flex justify-content-end gap-2 mb-4">
+    @php
+    $pengaturanSerial = \App\Models\Serial::where('user_id', auth()->id())->first()
+        ?? \App\Models\Serial::first();
+    @endphp
+    <a href="{{ route('guru.pengaturan', $pengaturanSerial->id ?? 1) }}" class="btn btn-outline-primary">
+        <i class='bx bx-cog me-1'></i>Pengaturan
+    </a>
+    <form method="POST" action="{{ route('logout') }}" class="d-inline">
+        @csrf
+        <button type="submit" class="btn btn-outline-danger">
+            <i class='bx bx-log-out me-1'></i>Logout
+        </button>
+    </form>
 </div>
 
 <!-- Daftar Aplikasi / Serial -->

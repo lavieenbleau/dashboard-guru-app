@@ -8,8 +8,7 @@ class Student extends Model
 {
     protected $fillable = [
         'serial_id', 'user_id', 'classroom_id', 'name', 'username',
-        'password', 'password_text', 'role', 'absen', 'nis', 
-        'img', 'address', 'email', 'phone'
+        'password', 'password_text', 'nis', 'email', 'phone'
     ];
 
     public function serial()

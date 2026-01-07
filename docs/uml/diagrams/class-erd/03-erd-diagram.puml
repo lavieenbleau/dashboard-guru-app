@@ -1,0 +1,421 @@
+@startuml DashboardGuru-ERD
+
+' Entity Relationship Diagram Style
+skinparam defaultTextAlignment center
+skinparam packageStyle rectangle
+
+' Core Entities
+entity "pengguna" as users {
+}
+
+entity "produk" as products {
+}
+
+entity "serial" as serials {
+}
+
+entity "kelas" as classrooms {
+}
+
+entity "siswa" as students {
+}
+
+entity "mapel" as mapels {
+}
+
+entity "pelajaran" as lessons {
+}
+
+entity "tema" as themes {
+}
+
+entity "subtema" as subthemes {
+}
+
+entity "item_pelajaran" as lesson_items {
+}
+
+entity "tipe_soal" as exercise_types {
+}
+
+entity "latihan" as exercises {
+}
+
+entity "model_soal" as exercise_models {
+}
+
+entity "item_latihan" as exercise_items {
+}
+
+entity "postingan" as posts {
+}
+
+entity "komentar_postingan" as post_comments {
+}
+
+entity "tugas" as tasks {
+}
+
+entity "nilai_latihan" as exercise_points {
+}
+
+entity "kompetensi" as competences {
+}
+
+entity "laporan" as reports {
+}
+
+entity "kelas_online" as online_meetings {
+}
+
+entity "pelajaran_kelas" as lesson_classroom {
+}
+
+entity "latihan_kelas" as exercise_classroom {
+}
+
+' Users attributes
+entity "id_pengguna" as user_id #LightBlue
+entity "nama" as user_name #LightYellow
+entity "email" as user_email #LightYellow
+entity "kata_sandi" as user_password #LightYellow
+entity "terakhir_login" as user_last_login #LightYellow
+entity "role" as user_role #LightYellow
+
+' Products attributes
+entity "id_produk" as product_id #LightBlue
+entity "nama" as product_name #LightYellow
+entity "deskripsi" as product_description #LightYellow
+
+' Serials attributes
+entity "id_serial" as serial_id #LightBlue
+entity "serial" as serial_number #LightYellow
+entity "paket" as serial_package #LightYellow
+entity "aktif" as serial_active #LightYellow
+entity "kadaluwarsa" as serial_expired #LightYellow
+
+' Classrooms attributes
+entity "id_kelas" as classroom_id #LightBlue
+entity "nama" as classroom_name #LightYellow
+entity "tingkat" as classroom_grade #LightYellow
+entity "kode" as classroom_code #LightYellow
+
+' Students attributes
+entity "id_siswa" as student_id #LightBlue
+entity "nama" as student_name #LightYellow
+entity "username" as student_username #LightYellow
+entity "password" as student_password #LightYellow
+entity "nis" as student_nis #LightYellow
+entity "email" as student_email #LightYellow
+entity "telepon" as student_phone #LightYellow
+
+' Mapels attributes
+entity "id_mapel" as mapel_id #LightBlue
+entity "nama" as mapel_name #LightYellow
+
+' Lessons attributes
+entity "id_pelajaran" as lesson_id #LightBlue
+entity "nama" as lesson_name #LightYellow
+entity "deskripsi" as lesson_description #LightYellow
+entity "pertanyaan" as lesson_questions #LightYellow
+entity "file" as lesson_file #LightYellow
+entity "tingkat" as lesson_grade #LightYellow
+entity "semester" as lesson_semester #LightYellow
+entity "kategori" as lesson_category #LightYellow
+entity "tenggat" as lesson_deadline #LightYellow
+
+' Exercise Types attributes
+entity "id_tipe_soal" as exercise_type_id #LightBlue
+entity "nama" as exercise_type_name #LightYellow
+entity "kode" as exercise_type_code #LightYellow
+
+' Exercises attributes
+entity "id_latihan" as exercise_id #LightBlue
+entity "judul" as exercise_title #LightYellow
+entity "deskripsi" as exercise_description #LightYellow
+entity "is_admin" as exercise_is_admin #LightYellow
+entity "dibagikan_ke" as exercise_shared #LightYellow
+
+' Exercise Models attributes
+entity "id_model" as exercise_model_id #LightBlue
+entity "nama" as exercise_model_name #LightYellow
+entity "kode" as exercise_model_code #LightYellow
+
+' Exercise Items attributes
+entity "id_item" as exercise_item_id #LightBlue
+entity "pertanyaan" as exercise_item_question #LightYellow
+entity "pilihan" as exercise_item_options #LightYellow
+entity "jawaban" as exercise_item_answer #LightYellow
+entity "nilai" as exercise_item_point #LightYellow
+
+' Posts attributes
+entity "id_postingan" as post_id #LightBlue
+entity "judul" as post_title #LightYellow
+entity "deskripsi" as post_description #LightYellow
+entity "slug" as post_slug #LightYellow
+entity "tautan" as post_link #LightYellow
+entity "lampiran" as post_attachment #LightYellow
+entity "embed" as post_embed #LightYellow
+entity "kategori" as post_category #LightYellow
+entity "dibagikan_ke" as post_shared #LightYellow
+entity "tenggat" as post_deadline #LightYellow
+entity "adalah_tugas" as post_is_task #LightYellow
+
+' Tasks attributes
+entity "id_tugas" as task_id #LightBlue
+entity "deskripsi" as task_description #LightYellow
+entity "lampiran" as task_attachment #LightYellow
+entity "nilai" as task_point #LightYellow
+
+' Exercise Points attributes
+entity "id_nilai" as exercise_point_id #LightBlue
+entity "jawaban" as exercise_point_answer #LightYellow
+entity "nilai_kompetensi" as exercise_point_competence #LightYellow
+entity "nilai_latihan" as exercise_point_exercise #LightYellow
+
+' Competences attributes
+entity "id_kompetensi" as competence_id #LightBlue
+entity "kode" as competence_code #LightYellow
+entity "nama" as competence_name #LightYellow
+
+' Online Meetings attributes
+entity "id_pertemuan" as meeting_id #LightBlue
+entity "judul" as meeting_title #LightYellow
+entity "nama_ruang" as meeting_room #LightYellow
+entity "jadwal" as meeting_schedule #LightYellow
+entity "durasi" as meeting_duration #LightYellow
+
+' Themes attributes
+entity "id_tema" as theme_id #LightBlue
+entity "tema" as theme_number #LightYellow
+entity "nama" as theme_name #LightYellow
+
+' Subthemes attributes
+entity "id_subtema" as subtheme_id #LightBlue
+entity "subtema" as subtheme_number #LightYellow
+entity "nama" as subtheme_name #LightYellow
+
+' Lesson Items attributes
+entity "id_item_pelajaran" as lesson_item_id #LightBlue
+entity "nomor" as lesson_item_number #LightYellow
+entity "judul" as lesson_item_title #LightYellow
+entity "deskripsi" as lesson_item_description #LightYellow
+entity "tautan" as lesson_item_link #LightYellow
+entity "embed" as lesson_item_embed #LightYellow
+entity "lampiran" as lesson_item_attachment #LightYellow
+
+' Post Comments attributes
+entity "id_komentar" as comment_id #LightBlue
+entity "pesan" as comment_message #LightYellow
+entity "kode" as comment_code #LightYellow
+entity "is_user" as comment_is_user #LightYellow
+
+' Reports attributes
+entity "id_laporan" as report_id #LightBlue
+entity "laporan" as report_text #LightYellow
+entity "gambar" as report_img #LightYellow
+
+' Lesson Classroom attributes (pivot)
+entity "id_pelajaran_kelas" as lesson_classroom_id #LightBlue
+
+' Exercise Classroom attributes (pivot)
+entity "id_latihan_kelas" as exercise_classroom_id #LightBlue
+
+' Connect attributes to entities - Users
+users -- user_id
+users -- user_name
+users -- user_email
+users -- user_password
+users -- user_last_login
+users -- user_role
+
+' Products
+products -- product_id
+products -- product_name
+products -- product_description
+
+' Serials
+serials -- serial_id
+serials -- serial_number
+serials -- serial_package
+serials -- serial_active
+serials -- serial_expired
+
+' Classrooms
+classrooms -- classroom_id
+classrooms -- classroom_name
+classrooms -- classroom_grade
+classrooms -- classroom_code
+
+' Students
+students -- student_id
+students -- student_name
+students -- student_username
+students -- student_password
+students -- student_nis
+students -- student_email
+students -- student_phone
+
+' Mapels
+mapels -- mapel_id
+mapels -- mapel_name
+
+' Lessons
+lessons -- lesson_id
+lessons -- lesson_name
+lessons -- lesson_description
+lessons -- lesson_questions
+lessons -- lesson_file
+lessons -- lesson_grade
+lessons -- lesson_semester
+lessons -- lesson_category
+lessons -- lesson_deadline
+
+' Exercise Types
+exercise_types -- exercise_type_id
+exercise_types -- exercise_type_name
+exercise_types -- exercise_type_code
+
+' Exercises
+exercises -- exercise_id
+exercises -- exercise_title
+exercises -- exercise_description
+exercises -- exercise_is_admin
+exercises -- exercise_shared
+
+' Exercise Models
+exercise_models -- exercise_model_id
+exercise_models -- exercise_model_name
+exercise_models -- exercise_model_code
+
+' Exercise Items
+exercise_items -- exercise_item_id
+exercise_items -- exercise_item_question
+exercise_items -- exercise_item_options
+exercise_items -- exercise_item_answer
+exercise_items -- exercise_item_point
+
+' Posts
+posts -- post_id
+posts -- post_title
+posts -- post_description
+posts -- post_slug
+posts -- post_link
+posts -- post_attachment
+posts -- post_embed
+posts -- post_category
+posts -- post_shared
+posts -- post_deadline
+posts -- post_is_task
+
+' Tasks
+tasks -- task_id
+tasks -- task_description
+tasks -- task_attachment
+tasks -- task_point
+
+' Exercise Points
+exercise_points -- exercise_point_id
+exercise_points -- exercise_point_answer
+exercise_points -- exercise_point_competence
+exercise_points -- exercise_point_exercise
+
+' Competences
+competences -- competence_id
+competences -- competence_code
+competences -- competence_name
+
+' Online Meetings
+online_meetings -- meeting_id
+online_meetings -- meeting_title
+online_meetings -- meeting_room
+online_meetings -- meeting_schedule
+online_meetings -- meeting_duration
+
+' Themes
+themes -- theme_id
+themes -- theme_number
+themes -- theme_name
+
+' Subthemes
+subthemes -- subtheme_id
+subthemes -- subtheme_number
+subthemes -- subtheme_name
+
+' Lesson Items
+lesson_items -- lesson_item_id
+lesson_items -- lesson_item_number
+lesson_items -- lesson_item_title
+lesson_items -- lesson_item_description
+lesson_items -- lesson_item_link
+lesson_items -- lesson_item_embed
+lesson_items -- lesson_item_attachment
+
+' Post Comments
+post_comments -- comment_id
+post_comments -- comment_message
+post_comments -- comment_code
+post_comments -- comment_is_user
+
+' Reports
+reports -- report_id
+reports -- report_text
+reports -- report_img
+
+' Lesson Classroom (pivot)
+lesson_classroom -- lesson_classroom_id
+
+' Exercise Classroom (pivot)
+exercise_classroom -- exercise_classroom_id
+
+' Relationships between entities
+users ||--o{ serials
+products ||--o{ serials
+serials ||--o{ classrooms
+serials ||--o{ students
+serials ||--o{ posts
+serials ||--o{ exercises
+serials ||--o{ tasks
+serials ||--o{ exercise_points
+serials ||--o{ online_meetings
+serials ||--o{ reports
+
+classrooms ||--o{ students
+users ||--o{ students
+users ||--o{ posts
+users ||--o{ post_comments
+
+mapels ||--o{ lessons
+mapels ||--o{ posts
+mapels ||--o{ competences
+
+lessons ||--o{ themes
+lessons ||--o{ subthemes
+lessons ||--o{ lesson_items
+lessons ||--o{ exercises
+lessons ||--o{ lesson_classroom
+
+themes ||--o{ subthemes
+themes ||--o{ lesson_items
+
+subthemes ||--o{ lesson_items
+
+exercise_types ||--o{ exercises
+exercises ||--o{ exercise_items
+exercises ||--o{ exercise_points
+exercises ||--o{ exercise_classroom
+
+exercise_models ||--o{ exercise_items
+
+posts ||--o{ tasks
+posts ||--o{ post_comments
+
+students ||--o{ tasks
+students ||--o{ exercise_points
+students ||--o{ reports
+students ||--o{ post_comments
+
+classrooms ||--o{ lesson_classroom
+classrooms ||--o{ exercise_classroom
+
+@enduml

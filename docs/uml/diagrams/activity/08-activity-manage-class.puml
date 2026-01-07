@@ -1,0 +1,136 @@
+@startuml ActivityDiagram-ManageClass
+
+title Activity Diagram: Kelola Kelas & Siswa
+
+|Guru|
+start
+:Login ke sistem;
+:Pilih aplikasi/serial;
+:Navigasi ke menu Kelas;
+
+|Sistem|
+:Tampilkan daftar kelas;
+
+|Guru|
+if (Kelas sudah ada?) then (yes)
+  :Pilih kelas dari daftar;
+else (no)
+  :Klik "Tambah Kelas Baru";
+  :Isi form (nama, tingkat);
+  :Submit form;
+  
+  |Sistem|
+  :Generate kode kelas unik;
+  :Simpan kelas ke database;
+  :Redirect ke dashboard kelas;
+endif
+
+|Sistem|
+:Tampilkan dashboard kelas;
+:Query daftar siswa;
+
+if (Ada siswa di kelas?) then (yes)
+  :Tampilkan tabel siswa;
+else (no)
+  :Tampilkan pesan\n"Belum ada siswa";
+endif
+
+|Guru|
+if (Pilih aksi?) then (Tambah Manual)
+  :Klik "Tambah Siswa";
+  :Isi form siswa\n(nama, NIS, email, telepon);
+  :Submit form;
+  
+  |Sistem|
+  :Validasi input;
+  :Generate username dari NIS/nama;
+  :Hash password default (12345678);
+  :Simpan siswa ke database;
+  :Tampilkan pesan sukses;
+  
+elseif (Import CSV) then
+  :Klik "Import CSV";
+  
+  if (Punya file CSV?) then (tidak)
+    :Klik "Download Template";
+    
+    |Sistem|
+    :Generate file CSV template;
+    :Download ke browser;
+    
+    |Guru|
+    :Isi data siswa di Excel/CSV;
+    :Save as CSV;
+  endif
+  
+  :Upload file CSV;
+  
+  |Sistem|
+  :Validasi file (mimes:csv, max:2MB);
+  
+  if (File valid?) then (ya)
+    :Parse file CSV;
+    :Extract header row;
+    :Normalize header (lowercase);
+    
+    repeat
+      :Baca baris data;
+      :Combine header dengan row;
+      
+      if (Baris kosong?) then (ya)
+        :Skip baris;
+      else (tidak)
+        if (Nama siswa ada?) then (ya)
+          :Extract data\n(nama, NIS, email, telepon);
+          :Generate username;
+          
+          if (Username/NIS\nsudah ada?) then (ya)
+            :Tambahkan ke error list;
+          else (tidak)
+            :Create student record;
+            :Hash password default;
+            :Simpan ke database;
+            :Increment counter sukses;
+          endif
+        else (tidak)
+          :Tambahkan ke error list\n("Nama wajib diisi");
+        endif
+      endif
+    repeat while (Masih ada baris?) is (ya)
+    ->tidak;
+    
+    :Hitung total sukses & error;
+    :Tampilkan hasil import;
+    
+    if (Ada error?) then (ya)
+      :Tampilkan daftar error\nper baris;
+    endif
+    
+  else (tidak)
+    :Tampilkan error validasi\n"File harus CSV";
+  endif
+  
+elseif (Hapus Siswa) then
+  :Klik tombol hapus;
+  
+  |Sistem|
+  :Tampilkan konfirmasi dialog;
+  
+  |Guru|
+  if (Konfirmasi?) then (ya)
+    |Sistem|
+    :Hapus siswa dari database;
+    :Tampilkan pesan sukses;
+  else (tidak)
+    :Batal hapus;
+  endif
+  
+elseif (Lihat Detail) then
+  :Lihat informasi siswa\ndi tabel;
+endif
+
+|Guru|
+:Selesai kelola kelas;
+stop
+
+@enduml
