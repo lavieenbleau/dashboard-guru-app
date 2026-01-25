@@ -362,12 +362,11 @@
     </div>
 </div>
 
-@push('scripts')
 <script>
     function toggleReplyForm(commentId) {
         const replyForm = document.getElementById('reply-form-' + commentId);
         if (replyForm) {
-            if (replyForm.style.display === 'none') {
+            if (replyForm.style.display === 'none' || replyForm.style.display === '') {
                 replyForm.style.display = 'block';
                 // Focus on textarea
                 const textarea = replyForm.querySelector('textarea');
@@ -378,5 +377,4 @@
         }
     }
 </script>
-@endpush
 @endsection

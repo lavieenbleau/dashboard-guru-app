@@ -636,7 +636,6 @@
     </div>
 </div>
 
-@push('scripts')
 <script>
     function toggleAllClassrooms(source) {
         const checkboxes = document.querySelectorAll('.classroom-checkbox');
@@ -645,19 +644,26 @@
         });
     }
     
-    document.getElementById('asTaskCheckbox')?.addEventListener('change', function() {
-        const taskOptions = document.getElementById('taskOptionsDiv');
-        if (this.checked) {
-            taskOptions.style.display = 'block';
-        } else {
-            taskOptions.style.display = 'none';
+    document.addEventListener('DOMContentLoaded', function() {
+        const asTaskCheckbox = document.getElementById('asTaskCheckbox');
+        if (asTaskCheckbox) {
+            asTaskCheckbox.addEventListener('change', function() {
+                const taskOptions = document.getElementById('taskOptionsDiv');
+                if (taskOptions) {
+                    if (this.checked) {
+                        taskOptions.style.display = 'block';
+                    } else {
+                        taskOptions.style.display = 'none';
+                    }
+                }
+            });
         }
     });
 
     function toggleReplyForm(commentId) {
         const replyForm = document.getElementById('reply-form-' + commentId);
         if (replyForm) {
-            if (replyForm.style.display === 'none') {
+            if (replyForm.style.display === 'none' || replyForm.style.display === '') {
                 replyForm.style.display = 'block';
                 // Focus on textarea
                 const textarea = replyForm.querySelector('textarea');
@@ -668,5 +674,4 @@
         }
     }
 </script>
-@endpush
 @endsection
