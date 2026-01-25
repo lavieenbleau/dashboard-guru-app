@@ -44,6 +44,11 @@ class Post extends Model
         return $this->belongsTo(Mapel::class, 'mapel_id');
     }
 
+    public function comments()
+    {
+        return $this->hasMany(PostComment::class)->latest();
+    }
+
     public function getCategoryDataAttribute()
     {
         return json_decode($this->category, true);

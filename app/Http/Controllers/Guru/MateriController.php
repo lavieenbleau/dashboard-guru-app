@@ -14,6 +14,8 @@ use App\Models\Post;
 use App\Models\Lesson;
 use App\Models\LessonItem;
 use App\Models\Classroom;
+use App\Models\PostComment;
+use App\Models\PostChildComment;
 
 class MateriController extends Controller
 {
@@ -243,7 +245,7 @@ class MateriController extends Controller
     {
         $serial = Serial::findOrFail($serial);
         $mapel = Mapel::findOrFail($mapel);
-        $materi = Post::findOrFail($id);
+        $materi = Post::with(['comments.user', 'comments.student', 'comments.replies.user', 'comments.replies.student'])->findOrFail($id);
         
         // Get classrooms info if shared
         $sharedClassrooms = [];
@@ -258,6 +260,75 @@ class MateriController extends Controller
         }
         
         return view('guru.materi.detail', compact('serial', 'mapel', 'materi', 'sharedClassrooms'));
+    }
+
+    // Store comment
+    public function storeComment(Request $request, $serial, $mapel, $id)
+    {
+        $request->validate([
+            'message' => 'required|string|max:1000',
+        ]);
+
+        $materi = Post::findOrFail($id);
+        
+        PostComment::create([
+            'post_id' => $materi->id,
+            'user_id' => auth()->id(),
+            'student_id' => null,
+            'message' => $request->message,
+            'code' => Str::random(10),
+            'is_user' => 1, // Guru
+        ]);
+
+        return back()->with('success', 'Komentar berhasil ditambahkan!');
+    }
+
+    // Store reply to comment
+    public function storeReply(Request $request, $serial, $mapel, $id, $commentId)
+    {
+        $request->validate([
+            'message' => 'required|string|max:1000',
+        ]);
+
+        $comment = PostComment::findOrFail($commentId);
+        
+        PostChildComment::create([
+            'post_comment_id' => $comment->id,
+            'user_id' => auth()->id(),
+            'student_id' => null,
+            'message' => $request->message,
+            'is_user' => 1, // Guru
+        ]);
+
+        return back()->with('success', 'Balasan berhasil ditambahkan!');
+    }
+
+    // Delete comment
+    public function deleteComment($serial, $mapel, $id, $commentId)
+    {
+        $comment = PostComment::where('id', $commentId)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+        
+        // Delete all replies first
+        $comment->replies()->delete();
+        
+        // Delete comment
+        $comment->delete();
+
+        return back()->with('success', 'Komentar berhasil dihapus!');
+    }
+
+    // Delete reply
+    public function deleteReply($serial, $mapel, $id, $replyId)
+    {
+        $reply = PostChildComment::where('id', $replyId)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+        
+        $reply->delete();
+
+        return back()->with('success', 'Balasan berhasil dihapus!');
     }
 
     // Delete materi

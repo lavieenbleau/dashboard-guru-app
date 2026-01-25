@@ -151,6 +151,12 @@ Route::prefix('aplikasi/{serial}/materi')->group(function() {
     Route::get('/mapel/{mapel}/{id}/edit', [MateriController::class, 'editMateri'])->name('guru.materi.edit');
     Route::put('/mapel/{mapel}/{id}', [MateriController::class, 'updateMateri'])->name('guru.materi.update');
     Route::delete('/mapel/{mapel}/{id}', [MateriController::class, 'destroyMateri'])->name('guru.materi.destroy');
+    
+    // Comments & Discussion
+    Route::post('/mapel/{mapel}/{id}/comment', [MateriController::class, 'storeComment'])->name('guru.materi.comment.store');
+    Route::post('/mapel/{mapel}/{id}/comment/{comment}/reply', [MateriController::class, 'storeReply'])->name('guru.materi.comment.reply');
+    Route::delete('/mapel/{mapel}/{id}/comment/{comment}', [MateriController::class, 'deleteComment'])->name('guru.materi.comment.delete');
+    Route::delete('/mapel/{mapel}/{id}/reply/{reply}', [MateriController::class, 'deleteReply'])->name('guru.materi.reply.delete');
 
 });
 
