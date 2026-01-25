@@ -147,6 +147,7 @@ Route::prefix('aplikasi/{serial}/materi')->group(function() {
     // CRUD Materi
     Route::get('/mapel/{mapel}/create', [MateriController::class, 'createMateri'])->name('guru.materi.create');
     Route::post('/mapel/{mapel}', [MateriController::class, 'storeMateri'])->name('guru.materi.store');
+    Route::get('/mapel/{mapel}/{id}', [MateriController::class, 'showDetail'])->name('guru.materi.detail');
     Route::get('/mapel/{mapel}/{id}/edit', [MateriController::class, 'editMateri'])->name('guru.materi.edit');
     Route::put('/mapel/{mapel}/{id}', [MateriController::class, 'updateMateri'])->name('guru.materi.update');
     Route::delete('/mapel/{mapel}/{id}', [MateriController::class, 'destroyMateri'])->name('guru.materi.destroy');

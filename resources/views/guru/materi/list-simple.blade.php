@@ -86,6 +86,12 @@
                             </button>
                             <ul class="dropdown-menu">
                                 <li>
+                                    <a class="dropdown-item" href="{{ route('guru.materi.detail', [$serial->id, $mapel->id, $materi->id]) }}">
+                                        <i class='bx bx-show me-2'></i>Lihat Detail
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#shareModal{{ $materi->id }}">
                                         <i class='bx bx-share-alt me-2'></i>Bagikan
                                     </a>
@@ -112,29 +118,29 @@
                     <!-- Content Details -->
                     @if($materi->link || $materi->attachment || $materi->embed)
                     <div class="mt-3 pt-3 border-top">
-                        @if($materi->link)
-                        <div class="mb-2">
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{{ route('guru.materi.detail', [$serial->id, $mapel->id, $materi->id]) }}" class="btn btn-sm btn-primary">
+                                <i class='bx bx-show'></i> Lihat Detail
+                            </a>
+                            
+                            @if($materi->link)
                             <a href="{{ $materi->link }}" target="_blank" class="btn btn-sm btn-outline-primary">
                                 <i class='bx bx-link-external'></i> Buka Link
                             </a>
-                        </div>
-                        @endif
+                            @endif
 
-                        @if($materi->attachment)
-                        <div class="mb-2">
+                            @if($materi->attachment)
                             <a href="{{ Storage::url($materi->attachment) }}" target="_blank" class="btn btn-sm btn-outline-success">
                                 <i class='bx bx-download'></i> Download File
                             </a>
+                            @endif
                         </div>
-                        @endif
-
-                        @if($materi->embed)
-                        <div class="mt-3">
-                            <div class="ratio ratio-16x9">
-                                {!! $materi->embed !!}
-                            </div>
-                        </div>
-                        @endif
+                    </div>
+                    @else
+                    <div class="mt-3 pt-3 border-top">
+                        <a href="{{ route('guru.materi.detail', [$serial->id, $mapel->id, $materi->id]) }}" class="btn btn-sm btn-outline-primary">
+                            <i class='bx bx-show'></i> Lihat Detail
+                        </a>
                     </div>
                     @endif
                 </div>

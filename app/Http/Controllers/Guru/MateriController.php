@@ -238,6 +238,28 @@ class MateriController extends Controller
             ->with('success', 'Materi berhasil diupdate!');
     }
 
+    // Show detail materi
+    public function showDetail($serial, $mapel, $id)
+    {
+        $serial = Serial::findOrFail($serial);
+        $mapel = Mapel::findOrFail($mapel);
+        $materi = Post::findOrFail($id);
+        
+        // Get classrooms info if shared
+        $sharedClassrooms = [];
+        if ($materi->shared_to_classes) {
+            $sharedClassroomIds = is_array($materi->shared_to_classes) 
+                ? $materi->shared_to_classes 
+                : json_decode($materi->shared_to_classes, true) ?? [];
+            
+            if (!empty($sharedClassroomIds)) {
+                $sharedClassrooms = Classroom::whereIn('id', $sharedClassroomIds)->get();
+            }
+        }
+        
+        return view('guru.materi.detail', compact('serial', 'mapel', 'materi', 'sharedClassrooms'));
+    }
+
     // Delete materi
     public function destroyMateri($serial, $mapel, $id)
     {
