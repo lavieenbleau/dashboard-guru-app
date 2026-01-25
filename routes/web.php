@@ -176,6 +176,12 @@ Route::prefix('aplikasi/{serial}/tugas')->group(function() {
     Route::put('/mapel/{mapel}/{id}', [TugasController::class, 'update'])->name('guru.tugas.update');
     Route::delete('/mapel/{mapel}/{id}', [TugasController::class, 'destroy'])->name('guru.tugas.destroy');
 
+    // Comments & Discussion
+    Route::post('/mapel/{mapel}/{id}/comment', [TugasController::class, 'storeComment'])->name('guru.tugas.comment.store');
+    Route::post('/mapel/{mapel}/{id}/comment/{comment}/reply', [TugasController::class, 'storeReply'])->name('guru.tugas.comment.reply');
+    Route::delete('/mapel/{mapel}/{id}/comment/{comment}', [TugasController::class, 'deleteComment'])->name('guru.tugas.comment.delete');
+    Route::delete('/mapel/{mapel}/{id}/reply/{reply}', [TugasController::class, 'deleteReply'])->name('guru.tugas.reply.delete');
+
 });
 
 // =========================

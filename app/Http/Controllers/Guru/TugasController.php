@@ -11,6 +11,8 @@ use App\Models\Theme;
 use App\Models\Subtheme;
 use App\Models\Post;
 use App\Models\Classroom;
+use App\Models\PostComment;
+use App\Models\PostChildComment;
 use Illuminate\Support\Str;
 
 class TugasController extends Controller
@@ -96,7 +98,7 @@ class TugasController extends Controller
     {
         $serial = Serial::findOrFail($serial);
         $mapel = Mapel::findOrFail($mapel);
-        $task = Post::findOrFail($id);
+        $task = Post::with(['comments.user', 'comments.student', 'comments.replies.user', 'comments.replies.student'])->findOrFail($id);
 
         return view('guru.tugas.show', compact('serial', 'mapel', 'task'));
     }
@@ -179,5 +181,74 @@ class TugasController extends Controller
 
         return redirect()->route('guru.tugas.mapel', [$serial->id, $mapel->id])
             ->with('success', 'Tugas berhasil dihapus!');
+    }
+
+    // Store comment
+    public function storeComment(Request $request, $serial, $mapel, $id)
+    {
+        $request->validate([
+            'message' => 'required|string|max:1000',
+        ]);
+
+        $task = Post::findOrFail($id);
+        
+        PostComment::create([
+            'post_id' => $task->id,
+            'user_id' => auth()->id(),
+            'student_id' => null,
+            'message' => $request->message,
+            'code' => Str::random(10),
+            'is_user' => 1, // Guru
+        ]);
+
+        return back()->with('success', 'Komentar berhasil ditambahkan!');
+    }
+
+    // Store reply to comment
+    public function storeReply(Request $request, $serial, $mapel, $id, $commentId)
+    {
+        $request->validate([
+            'message' => 'required|string|max:1000',
+        ]);
+
+        $comment = PostComment::findOrFail($commentId);
+        
+        PostChildComment::create([
+            'post_comment_id' => $comment->id,
+            'user_id' => auth()->id(),
+            'student_id' => null,
+            'message' => $request->message,
+            'is_user' => 1, // Guru
+        ]);
+
+        return back()->with('success', 'Balasan berhasil ditambahkan!');
+    }
+
+    // Delete comment
+    public function deleteComment($serial, $mapel, $id, $commentId)
+    {
+        $comment = PostComment::where('id', $commentId)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+        
+        // Delete all replies first
+        $comment->replies()->delete();
+        
+        // Delete comment
+        $comment->delete();
+
+        return back()->with('success', 'Komentar berhasil dihapus!');
+    }
+
+    // Delete reply
+    public function deleteReply($serial, $mapel, $id, $replyId)
+    {
+        $reply = PostChildComment::where('id', $replyId)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+        
+        $reply->delete();
+
+        return back()->with('success', 'Balasan berhasil dihapus!');
     }
 }

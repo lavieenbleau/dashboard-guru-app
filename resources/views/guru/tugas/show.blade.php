@@ -95,9 +95,14 @@
                         <span class="text-muted">Nilai Tertinggi</span>
                         <strong>-</strong>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="text-muted">Belum Mengumpulkan</span>
                         <strong class="text-danger">0</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted"><i class='bx bx-message-dots me-1'></i>Diskusi</span>
+                        <strong>{{ $task->comments->count() }} komentar</strong>
                     </div>
                 </div>
             </div>
@@ -161,5 +166,217 @@
             @endif
         </div>
     </div>
+
+    <!-- Discussion Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class='bx bx-message-dots me-2'></i>Diskusi & Komentar</h5>
+                    <span class="badge bg-label-primary">{{ $task->comments->count() }} Komentar</span>
+                </div>
+                <div class="card-body">
+                    <!-- Comment Form -->
+                    <div class="mb-4 pb-4 border-bottom">
+                        <form action="{{ route('guru.tugas.comment.store', [$serial->id, $mapel->id, $task->id]) }}" method="POST">
+                            @csrf
+                            <div class="d-flex gap-3">
+                                <div class="avatar avatar-sm flex-shrink-0">
+                                    <div class="avatar-initial rounded-circle bg-label-primary">
+                                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <textarea name="message" 
+                                              class="form-control @error('message') is-invalid @enderror" 
+                                              rows="3" 
+                                              placeholder="Tulis komentar Anda..."
+                                              required></textarea>
+                                    @error('message')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="mt-2">
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            <i class='bx bx-send me-1'></i>Kirim Komentar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Comments List -->
+                    @forelse($task->comments as $comment)
+                    <div class="mb-4" id="comment-{{ $comment->id }}">
+                        <div class="d-flex gap-3">
+                            <!-- Avatar -->
+                            <div class="avatar avatar-sm flex-shrink-0">
+                                <div class="avatar-initial rounded-circle {{ $comment->is_user ? 'bg-label-primary' : 'bg-label-success' }}">
+                                    {{ strtoupper(substr($comment->commenter_name, 0, 1)) }}
+                                </div>
+                            </div>
+                            
+                            <!-- Comment Content -->
+                            <div class="flex-grow-1">
+                                <div class="bg-light p-3 rounded">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <strong class="d-block">{{ $comment->commenter_name }}</strong>
+                                            <small class="text-muted">
+                                                <span class="badge badge-sm bg-label-{{ $comment->is_user ? 'primary' : 'success' }}">
+                                                    {{ $comment->commenter_type }}
+                                                </span>
+                                                • {{ $comment->created_at->diffForHumans() }}
+                                            </small>
+                                        </div>
+                                        
+                                        @if($comment->user_id == auth()->id())
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-text-secondary rounded-pill btn-icon" 
+                                                    type="button" 
+                                                    data-bs-toggle="dropdown">
+                                                <i class='bx bx-dots-vertical-rounded'></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <form action="{{ route('guru.tugas.comment.delete', [$serial->id, $mapel->id, $task->id, $comment->id]) }}" 
+                                                          method="POST" 
+                                                          onsubmit="return confirm('Hapus komentar ini?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="dropdown-item text-danger">
+                                                            <i class='bx bx-trash me-2'></i>Hapus
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        @endif
+                                    </div>
+                                    <p class="mb-0">{{ $comment->message }}</p>
+                                </div>
+
+                                <!-- Reply Button -->
+                                <div class="mt-2">
+                                    <button class="btn btn-sm btn-text-primary" 
+                                            type="button"
+                                            onclick="toggleReplyForm({{ $comment->id }})">
+                                        <i class='bx bx-reply me-1'></i>Balas
+                                    </button>
+                                    @if($comment->replies->count() > 0)
+                                    <span class="text-muted small ms-2">
+                                        {{ $comment->replies->count() }} balasan
+                                    </span>
+                                    @endif
+                                </div>
+
+                                <!-- Reply Form (Hidden by default) -->
+                                <div id="reply-form-{{ $comment->id }}" class="mt-3" style="display: none;">
+                                    <form action="{{ route('guru.tugas.comment.reply', [$serial->id, $mapel->id, $task->id, $comment->id]) }}" method="POST">
+                                        @csrf
+                                        <div class="d-flex gap-2">
+                                            <textarea name="message" 
+                                                      class="form-control form-control-sm" 
+                                                      rows="2" 
+                                                      placeholder="Tulis balasan..."
+                                                      required></textarea>
+                                            <div class="d-flex flex-column gap-1">
+                                                <button type="submit" class="btn btn-primary btn-sm">
+                                                    <i class='bx bx-send'></i>
+                                                </button>
+                                                <button type="button" 
+                                                        class="btn btn-outline-secondary btn-sm" 
+                                                        onclick="toggleReplyForm({{ $comment->id }})">
+                                                    <i class='bx bx-x'></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- Replies -->
+                                @if($comment->replies->count() > 0)
+                                <div class="mt-3 ms-4">
+                                    @foreach($comment->replies as $reply)
+                                    <div class="d-flex gap-3 mb-3">
+                                        <div class="avatar avatar-xs flex-shrink-0">
+                                            <div class="avatar-initial rounded-circle {{ $reply->is_user ? 'bg-label-primary' : 'bg-label-success' }}">
+                                                {{ strtoupper(substr($reply->commenter_name, 0, 1)) }}
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="bg-light p-2 rounded">
+                                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                                    <div>
+                                                        <strong class="small">{{ $reply->commenter_name }}</strong>
+                                                        <small class="text-muted d-block">
+                                                            <span class="badge badge-sm bg-label-{{ $reply->is_user ? 'primary' : 'success' }}">
+                                                                {{ $reply->commenter_type }}
+                                                            </span>
+                                                            • {{ $reply->created_at->diffForHumans() }}
+                                                        </small>
+                                                    </div>
+                                                    
+                                                    @if($reply->user_id == auth()->id())
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-sm btn-text-secondary rounded-pill btn-icon" 
+                                                                type="button" 
+                                                                data-bs-toggle="dropdown">
+                                                            <i class='bx bx-dots-vertical-rounded'></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end">
+                                                            <li>
+                                                                <form action="{{ route('guru.tugas.reply.delete', [$serial->id, $mapel->id, $task->id, $reply->id]) }}" 
+                                                                      method="POST" 
+                                                                      onsubmit="return confirm('Hapus balasan ini?')">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit" class="dropdown-item text-danger">
+                                                                        <i class='bx bx-trash me-2'></i>Hapus
+                                                                    </button>
+                                                                </form>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                    @endif
+                                                </div>
+                                                <p class="mb-0 small">{{ $reply->message }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="text-center py-4">
+                        <i class='bx bx-message-rounded-dots' style="font-size: 48px; opacity: 0.3;"></i>
+                        <p class="text-muted mt-3 mb-0">Belum ada komentar. Jadilah yang pertama berkomentar!</p>
+                    </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+@push('scripts')
+<script>
+    function toggleReplyForm(commentId) {
+        const replyForm = document.getElementById('reply-form-' + commentId);
+        if (replyForm) {
+            if (replyForm.style.display === 'none') {
+                replyForm.style.display = 'block';
+                // Focus on textarea
+                const textarea = replyForm.querySelector('textarea');
+                if (textarea) textarea.focus();
+            } else {
+                replyForm.style.display = 'none';
+            }
+        }
+    }
+</script>
+@endpush
 @endsection
