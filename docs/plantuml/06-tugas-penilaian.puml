@@ -1,0 +1,84 @@
+@startuml 06-tugas-penilaian
+title Alur Tugas dan Penilaian - DashboardGuru
+
+start
+
+:Guru memilih aplikasi/serial;
+
+:Lihat daftar tugas;
+
+switch (Aksi?)
+case (Buat Tugas)
+  :Input data tugas:\n- Judul\n- Deskripsi/Instruksi\n- Deadline\n- Kelas tujuan;
+  
+  if (Lampirkan file?) then (Ya)
+    :Upload file:\n- Dokumen panduan\n- Template\n- Media pendukung;
+  endif
+  
+  :Pilih kelas\nyang ditugaskan;
+  
+  :Set deadline\npengumpulan;
+  
+  :Simpan tugas\nke database;
+  
+  :Notifikasi siswa\nvia dashboard;
+  
+  :Tugas berhasil dibuat;
+  
+  stop
+
+case (Edit Tugas)
+  :Pilih tugas;
+  
+  :Form edit tugas;
+  
+  :Update data tugas;
+  
+  stop
+
+case (Hapus Tugas)
+  if (Konfirmasi hapus?) then (Ya)
+    :Hapus tugas dan\nsemua submission;
+    stop
+  else (Tidak)
+    :Kembali ke daftar;
+    stop
+  endif
+
+case (Lihat Submission)
+  :Lihat daftar\npengumpulan siswa;
+  
+  switch (Filter?)
+  case (Semua)
+    :Tampilkan semua siswa;
+  case (Sudah Kumpul)
+    :Tampilkan yang sudah submit;
+  case (Belum Kumpul)
+    :Tampilkan yang belum submit;
+    stop
+  case (Terlambat)
+    :Tampilkan yang terlambat;
+  endswitch
+  
+  :Pilih submission siswa;
+  
+  :Lihat detail:\n- File yang dikumpulkan\n- Waktu pengumpulan\n- Catatan siswa;
+  
+  :Download file siswa;
+  
+  :Input nilai dan feedback;
+  
+  if (Nilai 0-100?) then (Tidak)
+    :Error: Nilai harus 0-100;
+    :Kembali input nilai;
+    stop
+  else (Ya)
+    :Simpan nilai\nke database;
+    
+    :Notifikasi siswa\nnilai sudah keluar;
+    
+    stop
+  endif
+endswitch
+
+@enduml

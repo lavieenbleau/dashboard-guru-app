@@ -23,6 +23,7 @@ class AplikasiSeeder extends Seeder
             ['email' => 'guru@sekolah.com'],
             [
                 'name' => 'Guru Utama',
+                'username' => 'guru',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
             ]
@@ -74,7 +75,12 @@ class AplikasiSeeder extends Seeder
         foreach ($grades as $grade) {
             foreach ($kurikulum as $k) {
                 // Semester 1
-                $product1 = Product::create([]);
+                $product1 = Product::create([
+                    'name' => "{$grade['name']} - {$k['name']}",
+                    'grade' => $grade['grade'],
+                    'grade_category' => 'SD',
+                    'semester' => '1'
+                ]);
                 $products[] = [
                     'product' => $product1,
                     'grade' => $grade['grade'],
@@ -84,7 +90,12 @@ class AplikasiSeeder extends Seeder
                 ];
                 
                 // Semester 2
-                $product2 = Product::create([]);
+                $product2 = Product::create([
+                    'name' => "{$grade['name']} - {$k['name']}",
+                    'grade' => $grade['grade'],
+                    'grade_category' => 'SD',
+                    'semester' => '2'
+                ]);
                 $products[] = [
                     'product' => $product2,
                     'grade' => $grade['grade'],

@@ -49,35 +49,78 @@
 
                         <div class="mb-3">
                             <label for="name" class="form-label">Nama Lengkap</label>
-                            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $user->name) }}" required>
+                            <div class="input-group">
+                                <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $user->name) }}" disabled>
+                                <button type="button" class="btn btn-outline-primary" onclick="enableEdit('name')" id="btn-edit-name">
+                                    <i class='bx bx-edit-alt'></i>
+                                </button>
+                                <button type="button" class="btn btn-success d-none" onclick="saveField('name')" id="btn-save-name">
+                                    <i class='bx bx-check'></i>
+                                </button>
+                                <button type="button" class="btn btn-secondary d-none" onclick="cancelEdit('name', '{{ $user->name }}')" id="btn-cancel-name">
+                                    <i class='bx bx-x'></i>
+                                </button>
+                            </div>
                             @error('name')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control @error('username') is-invalid @enderror" id="username" name="username" value="{{ old('username', $user->username) }}" disabled>
+                                <button type="button" class="btn btn-outline-primary" onclick="enableEdit('username')" id="btn-edit-username">
+                                    <i class='bx bx-edit-alt'></i>
+                                </button>
+                                <button type="button" class="btn btn-success d-none" onclick="saveField('username')" id="btn-save-username">
+                                    <i class='bx bx-check'></i>
+                                </button>
+                                <button type="button" class="btn btn-secondary d-none" onclick="cancelEdit('username', '{{ $user->username }}')" id="btn-cancel-username">
+                                    <i class='bx bx-x'></i>
+                                </button>
+                            </div>
+                            @error('username')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $user->email) }}" required>
+                            <div class="input-group">
+                                <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $user->email) }}" disabled>
+                                <button type="button" class="btn btn-outline-primary" onclick="enableEdit('email')" id="btn-edit-email">
+                                    <i class='bx bx-edit-alt'></i>
+                                </button>
+                                <button type="button" class="btn btn-success d-none" onclick="saveField('email')" id="btn-save-email">
+                                    <i class='bx bx-check'></i>
+                                </button>
+                                <button type="button" class="btn btn-secondary d-none" onclick="cancelEdit('email', '{{ $user->email }}')" id="btn-cancel-email">
+                                    <i class='bx bx-x'></i>
+                                </button>
+                            </div>
                             @error('email')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="mb-3">
                             <label for="phone" class="form-label">No. Telepon</label>
-                            <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone', $user->phone ?? '') }}" placeholder="08xxxxxxxxxx">
+                            <div class="input-group">
+                                <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone', $user->phone ?? '') }}" placeholder="08xxxxxxxxxx" disabled>
+                                <button type="button" class="btn btn-outline-primary" onclick="enableEdit('phone')" id="btn-edit-phone">
+                                    <i class='bx bx-edit-alt'></i>
+                                </button>
+                                <button type="button" class="btn btn-success d-none" onclick="saveField('phone')" id="btn-save-phone">
+                                    <i class='bx bx-check'></i>
+                                </button>
+                                <button type="button" class="btn btn-secondary d-none" onclick="cancelEdit('phone', '{{ $user->phone ?? '' }}')" id="btn-cancel-phone">
+                                    <i class='bx bx-x'></i>
+                                </button>
+                            </div>
                             @error('phone')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
-                        </div>
-
-                        <div class="mt-4">
-                            <button type="submit" class="btn btn-primary me-2">
-                                <i class='bx bx-save me-1'></i>Simpan Perubahan
-                            </button>
-                            <button type="reset" class="btn btn-outline-secondary">
-                                <i class='bx bx-reset me-1'></i>Reset
-                            </button>
                         </div>
                     </form>
                 </div>
@@ -182,5 +225,102 @@
         document.getElementById('uploadedAvatar').src = '{{ $user->avatar ? asset("storage/avatars/" . $user->avatar) : "https://ui-avatars.com/api/?name=" . urlencode($user->name) . "&background=7367f0&color=fff&size=100" }}';
         document.getElementById('avatar').value = '';
     });
+
+    // Enable edit for field
+    function enableEdit(field) {
+        const input = document.getElementById(field);
+        const editBtn = document.getElementById('btn-edit-' + field);
+        const saveBtn = document.getElementById('btn-save-' + field);
+        const cancelBtn = document.getElementById('btn-cancel-' + field);
+        
+        input.disabled = false;
+        input.focus();
+        editBtn.classList.add('d-none');
+        saveBtn.classList.remove('d-none');
+        cancelBtn.classList.remove('d-none');
+    }
+
+    // Cancel edit
+    function cancelEdit(field, originalValue) {
+        const input = document.getElementById(field);
+        const editBtn = document.getElementById('btn-edit-' + field);
+        const saveBtn = document.getElementById('btn-save-' + field);
+        const cancelBtn = document.getElementById('btn-cancel-' + field);
+        
+        input.value = originalValue;
+        input.disabled = true;
+        editBtn.classList.remove('d-none');
+        saveBtn.classList.add('d-none');
+        cancelBtn.classList.add('d-none');
+    }
+
+    // Save field
+    async function saveField(field) {
+        const input = document.getElementById(field);
+        const value = input.value;
+        const saveBtn = document.getElementById('btn-save-' + field);
+        const cancelBtn = document.getElementById('btn-cancel-' + field);
+        
+        // Disable buttons
+        saveBtn.disabled = true;
+        cancelBtn.disabled = true;
+        
+        try {
+            const response = await fetch('{{ route("guru.pengaturan.updateField", $serial->id) }}', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    field: field,
+                    value: value
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Show success message
+                showAlert('success', data.message);
+                
+                // Reset buttons
+                const editBtn = document.getElementById('btn-edit-' + field);
+                input.disabled = true;
+                editBtn.classList.remove('d-none');
+                saveBtn.classList.add('d-none');
+                cancelBtn.classList.add('d-none');
+            } else {
+                // Show error message
+                showAlert('danger', data.message || 'Terjadi kesalahan saat menyimpan data');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('danger', 'Terjadi kesalahan saat menyimpan data');
+        } finally {
+            saveBtn.disabled = false;
+            cancelBtn.disabled = false;
+        }
+    }
+
+    // Show alert
+    function showAlert(type, message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.role = 'alert';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        const container = document.querySelector('.container-xxl');
+        container.insertBefore(alertDiv, container.firstChild.nextSibling);
+        
+        // Auto dismiss after 5 seconds
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
 </script>
 @endsection

@@ -5,12 +5,11 @@
 <!-- HEADER -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h3 class="fw-bold">Hello {{ auth()->user()->name }} 👋</h3>
+        <h3 class="fw-bold mb-1">Halo, {{ auth()->user()->name }} 👋</h3>
         <p class="text-muted m-0">Mari mulai pembelajaran hari ini!</p>
     </div>
 
     <div class="d-flex align-items-center">
-
         <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}"
             class="rounded-circle shadow-sm" width="55">
 
@@ -60,7 +59,7 @@
 
 <!-- SECOND ROW STATS -->
 <div class="row g-3 mb-4">
-    
+
     <div class="col-md-4">
         <div class="card p-3 shadow-sm border-0">
             <div class="d-flex align-items-center">
@@ -118,33 +117,34 @@
     <div class="col-md-8">
         <div class="card p-4 shadow-sm border-0">
             <h6 class="fw-bold mb-3"><i class='bx bx-time-five me-2'></i>Aktivitas Terbaru</h6>
-            
+
             @if($recentActivities->count() > 0)
-                <div class="list-group list-group-flush">
-                    @foreach($recentActivities as $activity)
-                        <div class="list-group-item px-0">
-                            <div class="d-flex align-items-start">
-                                <img src="https://ui-avatars.com/api/?name={{ urlencode($activity->student->name ?? 'Student') }}&background=random&size=40" 
-                                     class="rounded-circle me-3" width="40" height="40">
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">{{ $activity->student->name ?? 'Unknown' }}</h6>
-                                    <p class="mb-1 text-muted small">Mengumpulkan tugas: {{ $activity->post->title ?? 'Untitled' }}</p>
-                                    <small class="text-muted">{{ $activity->created_at->diffForHumans() }}</small>
-                                </div>
-                                @if($activity->point)
-                                    <span class="badge bg-success">{{ $activity->point }} poin</span>
-                                @else
-                                    <span class="badge bg-warning">Belum dinilai</span>
-                                @endif
-                            </div>
+            <div class="list-group list-group-flush">
+                @foreach($recentActivities as $activity)
+                <div class="list-group-item px-0">
+                    <div class="d-flex align-items-start">
+                        <img src="https://ui-avatars.com/api/?name={{ urlencode($activity->student->name ?? 'Student') }}&background=random&size=40"
+                            class="rounded-circle me-3" width="40" height="40">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ $activity->student->name ?? 'Unknown' }}</h6>
+                            <p class="mb-1 text-muted small">Mengumpulkan tugas:
+                                {{ $activity->post->title ?? 'Untitled' }}</p>
+                            <small class="text-muted">{{ $activity->created_at->diffForHumans() }}</small>
                         </div>
-                    @endforeach
+                        @if($activity->point)
+                        <span class="badge bg-success">{{ $activity->point }} poin</span>
+                        @else
+                        <span class="badge bg-warning">Belum dinilai</span>
+                        @endif
+                    </div>
                 </div>
+                @endforeach
+            </div>
             @else
-                <div class="text-center py-5 text-muted">
-                    <i class='bx bx-info-circle fs-1'></i>
-                    <p class="mt-2">Belum ada aktivitas terbaru</p>
-                </div>
+            <div class="text-center py-5 text-muted">
+                <i class='bx bx-info-circle fs-1'></i>
+                <p class="mt-2">Belum ada aktivitas terbaru</p>
+            </div>
             @endif
         </div>
     </div>
@@ -155,40 +155,40 @@
             <h6 class="fw-bold mb-3"><i class='bx bx-calendar me-2'></i>Meeting Mendatang</h6>
 
             @if($upcomingMeetings->count() > 0)
-                @foreach($upcomingMeetings as $meeting)
-                    <div class="mb-3 pb-3 border-bottom">
-                        <div class="d-flex align-items-start">
-                            <div class="flex-shrink-0">
-                                @if($meeting->platform == 'Zoom')
-                                    <i class='bx bxl-zoom fs-4 text-primary'></i>
-                                @elseif($meeting->platform == 'Google Meet')
-                                    <i class='bx bxl-google fs-4 text-danger'></i>
-                                @else
-                                    <i class='bx bx-video fs-4 text-info'></i>
-                                @endif
-                            </div>
-                            <div class="flex-grow-1 ms-2">
-                                <h6 class="mb-1 fw-bold">{{ $meeting->title }}</h6>
-                                <small class="text-muted d-block">{{ $meeting->classroom->name ?? 'All Classes' }}</small>
-                                <small class="text-primary">
-                                    <i class='bx bx-time-five'></i>
-                                    {{ \Carbon\Carbon::parse($meeting->start_time)->format('d M, H:i') }}
-                                </small>
-                            </div>
-                        </div>
+            @foreach($upcomingMeetings as $meeting)
+            <div class="mb-3 pb-3 border-bottom">
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0">
+                        @if($meeting->platform == 'Zoom')
+                        <i class='bx bxl-zoom fs-4 text-primary'></i>
+                        @elseif($meeting->platform == 'Google Meet')
+                        <i class='bx bxl-google fs-4 text-danger'></i>
+                        @else
+                        <i class='bx bx-video fs-4 text-info'></i>
+                        @endif
                     </div>
-                @endforeach
-                <a href="{{ route('guru.onlineclass', $serial->id) }}" class="btn btn-sm btn-outline-primary w-100 mt-2">
-                    Lihat Semua Meeting
-                </a>
-            @else
-                <div class="text-center py-4 text-muted">
-                    <i class='bx bx-calendar-x fs-1'></i>
-                    <p class="mt-2 small">Tidak ada meeting terjadwal</p>
-                    <a href="{{ route('guru.onlineclass', $serial->id) }}" class="btn btn-sm btn-primary mt-2">
-                        <i class='bx bx-plus'></i> Buat Meeting
-                    </a>
+                    <div class="flex-grow-1 ms-2">
+                        <h6 class="mb-1 fw-bold">{{ $meeting->title }}</h6>
+                        <small class="text-muted d-block">{{ $meeting->classroom->name ?? 'All Classes' }}</small>
+                        <small class="text-primary">
+                            <i class='bx bx-time-five'></i>
+                            {{ \Carbon\Carbon::parse($meeting->start_time)->format('d M, H:i') }}
+                        </small>
+                    </div>
                 </div>
+            </div>
+            @endforeach
+            <a href="{{ route('guru.onlineclass', $serial->id) }}" class="btn btn-sm btn-outline-primary w-100 mt-2">
+                Lihat Semua Meeting
+            </a>
+            @else
+            <div class="text-center py-4 text-muted">
+                <i class='bx bx-calendar-x fs-1'></i>
+                <p class="mt-2 small">Tidak ada meeting terjadwal</p>
+                <a href="{{ route('guru.onlineclass', $serial->id) }}" class="btn btn-sm btn-primary mt-2">
+                    <i class='bx bx-plus'></i> Buat Meeting
+                </a>
+            </div>
             @endif
         </div>
     </div>

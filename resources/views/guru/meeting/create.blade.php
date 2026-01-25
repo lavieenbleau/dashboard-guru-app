@@ -11,7 +11,7 @@
     </nav>
 
     <div class="row">
-        <div class="col-lg-8">
+        <div class="col-lg-12">
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">Buat Meeting Baru</h5>
@@ -136,33 +136,6 @@
                             </a>
                         </div>
                     </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4">
-            <div class="card bg-label-info">
-                <div class="card-body">
-                    <h6 class="mb-3"><i class='bx bx-info-circle me-2'></i>Informasi</h6>
-                    <ul class="mb-0">
-                        <li class="mb-2"><strong>Jitsi Meet:</strong> Platform gratis yang terintegrasi langsung di sistem. Siswa dapat langsung join dari dashboard mereka.</li>
-                        <li class="mb-2"><strong>Platform Lain:</strong> Jika menggunakan Zoom atau Google Meet, Anda perlu memasukkan link meeting manual.</li>
-                        <li class="mb-2"><strong>Waktu Meeting:</strong> Pastikan waktu mulai lebih dari waktu sekarang.</li>
-                        <li>Meeting akan otomatis masuk daftar siswa di kelas yang dipilih.</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="card mt-3 bg-label-success">
-                <div class="card-body">
-                    <h6 class="mb-3"><i class='bx bx-check-circle me-2'></i>Keuntungan Jitsi Meet</h6>
-                    <ul class="mb-0">
-                        <li>✅ Gratis tanpa batas waktu</li>
-                        <li>✅ Tidak perlu aplikasi tambahan</li>
-                        <li>✅ Terintegrasi dengan sistem</li>
-                        <li>✅ Screen sharing & chat</li>
-                        <li>✅ Rekam meeting (opsional)</li>
-                    </ul>
                 </div>
             </div>
         </div>

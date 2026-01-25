@@ -23,14 +23,19 @@ class PengaturanController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . Auth::id(),
+            'username' => 'required|string|max:255|unique:users,username,' . Auth::id(),
+            'email' => 'nullable|email|max:255|unique:users,email,' . Auth::id(),
             'phone' => 'nullable|string|max:20',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
         
         $user = Auth::user();
         $user->name = $request->name;
-        $user->email = $request->email;
+        $user->username = $request->username;
+        
+        if ($request->email) {
+            $user->email = $request->email;
+        }
         
         if ($request->phone) {
             $user->phone = $request->phone;
@@ -66,5 +71,63 @@ class PengaturanController extends Controller
         
         return redirect()->route('guru.pengaturan', $serial)
             ->with('success', 'Password berhasil diperbarui!');
+    }
+    
+    public function updateField(Request $request, $serial)
+    {
+        $field = $request->input('field');
+        $value = $request->input('value');
+        
+        // Validation rules based on field
+        $rules = [];
+        switch ($field) {
+            case 'name':
+                $rules = ['value' => 'required|string|max:255'];
+                break;
+            case 'username':
+                $rules = ['value' => 'required|string|max:255|unique:users,username,' . Auth::id()];
+                break;
+            case 'email':
+                $rules = ['value' => 'nullable|email|max:255|unique:users,email,' . Auth::id()];
+                break;
+            case 'phone':
+                $rules = ['value' => 'nullable|string|max:20'];
+                break;
+            default:
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Field tidak valid'
+                ], 400);
+        }
+        
+        try {
+            $request->validate($rules);
+            
+            $user = Auth::user();
+            $user->$field = $value;
+            $user->save();
+            
+            $fieldLabels = [
+                'name' => 'Nama Lengkap',
+                'username' => 'Username',
+                'email' => 'Email',
+                'phone' => 'Nomor Telepon'
+            ];
+            
+            return response()->json([
+                'success' => true,
+                'message' => $fieldLabels[$field] . ' berhasil diperbarui!'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->errors()['value'][0] ?? 'Validasi gagal'
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

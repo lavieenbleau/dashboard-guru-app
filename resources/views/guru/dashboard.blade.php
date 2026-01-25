@@ -1,23 +1,23 @@
 @extends('layouts.guru')
 
 @section('content')
-    <h1>Dashboard Aplikasi</h1>
+<h1>Dashboard Aplikasi</h1>
 
-    @if ($serials->isEmpty())
-        <div class="alert alert-info">Tidak ada aplikasi / serial terdaftar untuk akun ini.</div>
-    @else
-        <div class="row">
-            @foreach ($serials as $serial)
-                <div class="col-md-4 mb-3">
-                    <div class="menu-card">
-                        <h5>{{ $serial->product->name ?? 'Produk' }}</h5>
-                        <p>Serial: {{ $serial->serial }}</p>
-                        <a class="btn btn-sm btn-primary" href="#">Buka</a>
-                    </div>
-                </div>
-            @endforeach
+@if ($serials->isEmpty())
+<div class="alert alert-info">Tidak ada aplikasi / serial terdaftar untuk akun ini.</div>
+@else
+<div class="row">
+    @foreach ($serials as $serial)
+    <div class="col-md-4 mb-3">
+        <div class="menu-card">
+            <h5>{{ $serial->product->name ?? 'Produk' }}</h5>
+            <p>Serial: {{ $serial->serial }}</p>
+            <a class="btn btn-sm btn-primary" href="#">Buka</a>
         </div>
-    @endif
+    </div>
+    @endforeach
+</div>
+@endif
 
 @endsection
 @extends('layouts.guru')

@@ -1,0 +1,104 @@
+@startuml 08-rekap-nilai
+title Alur Rekap Nilai - DashboardGuru
+
+start
+
+:Guru memilih aplikasi/serial;
+
+:Lihat menu\nrekap nilai;
+
+switch (Pilih tampilan?)
+case (Per Kelas)
+  :Tampilkan daftar\nkelas dalam serial;
+  
+  :Pilih kelas;
+  
+  :Load data nilai\nsemua siswa di kelas;
+  
+  :Tampilkan tabel nilai:\n- Nama siswa\n- Tugas\n- Latihan\n- Rata-rata;
+  
+  switch (Aksi?)
+  case (Lihat Detail Siswa)
+    :Pilih siswa;
+    
+  case (Export PDF Kelas)
+    :Generate PDF\nrekap nilai kelas;
+    :Download file PDF;
+    stop
+    
+  case (Export Excel)
+    :Generate Excel\nrekap nilai kelas;
+    :Download file Excel;
+    stop
+    
+  case (Print)
+    :Print rekap kelas;
+    stop
+    
+  case (Kembali)
+    :Kembali ke menu;
+    stop
+  endswitch
+
+case (Per Siswa)
+  :Cari siswa\nberdasarkan nama/NIS;
+  
+  if (Siswa ditemukan?) then (Tidak)
+    :Siswa tidak ditemukan;
+    :Kembali ke pencarian;
+    stop
+  else (Ya)
+    :Load semua nilai siswa;
+  endif
+
+case (Per Kompetensi)
+  :Pilih kompetensi dasar;
+  
+  :Load nilai semua siswa\nuntuk kompetensi ini;
+  
+  :Tampilkan tabel\npencapaian kompetensi;
+  
+  switch (Aksi?)
+  case (Lihat Detail Siswa)
+    :Pilih siswa;
+  case (Export PDF Kelas)
+    :Generate PDF;
+    :Download file PDF;
+    stop
+  case (Export Excel)
+    :Generate Excel;
+    :Download file Excel;
+    stop
+  case (Print)
+    :Print;
+    stop
+  case (Kembali)
+    :Kembali ke menu;
+    stop
+  endswitch
+endswitch
+
+partition "Detail Siswa" {
+  :Tampilkan detail:\n- Profile siswa\n- Semua nilai tugas\n- Semua nilai latihan\n- Grafik progress\n- Kompetensi tercapai;
+  
+  switch (Aksi?)
+  case (Export PDF Siswa)
+    :Generate PDF\nrapor siswa;
+    :Download rapor PDF;
+    stop
+    
+  case (Print Rapor)
+    :Print rapor siswa;
+    stop
+    
+  case (Lihat Grafik)
+    :Tampilkan grafik:\n- Line chart progress\n- Bar chart per kategori\n- Perbandingan rata-rata;
+    stop
+    
+  case (Kembali)
+    :Kembali ke menu;
+    stop
+  endswitch
+}
+
+@enduml

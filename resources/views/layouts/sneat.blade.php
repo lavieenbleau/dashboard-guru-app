@@ -33,6 +33,7 @@
             padding: 1.5rem;
             max-width: 100%;
             overflow-x: hidden;
+            margin: 0;
         }
         
         /* Ensure content doesn't overflow */
@@ -66,15 +67,7 @@
     <script src="{{ asset('sneat/assets/vendor/js/bootstrap.js') }}"></script>
 
     <script>
-    // Set initial layout class based on sidebar state
-    const html = document.documentElement;
-    const sidebar = document.getElementById('sidebar');
-
-    if (sidebar && sidebar.classList.contains('collapsed')) {
-        html.classList.add('layout-menu-collapsed');
-    } else {
-        html.classList.add('layout-menu-expanded');
-    }
+    // Sidebar is now always expanded
     </script>
 </body>
 

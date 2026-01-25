@@ -1,0 +1,44 @@
+@startuml 01-sistem-utama
+title Flowchart Sistem Utama - DashboardGuru
+
+skinparam defaultFontSize 11
+skinparam activity {
+  BackgroundColor<<Decision>> LightYellow
+  BackgroundColor<<Process>> LightBlue
+  BackgroundColor<<Start>> LightGreen
+  BackgroundColor<<End>> LightCoral
+}
+
+start
+:Mulai;
+
+:Guru login ke sistem;
+
+if (Memiliki serial aktif?) then (Ya)
+  :Tampilkan Dashboard Guru;
+  :Pilih Aplikasi/Serial;
+  
+else (Tidak)
+  :Tampilkan halaman\naktivasi serial;
+  stop
+endif
+
+:Akses Menu Utama;
+
+switch (Menu Utama?)
+case (Mengelola Kelas)
+  :Proses Mengelola Kelas;
+case (Mengelola Materi)
+  :Proses Mengelola Materi;
+case (Mengelola Soal)
+  :Proses Mengelola Soal;
+case (Kelas Online)
+  :Proses Kelas Online;
+case (Laporan)
+  :Proses Laporan;
+endswitch
+
+:Selesai;
+stop
+
+@enduml

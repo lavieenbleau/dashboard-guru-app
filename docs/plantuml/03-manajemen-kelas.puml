@@ -1,0 +1,61 @@
+@startuml 03-manajemen-kelas
+title Alur Manajemen Kelas - DashboardGuru
+
+start
+
+:Guru melihat daftar kelas;
+
+switch (Aksi yang dipilih?)
+case (Buat Kelas Baru)
+  :Input data kelas:\n- Nama kelas\n- Tingkat\n- Serial terkait;
+  
+  :Sistem generate\nkode kelas unik;
+  
+  :Simpan data kelas\nke database;
+  
+  :Tampilkan kode kelas\nuntuk dibagikan ke siswa;
+  
+  stop
+
+case (Edit Kelas)
+  :Pilih kelas\nyang akan diedit;
+  
+  :Tampilkan form edit\ndengan data kelas;
+  
+  :Update data kelas;
+  
+  stop
+
+case (Hapus Kelas)
+  if (Konfirmasi\nhapus kelas?) then (Ya)
+    :Hapus kelas dan\nrelasi dengan siswa;
+    stop
+  else (Tidak)
+    :Kembali ke daftar kelas;
+    stop
+  endif
+
+case (Lihat Detail)
+  :Tampilkan detail kelas\ndan daftar siswa;
+  
+  switch (Aksi dalam kelas?)
+  case (Tambah Siswa Manual)
+    :Form input data siswa;
+    :Simpan data siswa\ndan link ke kelas;
+    stop
+    
+  case (Hapus Siswa)
+    :Hapus siswa dari kelas;
+    stop
+    
+  case (Export Data)
+    :Export data siswa\nke Excel/PDF;
+    stop
+    
+  case (Kembali)
+    :Kembali ke daftar kelas;
+    stop
+  endswitch
+endswitch
+
+@enduml

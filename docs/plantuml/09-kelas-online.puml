@@ -1,0 +1,116 @@
+@startuml 09-kelas-online
+title Alur Kelas Online (Jitsi Meet) - DashboardGuru
+
+start
+
+:Guru memilih aplikasi/serial;
+
+:Lihat menu\nkelas online;
+
+switch (Aksi?)
+case (Buat Kelas Baru)
+  :Input data meeting:\n- Judul/Topik\n- Jadwal mulai\n- Durasi\n- Kelas peserta;
+  
+  :Pilih kelas\nyang diundang;
+  
+  :Sistem generate\nRoom ID Jitsi unik;
+  
+  :Generate link meeting:\nhttps://meet.jit.si/[RoomID];
+  
+  :Simpan data meeting\nke database;
+  
+  :Notifikasi siswa\nvia dashboard;
+  
+  :Tampilkan:\n- Link meeting\n- Room ID\n- Password (jika ada)\n- Waktu mulai;
+  
+  if (Copy link?) then (Ya)
+    :Copy link ke clipboard;
+  endif
+  
+  :Tunggu waktu mulai;
+  
+  stop
+
+case (Lihat Jadwal)
+  :Daftar meeting:\n- Mendatang\n- Sedang berlangsung\n- Selesai;
+  
+  switch (Aksi?)
+  case (Edit)
+    :Edit data meeting;
+    :Update meeting data;
+    stop
+    
+  case (Hapus)
+    :Hapus meeting;
+    stop
+    
+  case (Join)
+    :Pilih meeting;
+    
+  case (Kembali)
+    :Kembali ke menu;
+    stop
+  endswitch
+
+case (Join Meeting)
+  :Pilih meeting\nyang akan diikuti;
+endswitch
+
+partition "Join Meeting Process" {
+  switch (Waktu meeting?)
+  case (Belum Mulai)
+    :Tampilkan:\nMeeting belum dimulai\nMulai pada: [waktu];
+    
+    repeat
+      :Tunggu;
+    repeat while (Waktu sudah tiba?) is (Belum)
+    
+  case (Sedang Berlangsung)
+    :Join meeting sekarang;
+    
+  case (Sudah Selesai)
+    :Meeting sudah selesai;
+    stop
+  endswitch
+  
+  :Buka Jitsi Meet\ndi tab/window baru;
+  
+  :Setup perangkat:\n- Kamera\n- Mikrofon\n- Speaker;
+  
+  :Join room dengan:\n- Display name\n- Audio/Video status;
+  
+  partition "Dalam Meeting" {
+    :Dalam meeting;
+    
+    repeat
+      switch (Aksi dalam meeting?)
+      case (Share Screen)
+        :Bagikan layar;
+        
+      case (Chat)
+        :Buka panel chat;
+        
+      case (Mute/Unmute)
+        :Toggle audio;
+        
+      case (Camera On/Off)
+        :Toggle video;
+        
+      case (Raise Hand)
+        :Angkat tangan;
+        
+      case (Leave)
+        if (Konfirmasi keluar?) then (Ya)
+          :Keluar dari meeting;
+          break
+        endif
+      endswitch
+    repeat while (Dalam meeting?)
+  }
+  
+  :Sistem simpan\nlog kehadiran;
+}
+
+stop
+
+@enduml

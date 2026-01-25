@@ -1,13 +1,11 @@
-<div id="sidebar" class="layout-menu menu-vertical menu bg-menu-theme shadow collapsed">
+<div id="sidebar" class="layout-menu menu-vertical menu bg-menu-theme shadow">
 
-    <!-- Brand + Collapse Button -->
-    <div class="app-brand p-3 d-flex justify-content-between align-items-center">
-
-        <span class="app-brand-text fw-bold text-primary">Guru Panel</span>
-
-        <button id="btnCollapse" class="btn btn-sm btn-outline-primary">
-            <i class='bx bx-chevron-left'></i>
-        </button>
+    <!-- Brand + Logo -->
+    <div class="app-brand p-3">
+        <div class="d-flex align-items-center">
+            <img src="{{ asset('images/logo-sci.png') }}" alt="SCI Media" height="32" class="me-2">
+            <span class="app-brand-text fw-bold text-primary">Guru Panel</span>
+        </div>
     </div>
 
     <ul class="menu-inner py-1">
@@ -49,43 +47,43 @@
 
         @if(!$isPilihAplikasi)
         <!-- Dashboard -->
-        <li class="menu-item {{ request()->is('aplikasi/'.$serialId) ? 'active' : '' }}">
+        <li class="menu-item {{ (request()->is('aplikasi/'.$serialId) && request()->path() == 'aplikasi/'.$serialId) || request()->routeIs('guru.dashboard') ? 'active' : '' }}">
             <a href="{{ $dashboardUrl }}" class="menu-link">
                 <span class="menu-icon"><i class='bx bx-home'></i></span>
-                <div class="menu-text">Dashboard</div>
+                <div>Dashboard</div>
             </a>
         </li>
 
         <!-- Materi -->
-        <li class="menu-item {{ request()->is('aplikasi/'.$serialId.'/materi*') ? 'active' : '' }}">
+        <li class="menu-item {{ request()->routeIs('guru.materi*') ? 'active' : '' }}">
             <a href="{{ $serialId ? route('guru.materi', $serialId) : route('pilih.aplikasi') }}" class="menu-link">
                 <span class="menu-icon"><i class='bx bx-book-open'></i></span>
-                <div class="menu-text">Materi</div>
+                <div>Materi</div>
             </a>
         </li>
 
         <!-- Soal -->
-        <li class="menu-item {{ request()->is('aplikasi/'.$serialId.'/soal*') ? 'active' : '' }}">
+        <li class="menu-item {{ request()->routeIs('guru.soal*') ? 'active' : '' }}">
             <a href="{{ $serialId ? route('guru.soal', $serialId) : route('pilih.aplikasi') }}" class="menu-link">
                 <span class="menu-icon"><i class='bx bx-file-blank'></i></span>
-                <div class="menu-text">Soal</div>
+                <div>Soal</div>
             </a>
         </li>
 
         <!-- Tugas -->
-        <li class="menu-item {{ request()->is('aplikasi/'.$serialId.'/tugas*') ? 'active' : '' }}">
+        <li class="menu-item {{ request()->routeIs('guru.tugas*') ? 'active' : '' }}">
             <a href="{{ $serialId ? route('guru.tugas', $serialId) : route('pilih.aplikasi') }}" class="menu-link">
                 <span class="menu-icon"><i class='bx bx-edit'></i></span>
-                <div class="menu-text">Tugas</div>
+                <div>Tugas</div>
             </a>
         </li>
 
         <!-- Laporan Harian -->
-        <li class="menu-item {{ request()->is('aplikasi/'.$serialId.'/laporan-harian*') ? 'active' : '' }}">
+        <li class="menu-item {{ request()->routeIs('guru.laporanharian*') || request()->routeIs('guru.laporan*') ? 'active' : '' }}">
             <a href="{{ $serialId ? route('guru.laporanharian', $serialId) : route('pilih.aplikasi') }}"
                 class="menu-link">
                 <span class="menu-icon"><i class='bx bx-file'></i></span>
-                <div class="menu-text">Laporan Harian</div>
+                <div>Laporan Harian</div>
             </a>
         </li>
 
@@ -93,7 +91,7 @@
         <li class="menu-item {{ request()->is('aplikasi/'.$serialId.'/rekap-nilai*') ? 'active' : '' }}">
             <a href="{{ $serialId ? route('guru.rekapnilai', $serialId) : route('pilih.aplikasi') }}" class="menu-link">
                 <span class="menu-icon"><i class='bx bx-list-check'></i></span>
-                <div class="menu-text">Rekap Nilai</div>
+                <div>Rekap Nilai</div>
             </a>
         </li>
 
@@ -101,7 +99,7 @@
         <li class="menu-item {{ request()->is('aplikasi/'.$serialId.'/meeting*') ? 'active' : '' }}">
             <a href="{{ $serialId ? route('guru.meeting', $serialId) : route('pilih.aplikasi') }}" class="menu-link">
                 <span class="menu-icon"><i class='bx bx-video'></i></span>
-                <div class="menu-text">Kelas Online</div>
+                <div>Kelas Online</div>
             </a>
         </li>
 
@@ -110,7 +108,7 @@
             <a href="{{ $serialId ? route('guru.kelas.pilih', $serialId) : route('pilih.aplikasi') }}"
                 class="menu-link">
                 <span class="menu-icon"><i class='bx bx-group'></i></span>
-                <div class="menu-text">Kelas</div>
+                <div>Kelas</div>
             </a>
         </li>
         @endif
@@ -154,10 +152,9 @@
 </div>
 
 
-<!-- SIDEBAR COLLAPSE STYLE -->
+<!-- SIDEBAR STYLE -->
 <style>
 #sidebar {
-    transition: width 0.25s ease-in-out;
     overflow-x: hidden;
     overflow-y: auto;
     position: fixed;
@@ -165,38 +162,7 @@
     left: 0;
     height: 100vh;
     z-index: 1000;
-}
-
-#sidebar.collapsed {
-    width: 70px !important;
-}
-
-#sidebar:not(.collapsed) {
     width: 250px !important;
-}
-
-/* hide text when collapsed */
-#sidebar.collapsed .menu-text,
-#sidebar.collapsed .app-brand-text {
-    display: none !important;
-}
-
-/* hide buttons text when collapsed, keep icons */
-#sidebar.collapsed .menu-bottom .btn span.menu-text {
-    display: none !important;
-}
-
-#sidebar.collapsed .menu-bottom .btn {
-    padding: 0.375rem 0.5rem;
-}
-
-#sidebar.collapsed .menu-bottom .btn i {
-    margin: 0 !important;
-}
-
-/* rotate chevron */
-#sidebar.collapsed #btnCollapse i {
-    transform: rotate(180deg);
 }
 
 .menu-icon i {
@@ -217,33 +183,46 @@
     padding-bottom: 120px !important;
 }
 
-/* shift content based on sidebar state */
-.layout-menu-expanded .layout-page {
+/* shift content based on sidebar */
+.layout-page {
     margin-left: 250px !important;
-    transition: margin-left .25s;
+    padding: 0;
 }
 
-.layout-menu-collapsed .layout-page {
-    margin-left: 70px !important;
-    transition: margin-left .25s;
+.layout-container {
+    padding: 0;
+    margin: 0;
+}
+
+.layout-wrapper {
+    padding: 0;
+    margin: 0;
+}
+
+/* Active menu item styling */
+.menu-item.active {
+    background-color: rgba(105, 108, 255, 0.08);
+    border-left: 3px solid #696cff;
+}
+
+.menu-item.active .menu-link {
+    color: #696cff !important;
+    font-weight: 600;
+}
+
+.menu-item.active .menu-icon i {
+    color: #696cff !important;
+}
+
+.menu-item .menu-link {
+    transition: all 0.2s ease;
+}
+
+.menu-item:hover:not(.active) {
+    background-color: rgba(0, 0, 0, 0.03);
 }
 </style>
 
 
-<!-- COLLAPSE SCRIPT -->
-<script>
-document.getElementById('btnCollapse')?.addEventListener('click', () => {
-    const sidebar = document.getElementById('sidebar');
-    const html = document.documentElement;
-
-    sidebar.classList.toggle('collapsed');
-
-    if (html.classList.contains('layout-menu-expanded')) {
-        html.classList.remove('layout-menu-expanded');
-        html.classList.add('layout-menu-collapsed');
-    } else {
-        html.classList.add('layout-menu-expanded');
-        html.classList.remove('layout-menu-collapsed');
-    }
-});
+<!-- Remove collapse script since button is removed -->});
 </script>

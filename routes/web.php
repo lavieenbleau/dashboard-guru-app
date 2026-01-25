@@ -90,6 +90,8 @@ Route::middleware(['auth'])->group(function () {
         ->name('guru.pengaturan.profile');
     Route::put('/aplikasi/{serial}/pengaturan/password', [\App\Http\Controllers\Guru\PengaturanController::class, 'updatePassword'])
         ->name('guru.pengaturan.password');
+    Route::put('/aplikasi/{serial}/pengaturan/field', [\App\Http\Controllers\Guru\PengaturanController::class, 'updateField'])
+        ->name('guru.pengaturan.updateField');
 
 
     /* ------------------------------------------------------
