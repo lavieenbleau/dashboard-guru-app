@@ -92,14 +92,22 @@
                                     <td><code>{{ $student->username }}</code></td>
                                     <td>{{ $student->email ?? '-' }}</td>
                                     <td>
-                                        <code>{{ $student->password_text ?? '********' }}</code>
-                                    </td>
-                                    <td>
                                         <div class="dropdown">
                                             <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
                                                 <i class='bx bx-dots-vertical-rounded'></i>
                                             </button>
                                             <ul class="dropdown-menu">
+                                                <li>
+                                                    <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modalEditSiswa{{ $student->id }}">
+                                                        <i class='bx bx-edit me-1'></i> Edit
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modalChangePassword{{ $student->id }}">
+                                                        <i class='bx bx-key me-1'></i> Ganti Password
+                                                    </button>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
                                                 <li>
                                                     <form action="{{ route('guru.kelas.siswa.destroy', [$serial->id, $classroom->id, $student->id]) }}" method="POST" onsubmit="return confirm('Hapus siswa ini?')">
                                                         @csrf
@@ -113,6 +121,99 @@
                                         </div>
                                     </td>
                                 </tr>
+                                
+                                <!-- Modal Edit Siswa -->
+                                <div class="modal fade" id="modalEditSiswa{{ $student->id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Edit Data Siswa</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form method="POST" action="{{ route('guru.kelas.siswa.update', [$serial->id, $classroom->id, $student->id]) }}">
+                                                @csrf
+                                                @method('PUT')
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
+                                                        <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" 
+                                                               value="{{ $student->name }}" required>
+                                                        @error('name')
+                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">NIS</label>
+                                                        <input type="text" name="nis" class="form-control @error('nis') is-invalid @enderror" 
+                                                               value="{{ $student->nis }}">
+                                                        @error('nis')
+                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Email</label>
+                                                        <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" 
+                                                               value="{{ $student->email }}">
+                                                        @error('email')
+                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Telepon</label>
+                                                        <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror" 
+                                                               value="{{ $student->phone }}">
+                                                        @error('phone')
+                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <i class='bx bx-save me-1'></i>Update
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Modal Ganti Password -->
+                                <div class="modal fade" id="modalChangePassword{{ $student->id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Ganti Password</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form method="POST" action="{{ route('guru.kelas.siswa.update-password', [$serial->id, $classroom->id, $student->id]) }}">
+                                                @csrf
+                                                @method('PUT')
+                                                <div class="modal-body">
+                                                    <div class="alert alert-info mb-3">
+                                                        <strong>Siswa:</strong> {{ $student->name }}<br>
+                                                        <strong>Username:</strong> <code>{{ $student->username }}</code>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Password Baru <span class="text-danger">*</span></label>
+                                                        <input type="text" name="password" class="form-control @error('password') is-invalid @enderror" 
+                                                               placeholder="Masukkan password baru" required minlength="6">
+                                                        @error('password')
+                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                        @enderror
+                                                        <small class="text-muted">Minimal 6 karakter</small>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                                    <button type="submit" class="btn btn-warning">
+                                                        <i class='bx bx-key me-1'></i>Ganti Password
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                             @endforeach
                         </tbody>
                     </table>

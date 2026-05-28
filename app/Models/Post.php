@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Post extends Model
 {
-    protected $table = "posts";
+    use SoftDeletes;
+
+    protected $table = 'posts';
 
     protected $fillable = [
         'serial_id',
@@ -18,15 +21,14 @@ class Post extends Model
         'link',
         'attachment',
         'embed',
+        'due_date',
         'category',
-        'shared_to_classes',
-        'deadline',
         'is_task',
     ];
 
     protected $casts = [
         'category' => 'array',
-        'shared_to_classes' => 'array',
+        'due_date' => 'datetime',
     ];
 
     public function serial()
@@ -49,8 +51,18 @@ class Post extends Model
         return $this->hasMany(PostComment::class)->latest();
     }
 
-    public function getCategoryDataAttribute()
+    public function getDeadlineAttribute()
     {
-        return json_decode($this->category, true);
+        return $this->due_date;
+    }
+
+    public function setDeadlineAttribute($value)
+    {
+        $this->attributes['due_date'] = $value;
+    }
+
+    public function getSharedToClassesAttribute()
+    {
+        return null;
     }
 }

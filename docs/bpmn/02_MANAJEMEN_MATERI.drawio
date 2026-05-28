@@ -1,0 +1,263 @@
+<mxfile host="app.diagrams.net" modified="2026-01-27T00:00:00.000Z" agent="5.0" version="22.1.16" etag="drawio-version" type="device">
+  <diagram name="Manajemen Materi" id="manajemen-materi">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Start -->
+        <mxCell id="start" value="Mulai" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="540" y="40" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Menu Materi -->
+        <mxCell id="aksesMenu" value="Akses Menu Materi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="520" y="130" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Pilih Aktivitas -->
+        <mxCell id="pilihAktivitas" value="Pilih Aktivitas?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="530" y="220" width="140" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Branch 1: Buat Materi Baru -->
+        <mxCell id="buatMateri" value="Buat Materi Baru" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="80" y="350" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="inputDataMateri" value="Input Data Materi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="80" y="440" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="uploadFile" value="Upload File (PDF/Video)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="80" y="530" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="simpanMateri" value="Simpan Materi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="80" y="620" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Branch 2: Lihat Daftar Materi -->
+        <mxCell id="lihatDaftar" value="Lihat Daftar Materi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="270" y="350" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="tampilkanList" value="Tampilkan List Materi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="270" y="440" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Branch 3: Edit Materi -->
+        <mxCell id="pilihMateri" value="Pilih Materi untuk Edit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="460" y="350" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="editData" value="Edit Data Materi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="460" y="440" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="updateMateri" value="Update Materi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="460" y="530" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Branch 4: Hapus Materi -->
+        <mxCell id="pilihHapus" value="Pilih Materi untuk Hapus" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="650" y="350" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="konfirmasiHapus" value="Konfirmasi Hapus?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="660" y="440" width="120" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="hapusMateri" value="Hapus Materi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="650" y="550" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Branch 5: Atur Urutan -->
+        <mxCell id="aturUrutan" value="Atur Urutan Materi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="840" y="350" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="dragDrop" value="Drag &amp; Drop Urutan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="840" y="440" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="simpanUrutan" value="Simpan Urutan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="840" y="530" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Branch 6: Publikasi -->
+        <mxCell id="pilihPublikasi" value="Pilih Materi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="350" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="togglePublikasi" value="Toggle Status Publikasi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="440" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Kembali -->
+        <mxCell id="kembali" value="Kembali ke Menu" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="520" y="700" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- End -->
+        <mxCell id="end" value="Selesai" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="540" y="800" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Edges -->
+        <mxCell id="e1" edge="1" parent="1" source="start" target="aksesMenu">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="e2" edge="1" parent="1" source="aksesMenu" target="pilihAktivitas">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Buat Materi -->
+        <mxCell id="e3" value="Buat" edge="1" parent="1" source="pilihAktivitas" target="buatMateri">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="e4" edge="1" parent="1" source="buatMateri" target="inputDataMateri">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="e5" edge="1" parent="1" source="inputDataMateri" target="uploadFile">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="e6" edge="1" parent="1" source="uploadFile" target="simpanMateri">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="e7" edge="1" parent="1" source="simpanMateri" target="kembali">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="150" y="730" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Lihat Daftar -->
+        <mxCell id="e8" value="Lihat" edge="1" parent="1" source="pilihAktivitas" target="lihatDaftar">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="e9" edge="1" parent="1" source="lihatDaftar" target="tampilkanList">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="e10" edge="1" parent="1" source="tampilkanList" target="kembali">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="340" y="730" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Edit -->
+        <mxCell id="e11" value="Edit" edge="1" parent="1" source="pilihAktivitas" target="pilihMateri">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="e12" edge="1" parent="1" source="pilihMateri" target="editData">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="e13" edge="1" parent="1" source="editData" target="updateMateri">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="e14" edge="1" parent="1" source="updateMateri" target="kembali">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="530" y="730" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Hapus -->
+        <mxCell id="e15" value="Hapus" edge="1" parent="1" source="pilihAktivitas" target="pilihHapus">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="e16" edge="1" parent="1" source="pilihHapus" target="konfirmasiHapus">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="e17" value="Ya" edge="1" parent="1" source="konfirmasiHapus" target="hapusMateri">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="e18" value="Tidak" edge="1" parent="1" source="konfirmasiHapus" target="kembali">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="720" y="730" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e19" edge="1" parent="1" source="hapusMateri" target="kembali">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="720" y="730" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Urutan -->
+        <mxCell id="e20" value="Urutan" edge="1" parent="1" source="pilihAktivitas" target="aturUrutan">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="e21" edge="1" parent="1" source="aturUrutan" target="dragDrop">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="e22" edge="1" parent="1" source="dragDrop" target="simpanUrutan">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="e23" edge="1" parent="1" source="simpanUrutan" target="kembali">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="910" y="730" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Publikasi -->
+        <mxCell id="e24" value="Publikasi" edge="1" parent="1" source="pilihAktivitas" target="pilihPublikasi">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="e25" edge="1" parent="1" source="pilihPublikasi" target="togglePublikasi">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="e26" edge="1" parent="1" source="togglePublikasi" target="kembali">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1100" y="730" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Return -->
+        <mxCell id="e27" value="Lanjut" edge="1" parent="1" source="kembali" target="pilihAktivitas">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="450" y="730" />
+              <mxPoint x="450" y="260" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e28" value="Keluar" edge="1" parent="1" source="kembali" target="end">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -106,7 +106,6 @@ class KelasController extends Controller
             'name' => $request->name,
             'username' => $username,
             'password' => bcrypt($defaultPassword),
-            'password_text' => $defaultPassword,
             'nis' => $request->nis,
             'email' => $request->email,
             'phone' => $request->phone,
@@ -114,6 +113,50 @@ class KelasController extends Controller
         
         return redirect()->route('guru.kelas.dashboard', [$serial->id, $classroom->id])
             ->with('success', 'Siswa berhasil ditambahkan!');
+    }
+    
+    // Update student
+    public function updateStudent(Request $request, $serial, $classroom, $student)
+    {
+        $request->validate([
+            'name' => 'required|string|max:200',
+            'nis' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:100',
+            'phone' => 'nullable|string|max:20',
+        ]);
+        
+        $serial = Serial::findOrFail($serial);
+        $classroom = Classroom::findOrFail($classroom);
+        $student = \App\Models\Student::findOrFail($student);
+        
+        $student->update([
+            'name' => $request->name,
+            'nis' => $request->nis,
+            'email' => $request->email,
+            'phone' => $request->phone,
+        ]);
+        
+        return redirect()->route('guru.kelas.dashboard', [$serial->id, $classroom->id])
+            ->with('success', 'Data siswa berhasil diperbarui!');
+    }
+    
+    // Update student password
+    public function updateStudentPassword(Request $request, $serial, $classroom, $student)
+    {
+        $request->validate([
+            'password' => 'required|string|min:6|max:50',
+        ]);
+        
+        $serial = Serial::findOrFail($serial);
+        $classroom = Classroom::findOrFail($classroom);
+        $student = \App\Models\Student::findOrFail($student);
+        
+        $student->update([
+            'password' => bcrypt($request->password),
+        ]);
+        
+        return redirect()->route('guru.kelas.dashboard', [$serial->id, $classroom->id])
+            ->with('success', 'Password siswa berhasil diubah!');
     }
     
     // Delete student
@@ -200,7 +243,6 @@ class KelasController extends Controller
                     'name' => $name,
                     'username' => $username,
                     'password' => bcrypt($defaultPassword),
-                    'password_text' => $defaultPassword,
                     'nis' => $nis,
                     'email' => $email,
                     'phone' => $phone,

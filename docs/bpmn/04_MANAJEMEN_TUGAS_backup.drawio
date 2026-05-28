@@ -1,0 +1,406 @@
+<mxfile host="app.diagrams.net" modified="2026-01-27T00:00:00.000Z" agent="5.0" version="22.1.16" etag="drawio-version" type="device">
+  <diagram name="Manajemen Tugas" id="manajemen-tugas">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="3000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Start -->
+        <mxCell id="start" value="Guru Akses Menu Tugas" style="ellipse;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeColor=#000000;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="760" y="40" width="140" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="loadTugas" value="Load Halaman Tugas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="740" y="150" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="showActions" value="Pilih Aksi" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="760" y="250" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- CREATE TUGAS -->
+        <mxCell id="formTugas" value="Tampilkan Form Buat Tugas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="100" y="390" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="inputDataTugas" value="Input Detail Tugas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="100" y="490" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="setDeadline" value="Set Deadline Wajib" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="100" y="590" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="uploadFileTugas" value="Upload File Soal?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="110" y="690" width="160" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="validateFileTugas" value="Validasi File" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="100" y="830" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="saveFileTugas" value="Upload File ke Storage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="100" y="930" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="saveTugasDB" value="Simpan ke Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1050" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="successCreateTugas" value="Success: Tugas Dibuat" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1150" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- VIEW DETAIL TUGAS -->
+        <mxCell id="loadDetailTugas" value="Load Detail Tugas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="340" y="390" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="fetchSubmissions" value="Ambil Data Pengumpulan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="340" y="490" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="fetchCommentsTugas" value="Ambil Komentar &amp; Replies" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="340" y="590" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="showDetailTugas" value="Tampilkan Detail Tugas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="340" y="690" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="detailAction" value="Aksi User" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="360" y="790" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Comment -->
+        <mxCell id="inputCommentTugas" value="Input Komentar" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="340" y="930" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="validateCommentTugas" value="Valid?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="360" y="1030" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="errorCommentTugas" value="Error" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="560" y="1050" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="saveCommentTugas" value="Simpan Komentar" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="340" y="1170" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="reloadCommentsTugas" value="Reload Komentar" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="340" y="1270" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Reply -->
+        <mxCell id="inputReplyTugas" value="Input Reply" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="560" y="790" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="saveReplyTugas" value="Simpan Reply" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="560" y="890" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Delete Comment -->
+        <mxCell id="deleteCommentTugas" value="Hapus Komentar" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="760" y="810" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- LIHAT PENGUMPULAN -->
+        <mxCell id="selectTugas" value="Pilih Tugas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="970" y="390" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="loadSubmissions" value="Load Data Pengumpulan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="970" y="490" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="showSubmissions" value="Tampilkan List Siswa" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="970" y="590" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="submissionAction" value="Status Pengumpulan" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="980" y="690" width="160" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Belum Mengumpulkan -->
+        <mxCell id="showBelumMengumpulkan" value="Tampilkan Status: Belum" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E6;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="590" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="checkDeadline" value="Lewat Deadline?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="690" width="160" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="markTerlambat" value="Mark: Terlambat" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1410" y="710" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="waitSubmission" value="Tunggu Pengumpulan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E6;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="830" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Sudah Mengumpulkan -->
+        <mxCell id="showSubmission" value="Tampilkan File Jawaban" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="970" y="830" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="checkGraded" value="Sudah Dinilai?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="980" y="930" width="160" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="showGrade" value="Tampilkan Nilai" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="950" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="gradeAction" value="Guru Input Nilai" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="970" y="1070" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="inputNilai" value="Input Nilai 0-100" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="970" y="1170" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="inputFeedback" value="Input Feedback Opsional" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="970" y="1270" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="saveNilai" value="Simpan Nilai" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="970" y="1370" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="updateStatusDinilai" value="Update Status: Dinilai" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="970" y="1470" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sendNotification" value="Kirim Notifikasi ke Siswa" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="970" y="1570" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Bulk Download -->
+        <mxCell id="bulkDownload" value="Download Semua File" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="1170" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="createZip" value="Buat File ZIP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="1270" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="downloadZip" value="Download ZIP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="1370" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Export -->
+        <mxCell id="exportGrades" value="Export ke Excel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1410" y="1170" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="downloadExcel" value="Download Excel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1410" y="1270" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- EDIT TUGAS -->
+        <mxCell id="loadEditTugas" value="Load Form Edit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="740" y="1750" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="checkSubmitted" value="Ada yang Sudah Submit?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="740" y="1850" width="180" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="warningEditTugas" value="Warning: Sudah Ada Pengumpulan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E6;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="970" y="1870" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="confirmEditTugas" value="Tetap Edit?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="990" y="1970" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="editDataTugas" value="Edit Data" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="740" y="2120" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="updateTugas" value="Update Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="740" y="2220" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="successEditTugas" value="Success" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="740" y="2320" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- DELETE TUGAS -->
+        <mxCell id="confirmDeleteTugas" value="Konfirmasi Hapus" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="740" y="2460" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="deleteTaskSubmissions" value="Hapus Pengumpulan Siswa" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="740" y="2560" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="deleteTaskComments" value="Hapus Komentar" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="740" y="2660" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="deleteTaskFiles" value="Hapus File" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="740" y="2760" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="deleteTaskDB" value="Hapus dari Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="740" y="2860" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="successDeleteTugas" value="Success" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="740" y="2960" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- End -->
+        <mxCell id="end" value="End" style="ellipse;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeColor=#000000;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="770" y="2100" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Main Edges -->
+        <mxCell id="e1" edge="1" parent="1" source="start" target="loadTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="loadTugas" target="showActions"><mxGeometry relative="1" as="geometry" /></mxCell>
+        
+        <!-- Create Branch -->
+        <mxCell id="e3" value="Buat Tugas" edge="1" parent="1" source="showActions" target="formTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="formTugas" target="inputDataTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="inputDataTugas" target="setDeadline"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="setDeadline" target="uploadFileTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e7" value="Ya" edge="1" parent="1" source="uploadFileTugas" target="validateFileTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="validateFileTugas" target="saveFileTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="saveFileTugas" target="saveTugasDB"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e10" value="Tidak" edge="1" parent="1" source="uploadFileTugas" target="saveTugasDB">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="50" y="740" /><mxPoint x="50" y="1080" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="saveTugasDB" target="successCreateTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="successCreateTugas" target="loadTugas">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="190" y="1240" /><mxPoint x="30" y="1240" /><mxPoint x="30" y="180" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- View Detail Branch -->
+        <mxCell id="e13" value="Lihat Detail" edge="1" parent="1" source="showActions" target="loadDetailTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="loadDetailTugas" target="fetchSubmissions"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e15" edge="1" parent="1" source="fetchSubmissions" target="fetchCommentsTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e16" edge="1" parent="1" source="fetchCommentsTugas" target="showDetailTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e17" edge="1" parent="1" source="showDetailTugas" target="detailAction"><mxGeometry relative="1" as="geometry" /></mxCell>
+        
+        <mxCell id="e18" value="Komentar" edge="1" parent="1" source="detailAction" target="inputCommentTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e19" edge="1" parent="1" source="inputCommentTugas" target="validateCommentTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e20" value="Tidak" edge="1" parent="1" source="validateCommentTugas" target="errorCommentTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e21" edge="1" parent="1" source="errorCommentTugas" target="inputCommentTugas">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="620" y="960" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e22" value="Ya" edge="1" parent="1" source="validateCommentTugas" target="saveCommentTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e23" edge="1" parent="1" source="saveCommentTugas" target="reloadCommentsTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e24" edge="1" parent="1" source="reloadCommentsTugas" target="showDetailTugas">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="430" y="1360" /><mxPoint x="300" y="1360" /><mxPoint x="300" y="720" /></Array></mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e25" value="Reply" edge="1" parent="1" source="detailAction" target="inputReplyTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e26" edge="1" parent="1" source="inputReplyTugas" target="saveReplyTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e27" edge="1" parent="1" source="saveReplyTugas" target="reloadCommentsTugas">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="640" y="980" /><mxPoint x="640" y="1300" /><mxPoint x="430" y="1300" /></Array></mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e28" value="Hapus Komentar" edge="1" parent="1" source="detailAction" target="deleteCommentTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e29" edge="1" parent="1" source="deleteCommentTugas" target="reloadCommentsTugas">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="840" y="1300" /><mxPoint x="430" y="1300" /></Array></mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e30" value="Kembali" edge="1" parent="1" source="detailAction" target="loadTugas">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="300" y="840" /><mxPoint x="30" y="840" /><mxPoint x="30" y="180" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- Lihat Pengumpulan -->
+        <mxCell id="e31" value="Lihat Pengumpulan" edge="1" parent="1" source="showActions" target="selectTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e32" edge="1" parent="1" source="selectTugas" target="loadSubmissions"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e33" edge="1" parent="1" source="loadSubmissions" target="showSubmissions"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e34" edge="1" parent="1" source="showSubmissions" target="submissionAction"><mxGeometry relative="1" as="geometry" /></mxCell>
+        
+        <mxCell id="e35" value="Belum Mengumpulkan" edge="1" parent="1" source="submissionAction" target="showBelumMengumpulkan"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e36" edge="1" parent="1" source="showBelumMengumpulkan" target="checkDeadline"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e37" value="Ya" edge="1" parent="1" source="checkDeadline" target="markTerlambat"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e38" edge="1" parent="1" source="markTerlambat" target="showSubmissions">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1480" y="620" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e39" value="Tidak" edge="1" parent="1" source="checkDeadline" target="waitSubmission"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e40" edge="1" parent="1" source="waitSubmission" target="showSubmissions">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1290" y="920" /><mxPoint x="1160" y="920" /><mxPoint x="1160" y="620" /></Array></mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e41" value="Sudah Mengumpulkan" edge="1" parent="1" source="submissionAction" target="showSubmission"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e42" edge="1" parent="1" source="showSubmission" target="checkGraded"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e43" value="Ya" edge="1" parent="1" source="checkGraded" target="showGrade"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e44" edge="1" parent="1" source="showGrade" target="submissionAction">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1280" y="1020" /><mxPoint x="1280" y="740" /></Array></mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e45" value="Tidak" edge="1" parent="1" source="checkGraded" target="gradeAction"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e46" edge="1" parent="1" source="gradeAction" target="inputNilai"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e47" edge="1" parent="1" source="inputNilai" target="inputFeedback"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e48" edge="1" parent="1" source="inputFeedback" target="saveNilai"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e49" edge="1" parent="1" source="saveNilai" target="updateStatusDinilai"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e50" edge="1" parent="1" source="updateStatusDinilai" target="sendNotification"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e51" edge="1" parent="1" source="sendNotification" target="showSubmissions">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1060" y="1660" /><mxPoint x="930" y="1660" /><mxPoint x="930" y="620" /></Array></mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e52" value="Download Semua" edge="1" parent="1" source="submissionAction" target="bulkDownload"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e53" edge="1" parent="1" source="bulkDownload" target="createZip"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e54" edge="1" parent="1" source="createZip" target="downloadZip"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e55" edge="1" parent="1" source="downloadZip" target="showSubmissions">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1280" y="1460" /><mxPoint x="1160" y="1460" /><mxPoint x="1160" y="620" /></Array></mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e56" value="Export Nilai" edge="1" parent="1" source="submissionAction" target="exportGrades"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e57" edge="1" parent="1" source="exportGrades" target="downloadExcel"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e58" edge="1" parent="1" source="downloadExcel" target="showSubmissions">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1490" y="1360" /><mxPoint x="1480" y="620" /></Array></mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e59" edge="1" parent="1" source="showSubmissions" target="loadTugas">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1060" y="560" /><mxPoint x="1600" y="560" /><mxPoint x="1600" y="180" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- Edit Branch -->
+        <mxCell id="e60" value="Edit Tugas" edge="1" parent="1" source="showActions" target="loadEditTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e61" edge="1" parent="1" source="loadEditTugas" target="checkSubmitted"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e62" value="Ya" edge="1" parent="1" source="checkSubmitted" target="warningEditTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e63" edge="1" parent="1" source="warningEditTugas" target="confirmEditTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e64" value="Tidak" edge="1" parent="1" source="confirmEditTugas" target="loadTugas">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1190" y="2020" /><mxPoint x="1600" y="2020" /><mxPoint x="1600" y="180" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e65" value="Ya" edge="1" parent="1" source="confirmEditTugas" target="editDataTugas">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1060" y="2100" /><mxPoint x="830" y="2100" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e66" value="Tidak" edge="1" parent="1" source="checkSubmitted" target="editDataTugas">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="700" y="1900" /><mxPoint x="700" y="2150" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e67" edge="1" parent="1" source="editDataTugas" target="updateTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e68" edge="1" parent="1" source="updateTugas" target="successEditTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e69" edge="1" parent="1" source="successEditTugas" target="loadTugas">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="830" y="2410" /><mxPoint x="30" y="2410" /><mxPoint x="30" y="180" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- Delete Branch -->
+        <mxCell id="e70" value="Hapus Tugas" edge="1" parent="1" source="showActions" target="confirmDeleteTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e71" edge="1" parent="1" source="confirmDeleteTugas" target="deleteTaskSubmissions"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e72" edge="1" parent="1" source="deleteTaskSubmissions" target="deleteTaskComments"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e73" edge="1" parent="1" source="deleteTaskComments" target="deleteTaskFiles"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e74" edge="1" parent="1" source="deleteTaskFiles" target="deleteTaskDB"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e75" edge="1" parent="1" source="deleteTaskDB" target="successDeleteTugas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e76" edge="1" parent="1" source="successDeleteTugas" target="loadTugas">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="830" y="3040" /><mxPoint x="30" y="3040" /><mxPoint x="30" y="180" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- To End -->
+        <mxCell id="e77" edge="1" parent="1" source="loadTugas" target="end">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1640" y="180" /><mxPoint x="1640" y="2130" /></Array></mxGeometry>
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

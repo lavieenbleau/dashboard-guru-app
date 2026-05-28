@@ -1,0 +1,107 @@
+@startuml 11-admin-material-upload-activity
+title Activity Diagram: Admin Upload & Manage Material untuk AI Generator
+
+skinparam defaultFontSize 11
+skinparam activity {
+  BackgroundColor<<Process>> LightBlue
+  BackgroundColor<<Decision>> LightYellow
+  BackgroundColor<<Success>> LightGreen
+  BackgroundColor<<Error>> LightCoral
+  BackgroundColor<<Start>> #90EE90
+  BackgroundColor<<End>> #FFB6C1
+}
+
+start
+:Admin login sistem;
+
+:Akses menu\n"Manage Materi Kurikulum";
+
+:Pilih kategori:\n- Tema\n- Sub Tema\n- Pembelajaran;
+
+:Lihat daftar materi\nyang sudah ada;
+
+switch (Pilih aksi?)
+case (Upload Materi Baru)
+    :Input data materi:\n- Judul\n- Deskripsi\n- Mata Pelajaran;
+    
+    :Pilih format materi:\n- Text/Description\n- Upload file PDF\n- Link YouTube;
+    
+    if (Ada file upload?) then (YES)
+        :Upload file ke storage;
+        
+        if (File valid?\n(size < 50MB,\nformat .pdf/.docx)) then (NO)
+            :Show error:\n"File terlalu besar\natau format invalid";
+            :Kembali ke upload;
+            stop
+        else (YES)
+            :File tersimpan;
+        endif
+    else (NO)
+        :Gunakan text description;
+    endif
+    
+    :Save ke database\nLesson table\n(category = 'materi');
+    
+    :Generate token format:\nlesson:{id};
+    
+    :Index untuk search;\n
+    
+    :Show success:\n"Materi berhasil diupload";
+    
+case (Edit Materi)
+    :Pilih materi\nyang akan diedit;
+    
+    :Update data:\n- Judul\n- Deskripsi\n- File (optional);
+    
+    :Validasi data;
+    
+    if (Valid?) then (NO)
+        :Show error;
+        stop
+    else (YES)
+        :Update ke database;
+    endif
+    
+    :Show success:\n"Materi diperbarui";
+    
+case (Delete Materi)
+    if (Konfirmasi\nhapus?) then (YES)
+        :Check relasi ke\nExercise yang sudah\ngenerated;
+        
+        if (Ada exercise\nyang pakai materi ini?) then (YES)
+            :Show warning:\n"X exercise menggunakan\nmateri ini.\n\nMenghapus akan memutus\nrelasi.\n\nLanjutkan?";
+            
+            if (Admin confirm\ndelete?) then (NO)
+                :Batalkan delete;
+                stop
+            else (YES)
+                :Delete materi\nfrom lessons table;
+            endif
+        else (NO)
+            :Hapus materi\nfrom lessons table;
+        endif
+        
+        :Show success:\n"Materi dihapus";
+    else (NO)
+        :Batalkan operasi;
+        stop
+    endif
+
+case (Publish/Archive)
+    :Toggle status:\n- Published (visible)\n- Archived (hidden);
+    
+    :Update status\ndi database;
+    
+    :Show success;
+
+endswitch
+
+:Materi siap digunakan\noleh Guru untuk AI Generator|
+
+:Guru bisa pilih materi\nini dengan token:\nlesson:ID;
+
+:AI Generator\nmembaca content\nfrom Lesson table;
+
+stop
+
+@enduml

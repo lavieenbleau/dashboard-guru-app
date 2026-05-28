@@ -18,13 +18,13 @@ class OnlineMeetingController extends Controller
         // Get all meetings for this serial
         $meetings = OnlineMeeting::where('serial_id', $serial->id)
             ->where('user_id', auth()->id())
-            ->with(['classroom', 'mapel'])
+            ->with(['classroom'])
             ->orderBy('start_time', 'desc')
             ->get();
         
         // Separate by status
-        $upcomingMeetings = $meetings->where('status', 'scheduled')->sortBy('start_time');
-        $ongoingMeetings = $meetings->where('status', 'ongoing');
+        $upcomingMeetings = $meetings->where('status', 'upcoming')->sortBy('start_time');
+        $ongoingMeetings = $meetings->where('status', 'live');
         $endedMeetings = $meetings->whereIn('status', ['ended', 'cancelled']);
         
         // Get classrooms and mapels for quick create
@@ -37,6 +37,16 @@ class OnlineMeetingController extends Controller
     public function quickStart(Request $request, $serial)
     {
         $serial = Serial::findOrFail($serial);
+        
+        // Get first classroom from serial if not provided
+        $classroomId = $request->classroom_id;
+        if (!$classroomId) {
+            $firstClassroom = Classroom::where('serial_id', $serial->id)->first();
+            if (!$firstClassroom) {
+                return back()->with('error', 'Belum ada kelas untuk membuat meeting!');
+            }
+            $classroomId = $firstClassroom->id;
+        }
         
         $request->validate([
             'title' => 'required|max:255',
@@ -58,7 +68,7 @@ class OnlineMeetingController extends Controller
         $meeting = OnlineMeeting::create([
             'serial_id' => $serial->id,
             'user_id' => auth()->id(),
-            'classroom_id' => $request->classroom_id,
+            'classroom_id' => $classroomId,
             'mapel_id' => $request->mapel_id,
             'title' => $request->title,
             'description' => 'Instant meeting - ' . $now->format('d M Y H:i'),
@@ -67,7 +77,7 @@ class OnlineMeetingController extends Controller
             'platform' => 'jitsi',
             'start_time' => $now,
             'end_time' => $now->copy()->addMinutes($duration),
-            'status' => 'ongoing', // Langsung ongoing
+            'status' => 'live', // Langsung live
             'room_id' => $meetingCode,
             'is_internal' => true,
         ]);
@@ -120,7 +130,7 @@ class OnlineMeetingController extends Controller
             'platform' => $request->platform,
             'start_time' => $request->start_time,
             'end_time' => $request->end_time,
-            'status' => 'scheduled',
+            'status' => 'upcoming',
             'room_id' => $roomId,
             'is_internal' => $request->platform === 'jitsi',
         ]);
@@ -132,7 +142,7 @@ class OnlineMeetingController extends Controller
     public function show($serial, $id)
     {
         $serial = Serial::findOrFail($serial);
-        $meeting = OnlineMeeting::with(['classroom', 'mapel', 'user'])->findOrFail($id);
+        $meeting = OnlineMeeting::with(['classroom', 'user'])->findOrFail($id);
         
         // Check authorization
         if ($meeting->user_id !== auth()->id()) {
@@ -153,9 +163,9 @@ class OnlineMeetingController extends Controller
                 ->with('error', 'Meeting belum dimulai atau sudah berakhir!');
         }
         
-        // Update status to ongoing if scheduled
-        if ($meeting->status === 'scheduled') {
-            $meeting->update(['status' => 'ongoing']);
+        // Update status to live if upcoming
+        if ($meeting->status === 'upcoming') {
+            $meeting->update(['status' => 'live']);
         }
         
         // Get user name for Jitsi

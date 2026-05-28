@@ -164,13 +164,6 @@
                 <div class="card-body">
                     <h6 class="mb-3">Informasi Meeting</h6>
                     
-                    @if($meeting->mapel)
-                    <div class="mb-3">
-                        <small class="text-muted">Mata Pelajaran</small>
-                        <div><i class='bx bx-book me-2'></i>{{ $meeting->mapel->name }}</div>
-                    </div>
-                    @endif
-
                     @if($meeting->classroom)
                     <div class="mb-3">
                         <small class="text-muted">Kelas</small>

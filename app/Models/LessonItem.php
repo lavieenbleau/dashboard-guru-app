@@ -11,19 +11,13 @@ class LessonItem extends Model
         'lesson_id',
         'theme_id',
         'subtheme_id',
+        'admin_id',
         'number',
         'title',
-        'description',
-        'link',
         'embed',
-        'attachment',
-        'is_admin',
-        'shared_to_classes'
     ];
 
     protected $casts = [
-        'shared_to_classes' => 'array',
-        'is_admin' => 'boolean'
     ];
 
     public function lesson()
@@ -39,5 +33,10 @@ class LessonItem extends Model
     public function subtheme()
     {
         return $this->belongsTo(Subtheme::class, 'subtheme_id');
+    }
+
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class, 'admin_id');
     }
 }

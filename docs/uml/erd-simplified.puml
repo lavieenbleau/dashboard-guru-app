@@ -1,0 +1,158 @@
+@startuml SimpleERD_DashboardGuru
+!define TABLE_COLOR #FFE4E1
+
+skinparam classBackgroundColor TABLE_COLOR
+skinparam classBorderColor #8B4789
+
+' Core Entities
+
+class Users {
+    id (PK)
+    --
+    name
+    username (UK)
+    password
+    role
+    email
+    phone
+}
+
+class Serials {
+    id (PK)
+    --
+    user_id (FK)
+    product_id (FK)
+    serial (UK)
+    active
+    expired_at
+}
+
+class Classrooms {
+    id (PK)
+    --
+    serial_id (FK)
+    name
+    grade
+    code (UK)
+}
+
+class Students {
+    id (PK)
+    --
+    serial_id (FK)
+    user_id (FK)
+    classroom_id (FK)
+    name
+    username (UK)
+    password
+}
+
+class Lessons {
+    id (PK)
+    --
+    mapel_id (FK)
+    name
+    grade
+    semester
+}
+
+class Exercises {
+    id (PK)
+    --
+    lesson_id (FK)
+    serial_id (FK)
+    exercise_type_id (FK)
+    title
+}
+
+class ExerciseItems {
+    id (PK)
+    --
+    exercise_id (FK)
+    exercise_type_id (FK)
+    question
+    answer
+}
+
+class ExercisePoints {
+    id (PK)
+    --
+    serial_id (FK)
+    exercise_id (FK)
+    student_id (FK)
+    answer
+    exercise_point
+}
+
+class Posts {
+    id (PK)
+    --
+    serial_id (FK)
+    user_id (FK)
+    mapel_id (FK)
+    title
+    due_date
+    is_task
+}
+
+class Tasks {
+    id (PK)
+    --
+    serial_id (FK)
+    post_id (FK)
+    student_id (FK)
+    description
+    attachment
+    point
+}
+
+class OnlineMeetings {
+    id (PK)
+    --
+    serial_id (FK)
+    classroom_id (FK)
+    user_id (FK)
+    title
+    start_time
+    meeting_code (UK)
+}
+
+class Reports {
+    id (PK)
+    --
+    serial_id (FK)
+    student_id (FK)
+    report
+}
+
+' Relationships
+Users "1" -- "M" Serials : owns
+Users "1" -- "M" Students : creates
+Users "1" -- "M" Posts : creates
+Users "1" -- "M" OnlineMeetings : schedules
+
+Serials "1" -- "M" Classrooms : activates
+Serials "1" -- "M" Students : licenses
+Serials "1" -- "M" Exercises : tracks
+Serials "1" -- "M" Posts : contains
+Serials "1" -- "M" OnlineMeetings : hosts
+
+Classrooms "1" -- "M" Students : groups
+Classrooms "1" -- "M" OnlineMeetings : hosts
+
+Lessons "1" -- "M" Exercises : contains
+
+ExerciseItems "M" -- "1" Exercises : belongs_to
+
+ExercisePoints "M" -- "1" Exercises : scores
+ExercisePoints "M" -- "1" Students : answers
+
+Students "1" -- "M" ExercisePoints : submits
+Students "1" -- "M" Tasks : completes
+Students "1" -- "M" Reports : creates
+
+Posts "1" -- "M" Tasks : assigns
+
+OnlineMeetings "1" -- "M" Students : hosted_for
+
+@enduml

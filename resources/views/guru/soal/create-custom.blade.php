@@ -55,20 +55,41 @@
 
                                 <!-- Form Inputs (muncul setelah pilih tipe soal) -->
                                 <div id="mainFormSection" style="display: none;">
-                                    <!-- Pilih Mapel -->
-                                    <div class="mb-3">
-                                        <label for="mapel_id" class="form-label">Pilih Mapel <span class="text-danger">*</span></label>
-                                        <select class="form-select @error('mapel_id') is-invalid @enderror" id="mapel_id" name="mapel_id" required>
-                                            <option value="">-- Pilih Mapel --</option>
-                                            @foreach($mapels as $mapel)
-                                                <option value="{{ $mapel->id }}" {{ old('mapel_id') == $mapel->id ? 'selected' : '' }}>
-                                                    {{ $mapel->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        @error('mapel_id')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
+                                    <div class="row">
+                                        <!-- Pilih Mapel -->
+                                        <div class="col-md-6 mb-3">
+                                            <label for="mapel_id" class="form-label">Pilih Mapel <span class="text-danger">*</span></label>
+                                            <select class="form-select @error('mapel_id') is-invalid @enderror" id="mapel_id" name="mapel_id" required>
+                                                <option value="">-- Pilih Mapel --</option>
+                                                @foreach($mapels as $mapel)
+                                                    <option value="{{ $mapel->id }}" {{ old('mapel_id') == $mapel->id ? 'selected' : '' }}>
+                                                        {{ $mapel->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @error('mapel_id')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        <!-- Waktu Pengerjaan -->
+                                        <div class="col-md-6 mb-3">
+                                            <label for="time_limit" class="form-label">Waktu Pengerjaan (Menit) <span class="text-danger">*</span></label>
+                                            <input 
+                                                type="number" 
+                                                class="form-control @error('time_limit') is-invalid @enderror" 
+                                                id="time_limit" 
+                                                name="time_limit" 
+                                                min="1" 
+                                                max="480" 
+                                                value="{{ old('time_limit') }}" 
+                                                placeholder="Contoh: 45"
+                                                required>
+                                            @error('time_limit')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                            <small class="text-muted d-block mt-1">Masukkan durasi pengerjaan soal dalam menit (1-480 menit / 1 menit hingga 8 jam)</small>
+                                        </div>
                                     </div>
 
                                     <!-- Container untuk multiple soal -->

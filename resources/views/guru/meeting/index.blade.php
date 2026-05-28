@@ -77,12 +77,6 @@
                             @endif
 
                             <div class="mb-3">
-                                @if($meeting->mapel)
-                                <span class="badge bg-label-primary me-1">
-                                    <i class='bx bx-book'></i> {{ $meeting->mapel->name }}
-                                </span>
-                                @endif
-                                
                                 @if($meeting->classroom)
                                 <span class="badge bg-label-info">
                                     <i class='bx bx-group'></i> {{ $meeting->classroom->name }}
@@ -137,12 +131,6 @@
                             @endif
 
                             <div class="mb-3">
-                                @if($meeting->mapel)
-                                <span class="badge bg-label-primary me-1">
-                                    <i class='bx bx-book'></i> {{ $meeting->mapel->name }}
-                                </span>
-                                @endif
-                                
                                 @if($meeting->classroom)
                                 <span class="badge bg-label-info">
                                     <i class='bx bx-group'></i> {{ $meeting->classroom->name }}
@@ -207,12 +195,7 @@
                             </div>
 
                             <div class="mb-3">
-                                @if($meeting->mapel)
-                                <span class="badge bg-label-primary me-1">
-                                    <i class='bx bx-book'></i> {{ $meeting->mapel->name }}
-                                </span>
-                                @endif
-                                
+
                                 @if($meeting->classroom)
                                 <span class="badge bg-label-info">
                                     <i class='bx bx-group'></i> {{ $meeting->classroom->name }}

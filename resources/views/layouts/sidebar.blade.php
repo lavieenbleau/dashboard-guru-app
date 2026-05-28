@@ -47,7 +47,8 @@
 
         @if(!$isPilihAplikasi)
         <!-- Dashboard -->
-        <li class="menu-item {{ (request()->is('aplikasi/'.$serialId) && request()->path() == 'aplikasi/'.$serialId) || request()->routeIs('guru.dashboard') ? 'active' : '' }}">
+        <li
+            class="menu-item {{ (request()->is('aplikasi/'.$serialId) && request()->path() == 'aplikasi/'.$serialId) || request()->routeIs('guru.dashboard') ? 'active' : '' }}">
             <a href="{{ $dashboardUrl }}" class="menu-link">
                 <span class="menu-icon"><i class='bx bx-home'></i></span>
                 <div>Dashboard</div>
@@ -79,7 +80,8 @@
         </li>
 
         <!-- Laporan Harian -->
-        <li class="menu-item {{ request()->routeIs('guru.laporanharian*') || request()->routeIs('guru.laporan*') ? 'active' : '' }}">
+        <li
+            class="menu-item {{ request()->routeIs('guru.laporanharian*') || request()->routeIs('guru.laporan*') ? 'active' : '' }}">
             <a href="{{ $serialId ? route('guru.laporanharian', $serialId) : route('pilih.aplikasi') }}"
                 class="menu-link">
                 <span class="menu-icon"><i class='bx bx-file'></i></span>
@@ -222,7 +224,3 @@
     background-color: rgba(0, 0, 0, 0.03);
 }
 </style>
-
-
-<!-- Remove collapse script since button is removed -->});
-</script>

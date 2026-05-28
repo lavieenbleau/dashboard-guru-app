@@ -114,6 +114,10 @@ Route::middleware(['auth'])->group(function () {
         // Student management
         Route::post('/{classroom}/siswa', [KelasController::class, 'storeStudent'])
             ->name('guru.kelas.siswa.store');
+        Route::put('/{classroom}/siswa/{student}', [KelasController::class, 'updateStudent'])
+            ->name('guru.kelas.siswa.update');
+        Route::put('/{classroom}/siswa/{student}/password', [KelasController::class, 'updateStudentPassword'])
+            ->name('guru.kelas.siswa.update-password');
         Route::delete('/{classroom}/siswa/{student}', [KelasController::class, 'destroyStudent'])
             ->name('guru.kelas.siswa.destroy');
         
@@ -206,6 +210,16 @@ Route::prefix('aplikasi/{serial}/soal')->group(function() {
     Route::get('/tambahan/{id}/edit', [SoalController::class, 'editCustom'])->name('guru.soal.edit-custom');
     Route::put('/tambahan/{id}', [SoalController::class, 'updateCustom'])->name('guru.soal.update-custom');
     Route::delete('/tambahan/{id}', [SoalController::class, 'destroyCustom'])->name('guru.soal.destroy-custom');
+    
+    // AI Question Generator Routes
+    Route::get('/ai-generator', [SoalController::class, 'aiGenerator'])->name('guru.soal.ai-generator');
+    Route::get('/ai-material/{materialId}/read', [SoalController::class, 'readUploadedMaterial'])->name('guru.soal.ai-material.read');
+    Route::post('/ai-generate', [SoalController::class, 'generateWithAI'])->name('guru.soal.ai-generate');
+    Route::get('/ai-preview', [SoalController::class, 'aiPreview'])->name('guru.soal.ai-preview');
+    Route::post('/ai-save', [SoalController::class, 'saveAIQuestions'])->name('guru.soal.ai-save');
+    
+    // View exercise (read-only)
+    Route::get('/view/{exerciseId}', [SoalController::class, 'viewExercise'])->name('guru.soal.view-exercise');
     
     // CRUD Operations (more specific routes first)
     Route::get('/{category}/{tema}/create', [SoalController::class, 'create'])->name('guru.soal.create');

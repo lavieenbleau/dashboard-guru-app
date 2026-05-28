@@ -19,8 +19,11 @@
             <div class="d-flex gap-2">
                 @if($category === 'tambahan')
                     <!-- Tombol Tambah Soal untuk Soal Tambahan -->
+                    <a href="{{ route('guru.soal.ai-generator', [$serial->id]) }}" class="btn btn-success">
+                        <i class='bx bx-brain me-1'></i>Generate Soal dengan AI
+                    </a>
                     <a href="{{ route('guru.soal.create-custom', [$serial->id]) }}" class="btn btn-primary">
-                        <i class='bx bx-plus me-1'></i>Tambah Soal
+                        <i class='bx bx-plus me-1'></i>Tambah Soal Manual
                     </a>
                 @else
                     <!-- Tombol Bulk Share untuk soal admin -->
@@ -101,6 +104,11 @@
                                 </button>
                                 <ul class="dropdown-menu">
                                     <li>
+                                        <a class="dropdown-item" href="{{ route('guru.soal.view-exercise', ['serial' => $serial->id, 'exerciseId' => $exercise->id]) }}">
+                                            <i class='bx bx-eye me-2'></i>Lihat Soal
+                                        </a>
+                                    </li>
+                                    <li>
                                         <a class="dropdown-item" href="{{ route('guru.soal.edit-custom', [$serial->id, $exercise->id]) }}">
                                             <i class='bx bx-edit me-2'></i>Edit
                                         </a>
@@ -158,7 +166,10 @@
                     
                     @php
                         $classrooms = \App\Models\Classroom::where('serial_id', $serial->id)->get();
-                        $sharedClassroomIds = $exercise->classrooms->pluck('id')->toArray();
+                        $isSharedToCurrentSerial = $exercise->sharedSerials
+                            ? $exercise->sharedSerials->pluck('id')->contains($serial->id)
+                            : false;
+                        $sharedClassroomIds = $isSharedToCurrentSerial ? $classrooms->pluck('id')->toArray() : [];
                     @endphp
                     
                     @forelse($classrooms as $classroom)

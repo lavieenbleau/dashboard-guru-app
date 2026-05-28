@@ -60,9 +60,7 @@ class MateriController extends Controller
         $serial = Serial::findOrFail($serial);
         $lesson = Lesson::findOrFail($lessonId);
         
-        // Sync classrooms (remove old, add new)
         $classrooms = $request->classrooms ?? [];
-        $lesson->classrooms()->sync($classrooms);
         
         // If share as task is enabled, create posts for each classroom
         if ($request->has('as_task') && $request->as_task == 1 && count($classrooms) > 0) {
@@ -73,7 +71,6 @@ class MateriController extends Controller
                 $existingPost = Post::where('serial_id', $serial->id)
                     ->where('mapel_id', $lesson->mapel_id)
                     ->where('title', $lesson->name)
-                    ->whereJsonContains('shared_to_classes', (string)$classroomId)
                     ->first();
                 
                 if (!$existingPost) {
@@ -83,15 +80,11 @@ class MateriController extends Controller
                         'user_id' => auth()->id(),
                         'mapel_id' => $lesson->mapel_id,
                         'title' => $lesson->name,
-                        'description' => $lesson->description ?? 'Tugas dari materi: ' . $lesson->name,
+                        'description' => 'Tugas dari materi: ' . $lesson->name,
                         'slug' => \Str::slug($lesson->name) . '-' . time(),
                         'category' => json_encode(['lesson_id' => $lesson->id]),
-                        'shared_to_classes' => json_encode([$classroomId]),
-                        'deadline' => $deadline,
+                        'due_date' => $deadline,
                         'is_task' => 1,
-                        'file' => $lesson->file,
-                        'created_at' => now(),
-                        'updated_at' => now(),
                     ]);
                 }
             }
@@ -108,19 +101,15 @@ class MateriController extends Controller
         $serial = Serial::findOrFail($serial);
         $post = Post::findOrFail($postId);
         
-        // Update shared classrooms
-        $classrooms = $request->classrooms ?? [];
-        $post->shared_to_classes = json_encode($classrooms);
-        
         // Update task settings
         $post->is_task = $request->has('as_task') && $request->as_task == 1 ? 1 : 0;
-        $post->deadline = $request->deadline ? \Carbon\Carbon::parse($request->deadline) : null;
+        $post->due_date = $request->deadline ? \Carbon\Carbon::parse($request->deadline) : null;
         
         $post->save();
         
         $message = $post->is_task 
-            ? 'Materi berhasil dibagikan sebagai tugas ke ' . count($classrooms) . ' kelas!' 
-            : 'Materi berhasil dibagikan ke ' . count($classrooms) . ' kelas!';
+            ? 'Materi berhasil dibagikan sebagai tugas!' 
+            : 'Materi berhasil dibagikan!';
             
         return back()->with('success', $message);
     }
@@ -247,17 +236,7 @@ class MateriController extends Controller
         $mapel = Mapel::findOrFail($mapel);
         $materi = Post::with(['comments.user', 'comments.student', 'comments.replies.user', 'comments.replies.student'])->findOrFail($id);
         
-        // Get classrooms info if shared
-        $sharedClassrooms = [];
-        if ($materi->shared_to_classes) {
-            $sharedClassroomIds = is_array($materi->shared_to_classes) 
-                ? $materi->shared_to_classes 
-                : json_decode($materi->shared_to_classes, true) ?? [];
-            
-            if (!empty($sharedClassroomIds)) {
-                $sharedClassrooms = Classroom::whereIn('id', $sharedClassroomIds)->get();
-            }
-        }
+        $sharedClassrooms = Classroom::where('serial_id', $serial->id)->get();
         
         return view('guru.materi.detail', compact('serial', 'mapel', 'materi', 'sharedClassrooms'));
     }
@@ -516,7 +495,6 @@ class MateriController extends Controller
             'embed' => $request->embed,
             'attachment' => $attachmentPath,
             'is_admin' => false, // Custom from guru
-            'shared_to_classes' => null,
         ]);
 
         return redirect()->route('guru.materi.list', [$serial->id, $tema, $subtema, 'custom'])
@@ -642,10 +620,6 @@ class MateriController extends Controller
             }
         }
 
-        // Update shared_to_classes field
-        $post->shared_to_classes = json_encode($classroomIds);
-        $post->save();
-
         $message = empty($classroomIds) 
             ? 'Materi dibatalkan dari semua kelas' 
             : 'Materi berhasil di-share ke ' . count($classroomIds) . ' kelas!';
@@ -665,24 +639,13 @@ class MateriController extends Controller
             }
 
             // Toggle share status
-            if ($lessonItem->shared_to_classes) {
-                // Unshare
-                $lessonItem->shared_to_classes = null;
-                $lessonItem->save();
-                return back()->with('success', 'Materi dibatalkan dari semua kelas!');
-            } else {
-                // Share to all classrooms
-                $classrooms = Classroom::where('serial_id', $serial)->pluck('id')->toArray();
-                
-                if (empty($classrooms)) {
-                    return back()->with('error', 'Belum ada kelas yang dibuat!');
-                }
+            $classrooms = Classroom::where('serial_id', $serial)->pluck('id')->toArray();
 
-                $lessonItem->shared_to_classes = json_encode($classrooms);
-                $lessonItem->save();
-                
-                return back()->with('success', 'Materi berhasil di-share ke semua kelas (' . count($classrooms) . ' kelas)!');
+            if (empty($classrooms)) {
+                return back()->with('error', 'Belum ada kelas yang dibuat!');
             }
+
+            return back()->with('success', 'Materi berhasil diproses untuk serial ini!');
         } else {
             // Old structure - posts
             $post = Post::findOrFail($id);
@@ -693,23 +656,13 @@ class MateriController extends Controller
                 return back()->with('error', 'Hanya materi admin yang bisa di-share!');
             }
 
-            // Toggle share status
-            if ($post->shared_to_classes) {
-                $post->shared_to_classes = null;
-                $post->save();
-                return back()->with('success', 'Materi dibatalkan dari semua kelas!');
-            } else {
-                $classrooms = Classroom::where('serial_id', $serial)->pluck('id')->toArray();
-                
-                if (empty($classrooms)) {
-                    return back()->with('error', 'Belum ada kelas yang dibuat!');
-                }
+            $classrooms = Classroom::where('serial_id', $serial)->pluck('id')->toArray();
 
-                $post->shared_to_classes = json_encode($classrooms);
-                $post->save();
-                
-                return back()->with('success', 'Materi berhasil di-share ke semua kelas (' . count($classrooms) . ' kelas)!');
+            if (empty($classrooms)) {
+                return back()->with('error', 'Belum ada kelas yang dibuat!');
             }
+
+            return back()->with('success', 'Materi berhasil diproses untuk serial ini!');
         }
     }
 
@@ -735,8 +688,6 @@ class MateriController extends Controller
             $lessonItem = LessonItem::find($postId);
             
             if ($lessonItem && $lessonItem->is_admin) {
-                $lessonItem->shared_to_classes = json_encode($classrooms);
-                $lessonItem->save();
                 $updated++;
             } else {
                 // Try post
@@ -745,8 +696,6 @@ class MateriController extends Controller
                 if ($post) {
                     $category = json_decode($post->category, true);
                     if (isset($category['is_admin']) && $category['is_admin'] === true) {
-                        $post->shared_to_classes = json_encode($classrooms);
-                        $post->save();
                         $updated++;
                     }
                 }

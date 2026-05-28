@@ -1,0 +1,361 @@
+<mxfile host="app.diagrams.net" modified="2026-01-27T00:00:00.000Z" agent="5.0" version="22.1.16" etag="drawio-version" type="device">
+  <diagram name="Manajemen Soal" id="manajemen-soal">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="2600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Start -->
+        <mxCell id="start" value="Guru Akses Menu Soal" style="ellipse;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeColor=#000000;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="840" y="40" width="140" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- Load Soal -->
+        <mxCell id="loadSoal" value="Load Halaman Soal" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="820" y="150" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Show Options -->
+        <mxCell id="showOptions" value="Pilih Aksi" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="840" y="250" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- CREATE SOAL -->
+        <mxCell id="selectType" value="Pilih Tipe Soal" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="390" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="typeChosen" value="Tipe Soal" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="70" y="490" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Multiple Choice -->
+        <mxCell id="formMC" value="Form Multiple Choice" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="640" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="inputQuestionMC" value="Input Pertanyaan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="740" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="inputOptions" value="Input 4-5 Pilihan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="840" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="markCorrect" value="Tandai Jawaban Benar" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="940" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="setPoint" value="Set Poin Soal" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1040" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="saveMC" value="Simpan Soal MC" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1140" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Essay -->
+        <mxCell id="formEssay" value="Form Essay" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="260" y="640" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="inputQuestionEssay" value="Input Pertanyaan Essay" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="260" y="740" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="setPointEssay" value="Set Poin Soal" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="260" y="840" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="saveEssay" value="Simpan Soal Essay" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="260" y="940" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- True/False -->
+        <mxCell id="formTF" value="Form True/False" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="460" y="640" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="inputQuestionTF" value="Input Pertanyaan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="460" y="740" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="markTrueFalse" value="Tandai Jawaban Benar" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="460" y="840" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="setPointTF" value="Set Poin Soal" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="460" y="940" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="saveTF" value="Simpan Soal T/F" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="460" y="1040" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="successSave" value="Success: Soal Disimpan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="260" y="1240" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- SHARE KE KELAS -->
+        <mxCell id="selectSoal" value="Pilih Soal" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="680" y="390" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="selectClass" value="Pilih Kelas Tujuan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="680" y="490" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="validateClass" value="Kelas Valid?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="690" y="590" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="errorClass" value="Error: Kelas Invalid" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="880" y="610" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="assignToClass" value="Assign Soal ke Kelas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="680" y="730" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="setDeadline" value="Set Deadline Opsional" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="680" y="830" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="activateSoal" value="Aktifkan Soal untuk Kelas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="680" y="930" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="notifySiswa" value="Notifikasi ke Siswa" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="680" y="1030" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="successShare" value="Success: Soal Dibagikan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="680" y="1130" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- VIEW HASIL -->
+        <mxCell id="selectExercise" value="Pilih Soal" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="900" y="390" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="fetchResults" value="Ambil Data Hasil Siswa" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="900" y="490" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="showResults" value="Tampilkan Hasil per Siswa" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="900" y="590" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="resultAction" value="Aksi" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="910" y="690" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="autoGrade" value="Sistem Hitung Otomatis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="900" y="830" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="showScore" value="Tampilkan Skor" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="900" y="930" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="manualGrade" value="Guru Input Nilai Manual" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="830" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="saveGrade" value="Simpan Nilai" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="930" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="updateStatus" value="Update Status: Dinilai" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="1030" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="exportData" value="Export ke Excel/PDF" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1340" y="830" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="downloadExport" value="Download File" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1340" y="930" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- EDIT SOAL -->
+        <mxCell id="loadEditSoal" value="Load Form Edit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="820" y="1350" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="checkUsage" value="Soal Sudah Dikerjakan?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="830" y="1450" width="160" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="warningEdit" value="Warning: Data Hasil Terpengaruh" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E6;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="1470" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="confirmEdit" value="Lanjut Edit?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="1570" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="editSoalData" value="Edit Data Soal" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="820" y="1720" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="updateSoal" value="Update Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="820" y="1820" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="successEdit" value="Success: Soal Diupdate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="820" y="1920" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- DELETE SOAL -->
+        <mxCell id="confirmDeleteSoal" value="Konfirmasi Hapus" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="820" y="2060" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="deleteResults" value="Hapus Hasil Pengerjaan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="820" y="2160" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="deleteAssignment" value="Hapus Assignment ke Kelas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="820" y="2260" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="deleteSoalDB" value="Hapus Soal dari DB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="820" y="2360" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="successDeleteSoal" value="Success: Soal Dihapus" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="820" y="2460" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- End -->
+        <mxCell id="end" value="End" style="ellipse;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeColor=#000000;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="850" y="2560" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Edges -->
+        <mxCell id="e1" edge="1" parent="1" source="start" target="loadSoal"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="loadSoal" target="showOptions"><mxGeometry relative="1" as="geometry" /></mxCell>
+        
+        <!-- Create Branch -->
+        <mxCell id="e3" value="Buat Soal Baru" edge="1" parent="1" source="showOptions" target="selectType"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="selectType" target="typeChosen"><mxGeometry relative="1" as="geometry" /></mxCell>
+        
+        <!-- MC -->
+        <mxCell id="e5" value="Multiple Choice" edge="1" parent="1" source="typeChosen" target="formMC"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="formMC" target="inputQuestionMC"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="inputQuestionMC" target="inputOptions"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="inputOptions" target="markCorrect"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="markCorrect" target="setPoint"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="setPoint" target="saveMC"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="saveMC" target="successSave">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="140" y="1270" /><mxPoint x="340" y="1270" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- Essay -->
+        <mxCell id="e12" value="Essay" edge="1" parent="1" source="typeChosen" target="formEssay"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="formEssay" target="inputQuestionEssay"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="inputQuestionEssay" target="setPointEssay"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e15" edge="1" parent="1" source="setPointEssay" target="saveEssay"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e16" edge="1" parent="1" source="saveEssay" target="successSave">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="340" y="1000" /><mxPoint x="340" y="1240" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- TF -->
+        <mxCell id="e17" value="True/False" edge="1" parent="1" source="typeChosen" target="formTF"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e18" edge="1" parent="1" source="formTF" target="inputQuestionTF"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e19" edge="1" parent="1" source="inputQuestionTF" target="markTrueFalse"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e20" edge="1" parent="1" source="markTrueFalse" target="setPointTF"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e21" edge="1" parent="1" source="setPointTF" target="saveTF"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e22" edge="1" parent="1" source="saveTF" target="successSave">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="540" y="1270" /><mxPoint x="340" y="1270" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e23" edge="1" parent="1" source="successSave" target="loadSoal">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="340" y="1320" /><mxPoint x="40" y="1320" /><mxPoint x="40" y="180" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- Share -->
+        <mxCell id="e24" value="Share ke Kelas" edge="1" parent="1" source="showOptions" target="selectSoal"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e25" edge="1" parent="1" source="selectSoal" target="selectClass"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e26" edge="1" parent="1" source="selectClass" target="validateClass"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e27" value="Tidak" edge="1" parent="1" source="validateClass" target="errorClass"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e28" edge="1" parent="1" source="errorClass" target="selectClass">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="950" y="520" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e29" value="Ya" edge="1" parent="1" source="validateClass" target="assignToClass"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e30" edge="1" parent="1" source="assignToClass" target="setDeadline"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e31" edge="1" parent="1" source="setDeadline" target="activateSoal"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e32" edge="1" parent="1" source="activateSoal" target="notifySiswa"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e33" edge="1" parent="1" source="notifySiswa" target="successShare"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e34" edge="1" parent="1" source="successShare" target="loadSoal">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="760" y="1220" /><mxPoint x="40" y="1220" /><mxPoint x="40" y="180" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- View Results -->
+        <mxCell id="e35" value="Lihat Hasil" edge="1" parent="1" source="showOptions" target="selectExercise"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e36" edge="1" parent="1" source="selectExercise" target="fetchResults"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e37" edge="1" parent="1" source="fetchResults" target="showResults"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e38" edge="1" parent="1" source="showResults" target="resultAction"><mxGeometry relative="1" as="geometry" /></mxCell>
+        
+        <mxCell id="e39" value="Auto-Grade MC" edge="1" parent="1" source="resultAction" target="autoGrade"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e40" edge="1" parent="1" source="autoGrade" target="showScore"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e41" edge="1" parent="1" source="showScore" target="showResults">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="860" y="960" /><mxPoint x="860" y="620" /></Array></mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e42" value="Grade Essay" edge="1" parent="1" source="resultAction" target="manualGrade"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e43" edge="1" parent="1" source="manualGrade" target="saveGrade"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e44" edge="1" parent="1" source="saveGrade" target="updateStatus"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e45" edge="1" parent="1" source="updateStatus" target="showResults">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1200" y="1100" /><mxPoint x="1080" y="1100" /><mxPoint x="1080" y="620" /></Array></mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e46" value="Export" edge="1" parent="1" source="resultAction" target="exportData"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e47" edge="1" parent="1" source="exportData" target="downloadExport"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e48" edge="1" parent="1" source="downloadExport" target="showResults">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1420" y="1000" /><mxPoint x="1420" y="620" /></Array></mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e49" value="Kembali" edge="1" parent="1" source="resultAction" target="loadSoal">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1100" y="740" /><mxPoint x="1600" y="740" /><mxPoint x="1600" y="180" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- Edit -->
+        <mxCell id="e50" value="Edit Soal" edge="1" parent="1" source="showOptions" target="loadEditSoal"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e51" edge="1" parent="1" source="loadEditSoal" target="checkUsage"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e52" value="Ya" edge="1" parent="1" source="checkUsage" target="warningEdit"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e53" edge="1" parent="1" source="warningEdit" target="confirmEdit"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e54" value="Tidak" edge="1" parent="1" source="confirmEdit" target="loadSoal">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1250" y="1620" /><mxPoint x="1600" y="1620" /><mxPoint x="1600" y="180" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e55" value="Ya" edge="1" parent="1" source="confirmEdit" target="editSoalData">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1120" y="1710" /><mxPoint x="910" y="1710" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e56" value="Tidak" edge="1" parent="1" source="checkUsage" target="editSoalData">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="800" y="1500" /><mxPoint x="800" y="1750" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e57" edge="1" parent="1" source="editSoalData" target="updateSoal"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e58" edge="1" parent="1" source="updateSoal" target="successEdit"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e59" edge="1" parent="1" source="successEdit" target="loadSoal">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="910" y="2000" /><mxPoint x="40" y="2000" /><mxPoint x="40" y="180" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- Delete -->
+        <mxCell id="e60" value="Hapus Soal" edge="1" parent="1" source="showOptions" target="confirmDeleteSoal"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e61" edge="1" parent="1" source="confirmDeleteSoal" target="deleteResults"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e62" edge="1" parent="1" source="deleteResults" target="deleteAssignment"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e63" edge="1" parent="1" source="deleteAssignment" target="deleteSoalDB"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e64" edge="1" parent="1" source="deleteSoalDB" target="successDeleteSoal"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e65" edge="1" parent="1" source="successDeleteSoal" target="loadSoal">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="910" y="2540" /><mxPoint x="40" y="2540" /><mxPoint x="40" y="180" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- To End -->
+        <mxCell id="e66" edge="1" parent="1" source="loadSoal" target="end">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1650" y="180" /><mxPoint x="1650" y="2590" /></Array></mxGeometry>
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

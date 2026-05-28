@@ -203,6 +203,14 @@ Dokumen ini menjelaskan alur business process dari sistem DashboardGuru untuk be
 - In-app notification
 - Real-time alerts
 
+### AI Question Generator
+
+- OpenAI GPT-4o-mini integration
+- Auto-generate pilihan ganda & essay
+- Adjustable difficulty levels
+- Preview & edit before save
+- Direct integration dengan bank soal
+
 ### Auto-Grading Engine
 
 - Multiple choice validation

@@ -4,6 +4,7 @@ Folder ini berisi diagram alur sistem DashboardGuru dalam format PlantUML.
 
 ## Daftar Diagram
 
+### Fitur Inti Sistem
 1. **[01-sistem-utama.puml](01-sistem-utama.puml)** - Flowchart Sistem Utama
 2. **[02-login-autentikasi.puml](02-login-autentikasi.puml)** - Alur Login dan Autentikasi
 3. **[03-manajemen-kelas.puml](03-manajemen-kelas.puml)** - Alur Manajemen Kelas
@@ -13,6 +14,42 @@ Folder ini berisi diagram alur sistem DashboardGuru dalam format PlantUML.
 7. **[07-laporan-harian.puml](07-laporan-harian.puml)** - Alur Laporan Harian
 8. **[08-rekap-nilai.puml](08-rekap-nilai.puml)** - Alur Rekap Nilai
 9. **[09-kelas-online.puml](09-kelas-online.puml)** - Alur Kelas Online (Jitsi Meet)
+
+### Fitur AI Question Generator (NEW)
+
+**📊 Complete Diagram Suite:**
+
+**Core AI Generator System:**
+- **[10-ai-question-generator-system.puml](10-ai-question-generator-system.puml)** - Sistem Keseluruhan (Component Diagram)
+- **[10c-ai-dual-source-architecture.puml](10c-ai-dual-source-architecture.puml)** - Arsitektur Teknis (Architecture Diagram)
+- **[10d-ai-generator-sequence.puml](10d-ai-generator-sequence.puml)** - Interaksi Komponen (Sequence Diagram)
+- **[10e-ai-generator-usecase.puml](10e-ai-generator-usecase.puml)** - Use Case Diagram
+- **[10f-ai-generator-erd.puml](10f-ai-generator-erd.puml)** - Entity Relationship Diagram (Database Schema)
+- **[10g-ai-generator-flowchart.puml](10g-ai-generator-flowchart.puml)** - Flowchart (Decision & Process Flow)
+- **[10h-ai-generator-state-diagram.puml](10h-ai-generator-state-diagram.puml)** - State Diagram (Request & Question Lifecycle)
+
+**Activity Diagrams (User Processes):**
+- **[10b-ai-generator-detailed-flow.puml](10b-ai-generator-detailed-flow.puml)** - Generate Soal dengan AI (Guru)
+- **[11-admin-material-upload-activity.puml](11-admin-material-upload-activity.puml)** - Admin Upload & Manage Material
+- **[12-student-answer-activity.puml](12-student-answer-activity.puml)** - Student Answer Questions
+- **[13-teacher-share-edit-activity.puml](13-teacher-share-edit-activity.puml)** - Teacher Share & Edit Questions
+
+📖 **Dokumentasi AI Generator:** [AI_GENERATOR_DIAGRAMS_README.md](AI_GENERATOR_DIAGRAMS_README.md)  
+📖 **Panduan Lengkap:** [AI_GENERATOR_DIAGRAMS_COMPLETE_GUIDE.md](AI_GENERATOR_DIAGRAMS_COMPLETE_GUIDE.md)
+
+| Diagram | Tipe | Fokus |
+|---------|------|-------|
+| 10 | Component | Overview sistem keseluruhan |
+| 10b | Activity | Generate soal (Guru) |
+| 10c | Architecture | Detail teknis & layer system |
+| 10d | Sequence | Timeline & interaksi komponen |
+| 10e | Use Case | User requirements & features |
+| 10f | ERD | Database structure & relationships |
+| 10g | Flowchart | Decision logic & process flow |
+| 10h | State | Request/Question lifecycle |
+| 11 | Activity | Admin upload material |
+| 12 | Activity | Student answer questions |
+| 13 | Activity | Teacher share & edit |
 
 ## Cara Menggunakan
 

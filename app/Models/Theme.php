@@ -10,11 +10,6 @@ class Theme extends Model
     
     protected $fillable = ['lesson_id', 'theme', 'name'];
 
-    public function subtema()
-    {
-        return $this->hasMany(Subtheme::class, 'theme_id');
-    }
-
     public function subthemes()
     {
         return $this->hasMany(Subtheme::class, 'theme_id');

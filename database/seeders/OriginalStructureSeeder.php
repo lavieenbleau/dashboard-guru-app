@@ -46,12 +46,12 @@ class OriginalStructureSeeder extends Seeder
 
         // Students
         $students = [
-            ['serial_id' => 1, 'user_id' => 1, 'classroom_id' => 1, 'name' => 'Ahmad Rizki', 'nis' => '2024001', 'username' => '2024001', 'password' => bcrypt('password'), 'password_text' => 'password', 'email' => 'ahmad@student.com', 'phone' => '081234567801'],
-            ['serial_id' => 1, 'user_id' => 1, 'classroom_id' => 1, 'name' => 'Siti Nur Azizah', 'nis' => '2024002', 'username' => '2024002', 'password' => bcrypt('password'), 'password_text' => 'password', 'email' => 'siti@student.com', 'phone' => '081234567802'],
-            ['serial_id' => 1, 'user_id' => 1, 'classroom_id' => 1, 'name' => 'Budi Santoso', 'nis' => '2024003', 'username' => '2024003', 'password' => bcrypt('password'), 'password_text' => 'password', 'email' => 'budi@student.com', 'phone' => '081234567803'],
-            ['serial_id' => 1, 'user_id' => 1, 'classroom_id' => 2, 'name' => 'Dewi Lestari', 'nis' => '2024004', 'username' => '2024004', 'password' => bcrypt('password'), 'password_text' => 'password', 'email' => 'dewi@student.com', 'phone' => '081234567804'],
-            ['serial_id' => 1, 'user_id' => 1, 'classroom_id' => 2, 'name' => 'Eko Prasetyo', 'nis' => '2024005', 'username' => '2024005', 'password' => bcrypt('password'), 'password_text' => 'password', 'email' => 'eko@student.com', 'phone' => '081234567805'],
-            ['serial_id' => 1, 'user_id' => 1, 'classroom_id' => 2, 'name' => 'Fitri Handayani', 'nis' => '2024006', 'username' => '2024006', 'password' => bcrypt('password'), 'password_text' => 'password', 'email' => 'fitri@student.com', 'phone' => '081234567806'],
+            ['serial_id' => 1, 'user_id' => 1, 'classroom_id' => 1, 'name' => 'Ahmad Rizki', 'nis' => '2024001', 'username' => '2024001', 'password' => bcrypt('password'), 'email' => 'ahmad@student.com', 'phone' => '081234567801'],
+            ['serial_id' => 1, 'user_id' => 1, 'classroom_id' => 1, 'name' => 'Siti Nur Azizah', 'nis' => '2024002', 'username' => '2024002', 'password' => bcrypt('password'), 'email' => 'siti@student.com', 'phone' => '081234567802'],
+            ['serial_id' => 1, 'user_id' => 1, 'classroom_id' => 1, 'name' => 'Budi Santoso', 'nis' => '2024003', 'username' => '2024003', 'password' => bcrypt('password'), 'email' => 'budi@student.com', 'phone' => '081234567803'],
+            ['serial_id' => 1, 'user_id' => 1, 'classroom_id' => 2, 'name' => 'Dewi Lestari', 'nis' => '2024004', 'username' => '2024004', 'password' => bcrypt('password'), 'email' => 'dewi@student.com', 'phone' => '081234567804'],
+            ['serial_id' => 1, 'user_id' => 1, 'classroom_id' => 2, 'name' => 'Eko Prasetyo', 'nis' => '2024005', 'username' => '2024005', 'password' => bcrypt('password'), 'email' => 'eko@student.com', 'phone' => '081234567805'],
+            ['serial_id' => 1, 'user_id' => 1, 'classroom_id' => 2, 'name' => 'Fitri Handayani', 'nis' => '2024006', 'username' => '2024006', 'password' => bcrypt('password'), 'email' => 'fitri@student.com', 'phone' => '081234567806'],
         ];
         foreach ($students as $s) {
             Student::create($s);

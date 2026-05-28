@@ -12,13 +12,8 @@ class Exercise extends Model
         'serial_id',
         'exercise_type_id',
         'title',
-        'description',
+        'time_limit',
         'is_admin',
-        'shared_to_classes',
-    ];
-
-    protected $casts = [
-        'shared_to_classes' => 'array',
     ];
 
     public function lesson()
@@ -41,8 +36,13 @@ class Exercise extends Model
         return $this->hasMany(ExerciseItem::class, 'exercise_id');
     }
 
-    public function classrooms()
+    public function sharedSerials()
     {
-        return $this->belongsToMany(Classroom::class, 'exercise_classroom');
+        return $this->belongsToMany(Serial::class, 'share_exercises', 'exercise_id', 'serial_id');
+    }
+
+    public function getSharedToClassesAttribute()
+    {
+        return $this->sharedSerials()->pluck('serial_id')->toJson();
     }
 }

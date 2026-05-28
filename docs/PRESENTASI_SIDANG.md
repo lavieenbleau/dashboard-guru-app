@@ -238,6 +238,10 @@ Actor: Siswa
 - Kategorisasi per mata pelajaran dan tema
 - Preview materi online
 - Download materi
+- **Halaman detail materi** dengan preview lengkap
+- **Forum diskusi** pada setiap materi
+- Sistem komentar berjenjang (nested comments)
+- Identifikasi pemberi komentar (Guru/Siswa)
 
 #### ✍️ 2. Sistem Soal Latihan
 - **Tipe Soal:**
@@ -255,6 +259,9 @@ Actor: Siswa
 - Penilaian online
 - Feedback guru
 - Status tracking (Belum dikerjakan, Sudah submit, Dinilai)
+- **Forum diskusi** pada detail tugas
+- Siswa dapat bertanya langsung pada tugas
+- Guru dapat menjawab dan memberikan klarifikasi
 
 #### 🎥 4. Kelas Online (Jitsi Meet)
 - **Fitur unggulan:**
@@ -303,10 +310,11 @@ $meeting = OnlineMeeting::create([
 
 ### 4.3 Implementasi Kode Penting
 
-**Controller Pattern:**
+**Controller Pattern - MateriController:**
 ```php
 class MateriController extends Controller
 {
+    // Store materi baru
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -326,6 +334,36 @@ class MateriController extends Controller
         
         return redirect()->back()
             ->with('success', 'Materi berhasil ditambahkan');
+    }
+    
+    // Tampilkan detail materi dengan komentar
+    public function showDetail($id)
+    {
+        $materi = Post::with([
+            'comments.user', 
+            'comments.student',
+            'comments.replies.user', 
+            'comments.replies.student'
+        ])->findOrFail($id);
+        
+        return view('guru.materi.detail', compact('materi'));
+    }
+    
+    // Simpan komentar baru
+    public function storeComment(Request $request, $id)
+    {
+        $request->validate([
+            'comment' => 'required|string|max:1000'
+        ]);
+        
+        PostComment::create([
+            'post_id' => $id,
+            'user_id' => auth()->user()->role === 'guru' ? auth()->id() : null,
+            'student_id' => auth()->user()->role === 'siswa' ? auth()->user()->student->id : null,
+            'comment' => $request->comment
+        ]);
+        
+        return redirect()->back()->with('success', 'Komentar berhasil ditambahkan');
     }
 }
 ```
@@ -347,6 +385,32 @@ class Classroom extends Model
     public function exercises()
     {
         return $this->hasMany(Exercise::class);
+    }
+}
+
+// Model untuk komentar
+class PostComment extends Model
+{
+    protected $fillable = ['post_id', 'user_id', 'student_id', 'comment'];
+    
+    public function post()
+    {
+        return $this->belongsTo(Post::class);
+    }
+    
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+    
+    public function student()
+    {
+        return $this->belongsTo(Student::class);
+    }
+    
+    public function replies()
+    {
+        return $this->hasMany(PostChildComment::class);
     }
 }
 ```
@@ -375,12 +439,21 @@ class Classroom extends Model
 |-------|-----------|--------|--------|
 | Authentication | 8 | 8 | 0 |
 | Manajemen Kelas | 6 | 6 | 0 |
-| Manajemen Materi | 8 | 8 | 0 |
+| Manajemen Materi | 10 | 10 | 0 |
+| Forum Diskusi | 6 | 6 | 0 |
 | Soal Latihan | 10 | 10 | 0 |
-| Tugas | 8 | 8 | 0 |
+| Tugas | 10 | 10 | 0 |
 | Kelas Online | 6 | 6 | 0 |
 | Laporan | 4 | 4 | 0 |
-| **TOTAL** | **50** | **50** | **0** |
+| **TOTAL** | **60** | **60** | **0** |
+
+**Detail Pengujian Forum Diskusi:**
+- ✅ Create komentar pada materi
+- ✅ Create komentar pada tugas
+- ✅ Reply komentar (nested comments)
+- ✅ Delete komentar oleh pemilik
+- ✅ Identifikasi commenter (Guru/Siswa)
+- ✅ Toggle reply form dengan JavaScript
 
 *(Lihat detail di BLACK_BOX_TESTING.md)*
 
@@ -418,16 +491,18 @@ class Classroom extends Model
 2. ✅ Mengimplementasikan fitur lengkap untuk manajemen pembelajaran (materi, soal, tugas)
 3. ✅ Integrasi sukses dengan Jitsi Meet untuk kelas online
 4. ✅ Sistem penilaian dan pelaporan otomatis berfungsi dengan baik
-5. ✅ Pengujian black box menunjukkan 100% fungsi berjalan sesuai spesifikasi
-6. ✅ User acceptance test menunjukkan tingkat kepuasan tinggi (4.6/5.0)
+5. ✅ **Fitur diskusi/forum pada materi dan tugas** meningkatkan interaksi guru-siswa
+6. ✅ Pengujian black box menunjukkan 100% fungsi berjalan sesuai spesifikasi (60 test cases)
+7. ✅ User acceptance test menunjukkan tingkat kepuasan tinggi (4.6/5.0)
 
 ### Saran Pengembangan
 
 **Jangka Pendek:**
 1. Tambah fitur notifikasi real-time (Pusher/WebSocket)
 2. Mobile responsive optimization
-3. Fitur diskusi/forum per kelas
+3. Edit & like pada komentar diskusi
 4. Integration dengan Google Classroom
+5. Mention user (@username) pada komentar
 
 **Jangka Panjang:**
 1. Aplikasi mobile (Android/iOS)
@@ -436,6 +511,7 @@ class Classroom extends Model
 4. Advanced analytics dashboard
 5. Multi-language support
 6. API untuk integrasi sistem lain
+7. Forum diskusi umum per kelas
 
 ### Kontribusi Penelitian
 
@@ -443,11 +519,13 @@ class Classroom extends Model
 - Implementasi framework Laravel dalam e-learning
 - Integrasi video conference dalam LMS
 - Best practice web development
+- **Pola diskusi berjenjang dalam pembelajaran online**
 
 **Bidang Praktis:**
 - Solusi digitalisasi pembelajaran
 - Template sistem informasi sekolah
 - Open source untuk pengembangan lebih lanjut
+- **Meningkatkan kolaborasi pembelajaran dengan forum diskusi**
 
 ---
 

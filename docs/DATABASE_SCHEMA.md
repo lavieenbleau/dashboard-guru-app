@@ -25,23 +25,23 @@ This document provides a comprehensive overview of the database schema for the D
 
 **Description:** Stores user information (teachers/administrators)
 
-| Column            | Type            | Constraints                 | Description                  |
-| ----------------- | --------------- | --------------------------- | ---------------------------- |
-| id                | BIGINT UNSIGNED | PRIMARY KEY, AUTO_INCREMENT | User ID                      |
-| name              | VARCHAR(100)    | NOT NULL                    | Full name                    |
-| username          | VARCHAR(100)    | NOT NULL                    | Login username               |
-| password          | VARCHAR(100)    | NOT NULL                    | Hashed password              |
-| password_text     | VARCHAR(100)    | NULLABLE                    | Plain text password (backup) |
-| email             | VARCHAR(100)    | NULLABLE                    | Email address                |
-| email_verified_at | TIMESTAMP       | NULLABLE                    | Email verification timestamp |
-| role              | TINYINT         | NOT NULL                    | User role (admin/teacher)    |
-| address           | TEXT            | NULLABLE                    | Physical address             |
-| phone             | VARCHAR(20)     | NULLABLE                    | Phone number                 |
-| img               | VARCHAR(100)    | NULLABLE                    | Profile image filename       |
-| login_at          | TIMESTAMP       | NULLABLE                    | Last login timestamp         |
-| remember_token    | VARCHAR(100)    | NULLABLE                    | Remember me token            |
-| created_at        | TIMESTAMP       | NOT NULL                    | Creation timestamp           |
-| updated_at        | TIMESTAMP       | NOT NULL                    | Last update timestamp        |
+| Column            | Type            | Constraints                 | Description                              |
+| ----------------- | --------------- | --------------------------- | ---------------------------------------- |
+| id                | BIGINT UNSIGNED | PRIMARY KEY, AUTO_INCREMENT | User ID                                  |
+| name              | VARCHAR(100)    | NOT NULL                    | Full name                                |
+| username          | VARCHAR(100)    | NOT NULL                    | Login username                           |
+| password          | VARCHAR(100)    | NOT NULL                    | Hashed password                          |
+| password_text     | VARCHAR(100)    | NULLABLE                    | ~~Plain text password (backup)~~ REMOVED |
+| email             | VARCHAR(100)    | NULLABLE                    | Email address                            |
+| email_verified_at | TIMESTAMP       | NULLABLE                    | Email verification timestamp             |
+| role              | TINYINT         | NOT NULL                    | User role (admin/teacher)                |
+| address           | TEXT            | NULLABLE                    | Physical address                         |
+| phone             | VARCHAR(20)     | NULLABLE                    | Phone number                             |
+| img               | VARCHAR(100)    | NULLABLE                    | Profile image filename                   |
+| login_at          | TIMESTAMP       | NULLABLE                    | Last login timestamp                     |
+| remember_token    | VARCHAR(100)    | NULLABLE                    | Remember me token                        |
+| created_at        | TIMESTAMP       | NOT NULL                    | Creation timestamp                       |
+| updated_at        | TIMESTAMP       | NOT NULL                    | Last update timestamp                    |
 
 **Indexes:**
 
@@ -178,21 +178,20 @@ This document provides a comprehensive overview of the database schema for the D
 
 **Description:** Student accounts in the system
 
-| Column        | Type            | Constraints                 | Description                    |
-| ------------- | --------------- | --------------------------- | ------------------------------ |
-| id            | BIGINT UNSIGNED | PRIMARY KEY, AUTO_INCREMENT | Student ID                     |
-| serial_id     | BIGINT UNSIGNED | NOT NULL                    | Foreign key to serials         |
-| user_id       | BIGINT UNSIGNED | NOT NULL                    | Foreign key to users (teacher) |
-| classroom_id  | BIGINT UNSIGNED | NOT NULL                    | Foreign key to classrooms      |
-| name          | VARCHAR(200)    | NOT NULL                    | Student name                   |
-| username      | VARCHAR(100)    | NOT NULL                    | Login username                 |
-| password      | VARCHAR(150)    | NOT NULL                    | Hashed password                |
-| password_text | VARCHAR(100)    | NOT NULL                    | Plain text password            |
-| nis           | VARCHAR(20)     | NULLABLE                    | Student ID number              |
-| email         | VARCHAR(100)    | NULLABLE                    | Email address                  |
-| phone         | VARCHAR(20)     | NULLABLE                    | Phone number                   |
-| created_at    | TIMESTAMP       | NOT NULL                    | Creation timestamp             |
-| updated_at    | TIMESTAMP       | NOT NULL                    | Last update timestamp          |
+| Column       | Type            | Constraints                 | Description                    |
+| ------------ | --------------- | --------------------------- | ------------------------------ |
+| id           | BIGINT UNSIGNED | PRIMARY KEY, AUTO_INCREMENT | Student ID                     |
+| serial_id    | BIGINT UNSIGNED | NOT NULL                    | Foreign key to serials         |
+| user_id      | BIGINT UNSIGNED | NOT NULL                    | Foreign key to users (teacher) |
+| classroom_id | BIGINT UNSIGNED | NOT NULL                    | Foreign key to classrooms      |
+| name         | VARCHAR(200)    | NOT NULL                    | Student name                   |
+| username     | VARCHAR(100)    | NOT NULL                    | Login username                 |
+| password     | VARCHAR(150)    | NOT NULL                    | Hashed password                |
+| nis          | VARCHAR(20)     | NULLABLE                    | Student ID number              |
+| email        | VARCHAR(100)    | NULLABLE                    | Email address                  |
+| phone        | VARCHAR(20)     | NULLABLE                    | Phone number                   |
+| created_at   | TIMESTAMP       | NOT NULL                    | Creation timestamp             |
+| updated_at   | TIMESTAMP       | NOT NULL                    | Last update timestamp          |
 
 **Indexes:**
 
@@ -982,9 +981,8 @@ Current indexes are primarily on primary keys. Consider adding:
 
 ### Security Considerations
 
-1. Both `users` and `students` tables store plain text passwords (`password_text`) - security risk
-2. Consider removing plain text password storage
-3. Ensure password hashing uses secure algorithms (bcrypt/argon2)
+1. ~~Both `users` and `students` tables store plain text passwords (`password_text`) - security risk~~ **FIXED: Removed `password_text` from students table**
+2. Ensure password hashing uses secure algorithms (bcrypt/argon2)
 
 ### Timestamp Conventions
 

@@ -1,0 +1,144 @@
+@startuml 12-student-answer-activity
+title Activity Diagram: Student Answer Generated Questions
+
+skinparam defaultFontSize 11
+skinparam activity {
+  BackgroundColor<<Process>> LightBlue
+  BackgroundColor<<Decision>> LightYellow
+  BackgroundColor<<Success>> LightGreen
+  BackgroundColor<<Error>> LightCoral
+  BackgroundColor<<Start>> #90EE90
+  BackgroundColor<<End>> #FFB6C1
+}
+
+start
+:Siswa login ke sistem;
+
+:Akses Dashboard\nSiswa;
+
+:Lihat daftar Exercise\nyang dibagikan Guru;
+
+:Pilih Exercise\n(Soal AI-Generated);
+
+:Preview soal:\n- Judul\n- Deskripsi\n- Durasi pengerjaan\n- Jumlah pertanyaan;
+
+if (Sudah pernah\nkerjakan soal ini?) then (YES)
+    :Show previous score\ndan tanggal pengerjaan;
+    
+    if (Boleh retry?) then (NO)
+        :Show message:\n"Soal hanya bisa\ndikerjakan 1x";
+        stop
+    else (YES)
+        :Continue;
+    endif
+else (NO)
+    :Soal baru;
+endif
+
+:Mulai mengerjakan\n(Click: Kerjakan Sekarang);
+
+:Tampilkan timer\nsesuai durasi;
+
+repeat
+    switch (Tipe Soal?)
+    case (Pilihan Ganda)
+        :Tampilkan pertanyaan\n+ 4-5 pilihan jawaban\n+ optional image;
+        
+        :Siswa pilih\njawaban;
+        
+        note on link
+            Question dibuat oleh AI
+            dari materi
+        end note
+        
+    case (Essay)
+        :Tampilkan pertanyaan\n+ text area;
+        
+        :Siswa ketik jawaban;
+        
+    case (True/False)
+        :Tampilkan pernyataan;
+        
+        :Siswa pilih:\nBenar / Salah;
+    endswitch
+    
+    :Simpan jawaban\nke temporary store\n(session/cache);
+    
+    :Show progress:\n"Pertanyaan X dari Y";
+    
+    switch (Aksi?)
+    case (Lanjut ke soal berikutnya)
+        :Next question;
+    case (Kembali ke soal sebelumnya)
+        :Previous question\n(Jika diperbolehkan);
+    case (Kerjakan nanti)
+        :Save progress\nto database;
+        :Redirect ke menu;
+        stop
+    endswitch
+    
+repeat while (Ada soal lagi?) is (YES)
+
+:Semua soal selesai dikerjakan|
+
+:Show summary:\n- Total soal\n- Soal terjawab\n- Soal skip;
+
+if (Konfirmasi\nsubmit?) then (NO)
+    :Kembali ke review\npertanyaan;
+    repeat
+        :Siswa bisa ubah\njawaban;
+    repeat while (Ada perubahan?) is (YES)
+else (YES)
+    :Submit jawaban;
+endif
+
+:Backend process:\nEvaluate answers|
+
+repeat
+    :Loop setiap ExerciseItem;
+    
+    :Compare jawaban siswa\ndengan correct_answer;
+    
+    if (Benar?) then (YES)
+        :Score += bobot;
+    else (NO)
+        :Score += 0;
+    endif
+    
+    :Simpan detail\njawaban ke database;
+    
+repeat while (Ada item lagi?) is (YES)
+
+:Calculate total score;
+
+:Save StudentAnswer\nrecord ke database\n(linked to Exercise);
+
+:Backend:\nGenerate detailed report|
+
+:Tampilkan hasil:\n- Score\n- Persentase\n- Passing/Failing;
+
+:Show detailed feedback:\n- Pertanyaan mana benar\n- Pertanyaan mana salah\n- Pilihan jawaban yang benar;
+
+if (Guru enable\ndetailed analysis?) then (YES)
+    :Show:\n- Item analysis\n- Difficulty level\n- Average score siswa lain;
+else (NO)
+    :Basic score\nonly;
+endif
+
+:Simpan hasil ke\nRiwayat Nilai Siswa;
+
+:Update dashboard:\n- Score\n- Progress;
+
+:Show button options:\n- Lihat ulang soal\n- Kembali ke menu\n- Lihat materi terkait;
+
+stop
+
+note bottom
+    **Data Flow:**
+    ✓ Jawaban disimpan → StudentAnswer table
+    ✓ Score dihitung → Analytics
+    ✓ Hasil tampil → Student dashboard
+    ✓ Guru bisa lihat → Teacher report
+end note
+
+@enduml

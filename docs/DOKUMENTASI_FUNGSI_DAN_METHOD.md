@@ -87,6 +87,14 @@ Sistem DashboardGuru menggunakan pola arsitektur **MVC (Model-View-Controller)**
 30. [Edit Profile](#30-edit-profile)
 31. [Update Profile](#31-update-profile)
 
+### AI QUESTION GENERATOR
+
+32. [Halaman AI Generator](#32-halaman-ai-generator)
+33. [Generate Soal dengan OpenAI](#33-generate-soal-dengan-openai)
+34. [Preview Soal yang Dihasilkan](#34-preview-soal-yang-dihasilkan)
+35. [Simpan Soal Hasil AI ke Database](#35-simpan-soal-hasil-ai-ke-database)
+36. [Service: OpenAI API Integration](#36-service-openai-api-integration)
+
 ---
 
 ## AUTENTIKASI
@@ -1000,7 +1008,6 @@ class Student extends Model
         'name',
         'username',
         'password',
-        'password_text',  // Plain text password untuk ditampilkan ke guru
         'nis',
         'email',
         'phone',
@@ -1230,7 +1237,6 @@ protected $fillable = [
     'name',
     'username',
     'password',
-    'password_text',
     'nis',
     'email',
     'phone',
@@ -3504,20 +3510,16 @@ public function listByMapel($serial, $mapel)
 ### Konvensi Penamaan
 
 1. **Controllers**: PascalCase dengan suffix "Controller"
-
    - Contoh: `KelasController`, `TugasController`
 
 2. **Models**: PascalCase singular
-
    - Contoh: `User`, `Classroom`, `Student`
    - Laravel otomatis mapping ke tabel plural (users, classrooms, students)
 
 3. **Methods**: camelCase
-
    - Contoh: `index()`, `pilihKelas()`, `storeStudent()`
 
 4. **Routes**: kebab-case dengan prefix grup
-
    - Contoh: `guru.kelas.pilih`, `guru.tugas.mapel`
 
 5. **Views**: kebab-case
@@ -3914,7 +3916,6 @@ if ($model->user_id !== auth()->id()) {
                                     </td>
                                     <td><code>{{ $student->username }}</code></td>
                                     <td>{{ $student->email ?? '-' }}</td>
-                                    <td><code>{{ $student->password_text ?? '********' }}</code></td>
                                     <td>
                                         <form method="POST"
                                               action="{{ route('guru.kelas.siswa.destroy', [$serial->id, $classroom->id, $student->id]) }}"
@@ -4656,6 +4657,944 @@ $categories = [
 
 ---
 
+## AI QUESTION GENERATOR
+
+### 32. Halaman AI Generator
+
+**Deskripsi:** Menampilkan form untuk generate soal dengan OpenAI
+
+#### 📍 ROUTE
+
+```php
+// File: routes/web.php
+Route::middleware(['auth'])->prefix('aplikasi/{serial}')->group(function () {
+    Route::get('soal/ai-generator', [SoalController::class, 'aiGenerator'])
+        ->name('guru.soal.ai-generator');
+});
+```
+
+#### 🎮 CONTROLLER
+
+```php
+// File: app/Http/Controllers/Guru/SoalController.php
+namespace App\Http\Controllers\Guru;
+
+use App\Models\Exercise;
+use App\Models\ExerciseType;
+use App\Models\ExerciseModel;
+use App\Models\Post;
+use App\Models\Lesson;
+use Illuminate\Http\Request;
+
+class SoalController extends Controller
+{
+    /**
+     * Tampilkan form AI Generator
+     *
+     * @param string $serial - Serial ID untuk multi-tenant
+     * @return \Illuminate\View\View
+     */
+    public function aiGenerator($serial)
+    {
+        // Ambil posts sebagai sumber materi guru
+        $posts = Post::where('serial_id', $serial)
+            ->where('is_task', 0)  // Hanya materi, bukan tugas
+            ->where('deleted_at', null)
+            ->orderByDesc('created_at')
+            ->limit(20)
+            ->get();
+
+        // Ambil lessons sebagai sumber materi admin
+        $lessons = Lesson::where('serial_id', $serial)
+            ->where('deleted_at', null)
+            ->orderByDesc('created_at')
+            ->limit(20)
+            ->get();
+
+        // Ambil tipe latihan (UH, SL, QUIZ)
+        $exerciseTypes = ExerciseType::all();
+
+        // Ambil model soal (Pilihan Ganda, Essay, dll)
+        $exerciseModels = ExerciseModel::all();
+
+        return view('guru.soal.ai-generator', compact(
+            'serial',
+            'posts',
+            'lessons',
+            'exerciseTypes',
+            'exerciseModels'
+        ));
+    }
+}
+```
+
+#### 🎨 VIEW
+
+```blade
+{{-- File: resources/views/guru/soal/ai-generator.blade.php --}}
+@extends('layouts.sneat')
+
+@section('content')
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class='bx bx-sparkles me-2'></i>Generate Soal dengan AI
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="aiGeneratorForm">
+                        @csrf
+
+                        <!-- Pilih Sumber Materi -->
+                        <div class="mb-3">
+                            <label class="form-label">Sumber Materi</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="material_source"
+                                       id="source_post" value="post" checked>
+                                <label class="btn btn-outline-primary" for="source_post">
+                                    <i class='bx bx-user me-1'></i>Materi Guru (Post)
+                                </label>
+
+                                <input type="radio" class="btn-check" name="material_source"
+                                       id="source_lesson" value="lesson">
+                                <label class="btn btn-outline-primary" for="source_lesson">
+                                    <i class='bx bx-book me-1'></i>Pelajaran Admin (Lesson)
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Pilih Materi Spesifik -->
+                        <div class="mb-3">
+                            <label class="form-label" for="material_id">Pilih Materi</label>
+                            <select id="material_id" name="material_id" class="form-select" required>
+                                <option value="">-- Pilih Materi --</option>
+                                @foreach($posts as $post)
+                                    <option value="{{ $post->id }}" data-source="post">
+                                        {{ $post->title }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Tipe Latihan -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="exercise_type_id">Tipe Latihan</label>
+                                <select id="exercise_type_id" name="exercise_type_id" class="form-select" required>
+                                    <option value="">-- Pilih Tipe --</option>
+                                    @foreach($exerciseTypes as $type)
+                                        <option value="{{ $type->id }}">{{ $type->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="exercise_model_id">Model Soal</label>
+                                <select id="exercise_model_id" name="exercise_model_id" class="form-select" required>
+                                    <option value="">-- Pilih Model --</option>
+                                    @foreach($exerciseModels as $model)
+                                        <option value="{{ $model->id }}">{{ $model->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Tingkat Kesulitan -->
+                        <div class="mb-3">
+                            <label class="form-label">Tingkat Kesulitan</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="difficulty"
+                                       id="diff_easy" value="mudah" checked>
+                                <label class="btn btn-outline-success" for="diff_easy">
+                                    <i class='bx bx-smiley me-1'></i>Mudah
+                                </label>
+
+                                <input type="radio" class="btn-check" name="difficulty"
+                                       id="diff_medium" value="sedang">
+                                <label class="btn btn-outline-warning" for="diff_medium">
+                                    <i class='bx bx-neutral me-1'></i>Sedang
+                                </label>
+
+                                <input type="radio" class="btn-check" name="difficulty"
+                                       id="diff_hard" value="sulit">
+                                <label class="btn btn-outline-danger" for="diff_hard">
+                                    <i class='bx bx-confused me-1'></i>Sulit
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Jumlah Soal -->
+                        <div class="mb-3">
+                            <label class="form-label" for="count">Jumlah Soal</label>
+                            <div class="input-group">
+                                <input type="number" id="count" name="count" class="form-control"
+                                       min="1" max="20" value="5" required>
+                                <span class="input-group-text">soal (max: 20)</span>
+                            </div>
+                        </div>
+
+                        <!-- Loading Indicator -->
+                        <div id="loading" style="display: none;" class="alert alert-info">
+                            <div class="spinner-border spinner-border-sm me-2" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span>Sedang menghasilkan soal... (ini butuh 30-60 detik)</span>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary" id="generateBtn">
+                                <i class='bx bx-play me-2'></i>Generate Soal
+                            </button>
+                            <a href="{{ route('guru.soal.list-direct', $serial) }}" class="btn btn-secondary">
+                                Batal
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tips & Info -->
+        <div class="col-md-4">
+            <div class="card bg-light">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class='bx bx-info-circle me-2'></i>Tips Penggunaan
+                    </h6>
+                </div>
+                <div class="card-body small">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <strong>✓ Materi Detail</strong><br>
+                            Pilih materi yang terstruktur untuk hasil lebih baik
+                        </li>
+                        <li class="mb-2">
+                            <strong>✓ Difficulty</strong><br>
+                            Mudah untuk review, Sulit untuk evaluasi
+                        </li>
+                        <li class="mb-2">
+                            <strong>✓ Edit Soal</strong><br>
+                            Bisa edit/hapus soal setelah preview
+                        </li>
+                        <li class="mb-2">
+                            <strong>✓ Regenerate</strong><br>
+                            Coba ulang jika hasil tidak sesuai
+                        </li>
+                        <li>
+                            <strong>✓ Kualitas</strong><br>
+                            Review dulu sebelum share ke siswa
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+```
+
+**Data Passed:**
+
+- `$serial` - Serial ID
+- `$posts` - Daftar posts (materi guru)
+- `$lessons` - Daftar lessons (materi admin)
+- `$exerciseTypes` - Tipe latihan
+- `$exerciseModels` - Model soal
+
+---
+
+### 33. Generate Soal dengan OpenAI
+
+**Deskripsi:** Proses menghasilkan soal menggunakan OpenAI API
+
+#### 📍 ROUTE
+
+```php
+// File: routes/web.php
+Route::middleware(['auth'])->post('aplikasi/{serial}/soal/generate-ai',
+    [SoalController::class, 'generateWithAI'])
+    ->name('guru.soal.generate-ai');
+```
+
+#### 🎮 CONTROLLER
+
+```php
+// File: app/Http/Controllers/Guru/SoalController.php
+namespace App\Http\Controllers\Guru;
+
+use App\Services\OpenAIService;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+
+class SoalController extends Controller
+{
+    private OpenAIService $openAIService;
+
+    public function __construct(OpenAIService $openAIService)
+    {
+        $this->openAIService = $openAIService;
+    }
+
+    /**
+     * Generate soal dengan OpenAI API
+     *
+     * @param Request $request - Request data
+     * @param string $serial - Serial ID
+     * @return JsonResponse
+     *
+     * Request Payload:
+     * {
+     *     "material_source": "post|lesson",
+     *     "material_id": 123,
+     *     "exercise_type_id": 1,
+     *     "exercise_model_id": 1,
+     *     "difficulty": "mudah|sedang|sulit",
+     *     "count": 5-20
+     * }
+     */
+    public function generateWithAI(Request $request, $serial): JsonResponse
+    {
+        // Validasi input
+        $validated = $request->validate([
+            'material_source' => 'required|in:post,lesson',
+            'material_id' => 'required|integer|exists:posts,id',
+            'exercise_type_id' => 'required|integer|exists:exercise_types,id',
+            'exercise_model_id' => 'required|integer|exists:exercise_models,id',
+            'difficulty' => 'required|in:mudah,sedang,sulit',
+            'count' => 'required|integer|between:1,20',
+        ]);
+
+        try {
+            // Ambil konten materi berdasarkan sumber
+            if ($validated['material_source'] === 'post') {
+                $material = Post::findOrFail($validated['material_id']);
+                $content = $material->title . "\n\n" . $material->content;
+            } else {
+                $material = Lesson::findOrFail($validated['material_id']);
+                $content = $material->title . "\n\n" . $material->description;
+            }
+
+            // Ambil metadata
+            $exerciseType = ExerciseType::findOrFail($validated['exercise_type_id']);
+            $exerciseModel = ExerciseModel::findOrFail($validated['exercise_model_id']);
+
+            // Generate soal dengan OpenAI
+            $questions = $this->openAIService->generateQuestions(
+                $content,
+                $exerciseType->name,
+                $validated['difficulty'],
+                $validated['count'],
+                $exerciseModel->name
+            );
+
+            // Simpan ke session untuk preview
+            session()->put('ai_generated_questions', [
+                'questions' => $questions,
+                'serial_id' => $serial,
+                'exercise_type_id' => $validated['exercise_type_id'],
+                'exercise_model_id' => $validated['exercise_model_id'],
+                'difficulty' => $validated['difficulty'],
+                'material_source' => $validated['material_source'],
+                'material_id' => $validated['material_id'],
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'questions' => $questions,
+                'count' => count($questions),
+                'message' => 'Soal berhasil dihasilkan'
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 422);
+        }
+    }
+}
+```
+
+**Error Handling:**
+
+- Rate limit (429) → Retry dengan exponential backoff
+- Invalid response → JSON parse error
+- API down → Fallback message
+
+---
+
+### 34. Preview Soal yang Dihasilkan
+
+**Deskripsi:** Menampilkan preview soal sebelum simpan
+
+#### 📍 ROUTE
+
+```php
+// File: routes/web.php
+Route::middleware(['auth'])->get('aplikasi/{serial}/soal/ai-preview',
+    [SoalController::class, 'aiPreview'])
+    ->name('guru.soal.ai-preview');
+```
+
+#### 🎮 CONTROLLER
+
+```php
+// File: app/Http/Controllers/Guru/SoalController.php
+public function aiPreview($serial)
+{
+    $data = session()->get('ai_generated_questions');
+
+    if (!$data) {
+        return redirect()->route('guru.soal.ai-generator', $serial)
+            ->withErrors('Session expired atau belum ada data preview');
+    }
+
+    return view('guru.soal.ai-preview', compact('data', 'serial'));
+}
+```
+
+#### 🎨 VIEW
+
+```blade
+{{-- File: resources/views/guru/soal/ai-preview.blade.php --}}
+@extends('layouts.sneat')
+
+@section('content')
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h4 class="fw-bold mb-2">Preview Soal yang Dihasilkan AI</h4>
+            <p class="text-muted">Total: {{ count($data['questions']) }} soal</p>
+        </div>
+    </div>
+
+    <!-- List Soal -->
+    <div class="row">
+        <div class="col-md-8">
+            <form id="previewForm" method="POST" action="{{ route('guru.soal.save-ai', $serial) }}">
+                @csrf
+                <input type="hidden" name="questions" id="questionsInput" value="">
+
+                <!-- Form Input Judul -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">Informasi Latihan</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label" for="title">Judul Latihan</label>
+                            <input type="text" id="title" name="title" class="form-control"
+                                   placeholder="Contoh: Ulangan Harian Bab 5 - Integral" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="description">Deskripsi (opsional)</label>
+                            <textarea id="description" name="description" class="form-control" rows="3"
+                                      placeholder="Deskripsi atau instruksi untuk siswa..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Soal Items -->
+                @foreach($data['questions'] as $idx => $question)
+                <div class="card mb-3" id="question_{{ $idx }}">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">Soal {{ $idx + 1 }}</h6>
+                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                onclick="removeQuestion({{ $idx }})">
+                            <i class='bx bx-trash'></i>Hapus
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <!-- Pertanyaan -->
+                        <div class="mb-3">
+                            <label class="form-label">Pertanyaan</label>
+                            <textarea class="form-control question-text" data-idx="{{ $idx }}" rows="3" required>{{ $question['question'] }}</textarea>
+                        </div>
+
+                        <!-- Opsi Jawaban -->
+                        <div class="mb-3">
+                            <label class="form-label">Opsi Jawaban</label>
+                            @foreach($question['options'] as $opt_idx => $option)
+                            <div class="input-group mb-2">
+                                <span class="input-group-text">{{ chr(65 + $opt_idx) }}</span>
+                                <input type="text" class="form-control option-text" data-idx="{{ $idx }}"
+                                       data-opt="{{ $opt_idx }}" value="{{ $option }}">
+                            </div>
+                            @endforeach
+                        </div>
+
+                        <!-- Jawaban Benar & Poin -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Jawaban Benar</label>
+                                <select class="form-select answer-select" data-idx="{{ $idx }}" required>
+                                    @foreach($question['options'] as $opt_idx => $option)
+                                    <option value="{{ chr(65 + $opt_idx) }}" {{ $question['answer'] === chr(65 + $opt_idx) ? 'selected' : '' }}>
+                                        {{ chr(65 + $opt_idx) }}. {{ $option }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Poin</label>
+                                <input type="number" class="form-control point-input" data-idx="{{ $idx }}"
+                                       min="1" max="100" value="{{ $question['point'] ?? 20 }}" required>
+                            </div>
+                        </div>
+
+                        <!-- Penjelasan -->
+                        <div class="mb-3">
+                            <label class="form-label">Penjelasan (opsional)</label>
+                            <textarea class="form-control explanation-text" data-idx="{{ $idx }}" rows="2">{{ $question['explanation'] ?? '' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+
+                <!-- Submit Buttons -->
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success" id="saveBtn">
+                        <i class='bx bx-save me-2'></i>Simpan Semua Soal
+                    </button>
+                    <a href="{{ route('guru.soal.ai-generator', $serial) }}" class="btn btn-secondary">
+                        <i class='bx bx-undo me-2'></i>Kembali Generate Ulang
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sidebar Info -->
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">Info Soal</h6>
+                    <ul class="small list-unstyled">
+                        <li class="mb-2"><strong>Total Soal:</strong> {{ count($data['questions']) }}</li>
+                        <li class="mb-2"><strong>Tipe:</strong> {{ $data['exercise_type'] }}</li>
+                        <li class="mb-2"><strong>Model:</strong> {{ $data['model_type'] }}</li>
+                        <li><strong>Kesulitan:</strong> {{ ucfirst($data['difficulty']) }}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">Aksi Cepat</h6>
+                    <button type="button" class="btn btn-warning btn-sm w-100 mb-2" onclick="regenerateAll()">
+                        <i class='bx bx-refresh me-1'></i>Regenerate Semua
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm w-100" onclick="resetForm()">
+                        <i class='bx bx-reset me-1'></i>Reset Form
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+function removeQuestion(idx) {
+    document.getElementById('question_' + idx).remove();
+}
+
+function regenerateAll() {
+    if (confirm('Yakin ingin generate ulang dari awal? Data yang sudah diedit akan hilang.')) {
+        window.history.back();
+    }
+}
+
+function resetForm() {
+    document.getElementById('previewForm').reset();
+}
+
+document.getElementById('previewForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Collect all data
+    const questions = [];
+    document.querySelectorAll('[id^="question_"]').forEach((card, idx) => {
+        questions.push({
+            question: card.querySelector('.question-text').value,
+            options: Array.from(card.querySelectorAll('.option-text')).map(el => el.value),
+            answer: card.querySelector('.answer-select').value,
+            point: parseInt(card.querySelector('.point-input').value),
+            explanation: card.querySelector('.explanation-text').value
+        });
+    });
+
+    document.getElementById('questionsInput').value = JSON.stringify(questions);
+    this.submit();
+});
+</script>
+@endpush
+@endsection
+```
+
+---
+
+### 35. Simpan Soal Hasil AI ke Database
+
+**Deskripsi:** Menyimpan soal hasil generate ke tabel exercises dan exercise_items
+
+#### 📍 ROUTE
+
+```php
+// File: routes/web.php
+Route::middleware(['auth'])->post('aplikasi/{serial}/soal/save-ai',
+    [SoalController::class, 'saveAIQuestions'])
+    ->name('guru.soal.save-ai');
+```
+
+#### 🎮 CONTROLLER
+
+```php
+// File: app/Http/Controllers/Guru/SoalController.php
+public function saveAIQuestions(Request $request, $serial)
+{
+    $data = session()->get('ai_generated_questions');
+
+    if (!$data) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Session expired'
+        ], 422);
+    }
+
+    // Validasi input
+    $validated = $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'questions' => 'required|json',
+    ]);
+
+    try {
+        $questions = json_decode($validated['questions'], true);
+
+        // Create exercise container
+        $exercise = Exercise::create([
+            'serial_id' => $data['serial_id'],
+            'exercise_type_id' => $data['exercise_type_id'],
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'is_admin' => 0, // Guru-generated
+        ]);
+
+        // Bulk insert exercise items
+        $items = [];
+        foreach ($questions as $index => $q) {
+            $items[] = [
+                'exercise_id' => $exercise->id,
+                'exercise_model_id' => $data['exercise_model_id'],
+                'no' => $index + 1,
+                'question' => $q['question'],
+                'selection' => json_encode($q['options']),
+                'answer' => $q['answer'],
+                'point' => $q['point'],
+                'is_user' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        ExerciseItem::insert($items);
+
+        // Update serial usage count
+        $serial_model = Serial::findOrFail($data['serial_id']);
+        $serial_model->increment('usage_count');
+
+        // Clear session
+        session()->forget('ai_generated_questions');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Soal berhasil disimpan',
+            'exercise_id' => $exercise->id,
+            'redirect' => route('guru.soal.show', [$serial, $exercise->id])
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Gagal menyimpan: ' . $e->getMessage()
+        ], 422);
+    }
+}
+```
+
+#### 📦 MODEL
+
+```php
+// File: app/Models/Exercise.php
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Exercise extends Model
+{
+    protected $fillable = [
+        'serial_id',
+        'exercise_type_id',
+        'title',
+        'description',
+        'is_admin',
+    ];
+
+    // Relasi ke items
+    public function items()
+    {
+        return $this->hasMany(ExerciseItem::class)->orderBy('no');
+    }
+
+    // Relasi ke exercise type
+    public function exerciseType()
+    {
+        return $this->belongsTo(ExerciseType::class);
+    }
+
+    // Relasi ke serial
+    public function serial()
+    {
+        return $this->belongsTo(Serial::class);
+    }
+}
+
+// File: app/Models/ExerciseItem.php
+class ExerciseItem extends Model
+{
+    protected $fillable = [
+        'exercise_id',
+        'exercise_model_id',
+        'no',
+        'question',
+        'selection',
+        'answer',
+        'point',
+        'is_user',
+    ];
+
+    protected $casts = [
+        'selection' => 'array',
+    ];
+
+    // Relasi ke exercise
+    public function exercise()
+    {
+        return $this->belongsTo(Exercise::class);
+    }
+}
+```
+
+---
+
+### 36. Service: OpenAI API Integration
+
+**Deskripsi:** Service layer untuk integrasi dengan OpenAI API
+
+#### 📍 SERVICE
+
+````php
+// File: app/Services/OpenAIService.php
+namespace App\Services;
+
+use Illuminate\Support\Facades\Http;
+use Exception;
+
+class OpenAIService
+{
+    private string $apiKey;
+    private string $model;
+    private string $baseUrl;
+    private int $maxRetries = 3;
+    private int $retryDelay = 2;
+
+    public function __construct()
+    {
+        $this->detectApiSource();
+    }
+
+    /**
+     * Deteksi sumber API (OpenAI atau OpenRouter)
+     */
+    private function detectApiSource(): void
+    {
+        if (env('OPENAI_API_KEY')) {
+            $this->apiKey = env('OPENAI_API_KEY');
+            $this->baseUrl = env('OPENAI_BASE_URL', 'https://api.openai.com/v1');
+            $this->model = env('OPENAI_MODEL', 'gpt-4o-mini');
+        } else {
+            $this->apiKey = env('OPENROUTER_API_KEY');
+            $this->baseUrl = 'https://openrouter.ai/api/v1';
+            $this->model = 'openai/gpt-4o-mini';
+        }
+    }
+
+    /**
+     * Generate soal menggunakan OpenAI
+     *
+     * @param string $materialContent - Konten materi
+     * @param string $questionType - Tipe soal (UH/SL/QUIZ)
+     * @param string $difficulty - Tingkat kesulitan
+     * @param int $count - Jumlah soal
+     * @param string $modelType - Model soal (PG/Essay/dll)
+     * @return array
+     */
+    public function generateQuestions(
+        string $materialContent,
+        string $questionType,
+        string $difficulty,
+        int $count,
+        string $modelType = 'Pilihan Ganda'
+    ): array {
+        $prompt = $this->buildPrompt(
+            $materialContent,
+            $questionType,
+            $difficulty,
+            $count,
+            $modelType
+        );
+
+        $response = $this->callApiWithRetry($prompt);
+
+        if (!$response) {
+            throw new Exception('Gagal menghasilkan soal dari AI');
+        }
+
+        return $this->formatQuestions($response, $modelType);
+    }
+
+    /**
+     * Build prompt untuk OpenAI
+     */
+    private function buildPrompt(
+        string $material,
+        string $type,
+        string $difficulty,
+        int $count,
+        string $modelType
+    ): string {
+        return <<<PROMPT
+Kamu adalah guru berpengalaman yang ahli membuat soal berkualitas tinggi.
+
+Buat $count soal dengan kriteria:
+- Tipe: $type
+- Kesulitan: $difficulty
+- Model: $modelType
+- Format: JSON array
+
+Materi: $material
+
+Return format JSON ONLY (tidak ada text lain):
+[{"question":"...","options":[...],"answer":"...","point":20}]
+PROMPT;
+    }
+
+    /**
+     * Call OpenAI API dengan retry mechanism
+     */
+    private function callApiWithRetry(string $prompt): ?string
+    {
+        $attempt = 0;
+
+        while ($attempt < $this->maxRetries) {
+            try {
+                $response = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . $this->apiKey,
+                    'Content-Type' => 'application/json',
+                ])->post("{$this->baseUrl}/chat/completions", [
+                    'model' => $this->model,
+                    'messages' => [
+                        ['role' => 'system', 'content' => 'Kamu adalah expert membuat soal pendidikan.'],
+                        ['role' => 'user', 'content' => $prompt]
+                    ],
+                    'temperature' => 0.7,
+                    'max_tokens' => 2000,
+                ]);
+
+                if ($response->successful()) {
+                    $content = $response->json('choices.0.message.content');
+                    $content = preg_replace('/^```json\n?/', '', $content);
+                    $content = preg_replace('/\n?```$/', '', $content);
+                    return trim($content);
+                }
+
+                if ($response->status() == 429) {
+                    throw new Exception('Rate limit exceeded');
+                }
+
+                throw new Exception('API Error: ' . $response->status());
+
+            } catch (Exception $e) {
+                $attempt++;
+                if ($attempt < $this->maxRetries && strpos($e->getMessage(), 'Rate limit') !== false) {
+                    sleep($this->retryDelay * $attempt);
+                } else if ($attempt >= $this->maxRetries) {
+                    throw $e;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Format response dari OpenAI
+     */
+    private function formatQuestions(string $response, string $modelType): array
+    {
+        try {
+            $questions = json_decode($response, true, 10, JSON_THROW_ON_ERROR);
+
+            return array_map(function($q, $index) use ($modelType) {
+                return [
+                    'no' => $index + 1,
+                    'question' => $q['question'] ?? '',
+                    'options' => $q['options'] ?? $q['choices'] ?? [],
+                    'answer' => $q['answer'] ?? '',
+                    'point' => $q['point'] ?? 20,
+                    'explanation' => $q['explanation'] ?? '',
+                    'model_type' => $modelType
+                ];
+            }, $questions, array_keys($questions));
+
+        } catch (Exception $e) {
+            throw new Exception('Error parsing AI response: ' . $e->getMessage());
+        }
+    }
+}
+````
+
+#### 📦 MODEL
+
+```php
+// File: app/Models/Serial.php
+class Serial extends Model
+{
+    protected $fillable = [
+        'user_id',
+        'product_id',
+        'serial',
+        'active',
+        'expired_at',
+        'usage_count',  // Track AI usage
+    ];
+
+    // Relasi ke exercises
+    public function exercises()
+    {
+        return $this->hasMany(Exercise::class);
+    }
+}
+```
+
+---
+
 **Dokumen dibuat:** 11 Januari 2026
-**Versi:** 1.1
+**Versi:** 1.2
 **Sistem:** DashboardGuru Application
+**Last Updated:** 15 Mei 2026 - Menambahkan AI Question Generator Documentation

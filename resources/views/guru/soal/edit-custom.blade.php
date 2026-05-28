@@ -22,10 +22,6 @@
                         @csrf
                         @method('PUT')
 
-                        @php
-                            $exerciseItem = $exercise->exerciseItems->first();
-                        @endphp
-
                         <!-- Pilih Mapel -->
                         <div class="mb-3">
                             <label for="mapel_id" class="form-label">Pilih Mapel <span class="text-danger">*</span></label>
@@ -58,100 +54,119 @@
                             @enderror
                         </div>
 
-                        <!-- Jenis Soal -->
-                        <div class="mb-3">
-                            <label for="question_type" class="form-label">Jenis Soal <span class="text-danger">*</span></label>
-                            <select class="form-select @error('question_type') is-invalid @enderror" id="question_type" name="question_type" required>
-                                <option value="">-- Pilih Jenis --</option>
-                                <option value="pilihan_ganda" {{ (old('question_type', $exerciseItem->question_type ?? '') == 'pilihan_ganda') ? 'selected' : '' }}>Pilihan Ganda</option>
-                                <option value="essai" {{ (old('question_type', $exerciseItem->question_type ?? '') == 'essai') ? 'selected' : '' }}>Essai</option>
-                                <option value="jawaban_singkat" {{ (old('question_type', $exerciseItem->question_type ?? '') == 'jawaban_singkat') ? 'selected' : '' }}>Jawaban Singkat</option>
-                            </select>
-                            @error('question_type')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
                         <!-- Judul Soal -->
                         <div class="mb-3">
-                            <label for="title" class="form-label">Judul Soal <span class="text-danger">*</span></label>
+                            <label for="title" class="form-label">Judul Paket Soal <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('title') is-invalid @enderror" id="title" name="title" value="{{ old('title', $exercise->title) }}" placeholder="Contoh: Latihan Perkalian" required>
                             @error('title')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        <!-- Pertanyaan -->
+                        <!-- Waktu Pengerjaan -->
                         <div class="mb-3">
-                            <label for="question" class="form-label">Pertanyaan/Soal <span class="text-danger">*</span></label>
-                            <textarea class="form-control @error('question') is-invalid @enderror" id="question" name="question" rows="5" placeholder="Tulis pertanyaan atau soal di sini..." required>{{ old('question', $exerciseItem->question ?? '') }}</textarea>
-                            @error('question')
+                            <label for="time_limit" class="form-label">Waktu Pengerjaan (Menit) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control @error('time_limit') is-invalid @enderror" id="time_limit" name="time_limit" min="1" max="480" value="{{ old('time_limit', $exercise->time_limit) }}" placeholder="Contoh: 45" required>
+                            @error('time_limit')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+                            <small class="text-muted">Masukkan durasi pengerjaan soal dalam menit (1-480 menit / 1 menit hingga 8 jam)</small>
                         </div>
 
-                        <!-- Pilihan Jawaban (untuk Pilihan Ganda) -->
-                        <div class="mb-3" id="optionsContainer" style="{{ (old('question_type', $exerciseItem->question_type ?? '') == 'pilihan_ganda') ? '' : 'display:none' }}">
-                            <label class="form-label">Pilihan Jawaban</label>
-                            @for($i = 0; $i < 5; $i++)
-                            @php
-                                $optionKey = chr(65 + $i); // A, B, C, D, E
-                                $optionField = 'option_' . strtolower($optionKey);
-                                $optionValue = old("options.{$i}", $exerciseItem->{$optionField} ?? '');
-                            @endphp
-                            <div class="input-group mb-2">
-                                <span class="input-group-text">{{ $optionKey }}</span>
-                                <input type="text" class="form-control" name="options[]" value="{{ $optionValue }}" placeholder="Pilihan {{ $optionKey }}">
-                            </div>
-                            @endfor
-                        </div>
+                        <!-- Tabs untuk semua soal items -->
+                        <div class="mb-4">
+                            <h6 class="mb-3"><i class='bx bx-list-check me-2'></i>Soal-soal dalam Paket ({{ count($exercise->exerciseItems) }} soal)</h6>
+                            
+                            @if($exercise->exerciseItems->count() > 0)
+                                <!-- Nav Tabs -->
+                                <ul class="nav nav-tabs mb-3" role="tablist">
+                                    @foreach($exercise->exerciseItems as $index => $item)
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link {{ $index === 0 ? 'active' : '' }}" 
+                                                    id="tab-soal-{{ $item->id }}" 
+                                                    data-bs-toggle="tab" 
+                                                    data-bs-target="#content-soal-{{ $item->id }}" 
+                                                    type="button" role="tab">
+                                                Soal #{{ $index + 1 }}
+                                            </button>
+                                        </li>
+                                    @endforeach
+                                </ul>
 
-                        <!-- Kunci Jawaban -->
-                        <div class="mb-3">
-                            <label for="answer" class="form-label">Kunci Jawaban</label>
-                            <input type="text" class="form-control @error('answer') is-invalid @enderror" id="answer" name="answer" value="{{ old('answer', $exerciseItem->correct_answer ?? '') }}" placeholder="Untuk pilihan ganda: A/B/C/D/E">
-                            @error('answer')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <small class="text-muted">Untuk pilihan ganda, isi dengan huruf (A/B/C/D/E). Untuk essai/jawaban singkat, isi dengan jawaban yang benar.</small>
-                        </div>
+                                <!-- Tab Content -->
+                                <div class="tab-content border rounded p-3">
+                                    @foreach($exercise->exerciseItems as $index => $item)
+                                        <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}" 
+                                             id="content-soal-{{ $item->id }}" role="tabpanel">
+                                            
+                                            <input type="hidden" name="items[{{ $index }}][id]" value="{{ $item->id }}">
 
-                        <!-- Pilih Kelas -->
-                        <div class="mb-3">
-                            <label class="form-label">Bagikan ke Kelas</label>
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox" id="selectAllClassrooms">
-                                        <label class="form-check-label fw-bold" for="selectAllClassrooms">
-                                            Pilih Semua
-                                        </label>
-                                    </div>
-                                    <hr>
-                                    @php
-                                        $sharedClasses = is_array($exercise->shared_to_classes) ? $exercise->shared_to_classes : (json_decode($exercise->shared_to_classes, true) ?? []);
-                                    @endphp
-                                    @foreach($classrooms as $classroom)
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input classroom-checkbox" type="checkbox" name="classrooms[]" 
-                                               value="{{ $classroom->id }}" id="classroom{{ $classroom->id }}"
-                                               {{ in_array($classroom->id, old('classrooms', $sharedClasses)) ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="classroom{{ $classroom->id }}">
-                                            {{ $classroom->name }}
-                                        </label>
-                                    </div>
+                                            <!-- Jenis Soal -->
+                                            <div class="mb-3">
+                                                <label class="form-label">Jenis Soal <span class="text-danger">*</span></label>
+                                                <select class="form-select question-type-select" name="items[{{ $index }}][question_type]" required>
+                                                    <option value="">-- Pilih Jenis --</option>
+                                                    <option value="pilihan_ganda" {{ old("items.{$index}.question_type", $item->exercise_model_id == 1 ? 'pilihan_ganda' : '') == 'pilihan_ganda' ? 'selected' : '' }}>Pilihan Ganda</option>
+                                                    <option value="essai" {{ old("items.{$index}.question_type", $item->exercise_model_id == 2 ? 'essai' : '') == 'essai' ? 'selected' : '' }}>Essai</option>
+                                                    <option value="jawaban_singkat" {{ old("items.{$index}.question_type", $item->exercise_model_id == 3 ? 'jawaban_singkat' : '') == 'jawaban_singkat' ? 'selected' : '' }}>Jawaban Singkat</option>
+                                                </select>
+                                            </div>
+
+                                            <!-- Pertanyaan -->
+                                            <div class="mb-3">
+                                                <label class="form-label">Pertanyaan <span class="text-danger">*</span></label>
+                                                <textarea class="form-control" name="items[{{ $index }}][question]" rows="4" required>{{ old("items.{$index}.question", strip_tags($item->question ?? '')) }}</textarea>
+                                            </div>
+
+                                            <!-- Pilihan Jawaban (untuk Pilihan Ganda) -->
+                                            @php
+                                                $selection = is_array($item->selection) ? $item->selection : json_decode($item->selection, true);
+                                                $showOptions = ($item->exercise_model_id == 1);
+                                            @endphp
+                                            
+                                            <div class="options-section mb-3" style="{{ $showOptions ? '' : 'display:none' }}">
+                                                <label class="form-label">Pilihan Jawaban</label>
+                                                @if(is_array($selection) && isset($selection['A']))
+                                                    @foreach(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D', 'E' => 'E'] as $key => $label)
+                                                        <div class="input-group mb-2">
+                                                            <span class="input-group-text">{{ $label }}</span>
+                                                            <input type="text" class="form-control" name="items[{{ $index }}][selection][{{ $key }}]" 
+                                                                   value="{{ old("items.{$index}.selection.{$key}", $selection[$key] ?? '') }}" 
+                                                                   placeholder="Opsi {{ $label }}">
+                                                        </div>
+                                                    @endforeach
+                                                @else
+                                                    @foreach(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D', 'E' => 'E'] as $key => $label)
+                                                        <div class="input-group mb-2">
+                                                            <span class="input-group-text">{{ $label }}</span>
+                                                            <input type="text" class="form-control" name="items[{{ $index }}][selection][{{ $key }}]" placeholder="Opsi {{ $label }}">
+                                                        </div>
+                                                    @endforeach
+                                                @endif
+                                            </div>
+
+                                            <!-- Kunci Jawaban -->
+                                            <div class="mb-3">
+                                                <label class="form-label">Kunci Jawaban</label>
+                                                <input type="text" class="form-control" name="items[{{ $index }}][answer]" 
+                                                       value="{{ old("items.{$index}.answer", $item->answer ?? '') }}" 
+                                                       placeholder="Untuk pilihan ganda: A/B/C/D/E. Untuk essay: jawaban yang benar">
+                                                <small class="text-muted">Untuk pilihan ganda: A/B/C/D/E | Untuk essay/singkat: jawaban yang benar</small>
+                                            </div>
+                                        </div>
                                     @endforeach
                                 </div>
-                            </div>
-                            <small class="text-muted">Pilih kelas yang akan dapat mengakses soal ini</small>
+                            @else
+                                <div class="alert alert-warning">Tidak ada soal items</div>
+                            @endif
                         </div>
 
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class='bx bx-save me-1'></i>Update
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class='bx bx-save me-2'></i>Update Semua
                             </button>
-                            <a href="{{ route('guru.soal.list-direct', [$serial->id, $category]) }}" class="btn btn-label-secondary">
-                                <i class='bx bx-x me-1'></i>Batal
+                            <a href="{{ route('guru.soal.list-direct', [$serial->id, $category]) }}" class="btn btn-label-secondary btn-lg">
+                                <i class='bx bx-x me-2'></i>Batal
                             </a>
                         </div>
                     </form>
@@ -160,37 +175,113 @@
         </div>
 
         <div class="col-md-4">
-            <div class="card bg-label-info">
+            <!-- Bagikan ke Kelas Card -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class='bx bx-share-alt me-2'></i>Bagikan ke Kelas</h6>
+                </div>
                 <div class="card-body">
-                    <h6 class="mb-3"><i class='bx bx-info-circle me-2'></i>Informasi</h6>
-                    <ul class="mb-0">
-                        <li>Pilih tipe dan jenis soal yang sesuai</li>
-                        <li>Judul soal harus jelas dan deskriptif</li>
-                        <li>Untuk pilihan ganda, isi minimal 2 opsi</li>
-                        <li>Kunci jawaban wajib diisi</li>
-                        <li>Pilih kelas yang akan mengakses soal</li>
+                    <form action="{{ route('guru.soal.update-custom', [$serial->id, $exercise->id]) }}" method="POST" id="shareForm">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" name="mapel_id" value="{{ $exercise->lesson->mapel_id }}">
+                        <input type="hidden" name="exercise_type_id" value="{{ $exercise->exercise_type_id }}">
+                        <input type="hidden" name="title" value="{{ $exercise->title }}">
+                        <input type="hidden" name="time_limit" value="{{ $exercise->time_limit }}">
+                        @foreach($exercise->exerciseItems as $index => $item)
+                            <input type="hidden" name="items[{{ $index }}][id]" value="{{ $item->id }}">
+                            <input type="hidden" name="items[{{ $index }}][question_type]" value="{{ $item->exercise_model_id == 1 ? 'pilihan_ganda' : ($item->exercise_model_id == 2 ? 'essai' : 'jawaban_singkat') }}">
+                            <input type="hidden" name="items[{{ $index }}][question]" value="{{ strip_tags($item->question) }}">
+                            <input type="hidden" name="items[{{ $index }}][answer]" value="{{ $item->answer }}">
+                        @endforeach
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="selectAllClassrooms">
+                            <label class="form-check-label fw-bold" for="selectAllClassrooms">
+                                Pilih Semua Kelas
+                            </label>
+                        </div>
+                        <hr>
+
+                        @php
+                            $sharedClasses = is_array($exercise->shared_to_classes) ? $exercise->shared_to_classes : (json_decode($exercise->shared_to_classes, true) ?? []);
+                        @endphp
+
+                        @if($classrooms->count() > 0)
+                            <div class="classroom-list" style="max-height: 300px; overflow-y: auto;">
+                                @foreach($classrooms as $classroom)
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input classroom-checkbox" type="checkbox" name="classrooms[]" 
+                                           value="{{ $classroom->id }}" id="classroom{{ $classroom->id }}"
+                                           {{ in_array($classroom->id, old('classrooms', $sharedClasses)) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="classroom{{ $classroom->id }}">
+                                        <span class="badge bg-info me-1">{{ $classroom->name }}</span>
+                                    </label>
+                                </div>
+                                @endforeach
+                            </div>
+                            <hr>
+                            <small class="text-muted d-block mb-3">Pilih kelas yang akan dapat mengakses soal ini</small>
+                            <button type="submit" form="shareForm" class="btn btn-success btn-sm w-100">
+                                <i class='bx bx-check me-1'></i>Simpan Pembagian
+                            </button>
+                        @else
+                            <div class="alert alert-warning mb-0" role="alert">
+                                <small>Tidak ada kelas yang tersedia</small>
+                            </div>
+                        @endif
+                    </form>
+                </div>
+            </div>
+
+            <!-- Informasi Card -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class='bx bx-info-circle me-2'></i>Petunjuk</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0 small">
+                        <li>✓ Isi semua field yang diperlukan</li>
+                        <li>✓ Setiap tab adalah satu soal terpisah</li>
+                        <li>✓ Gunakan jenis soal yang sesuai</li>
+                        <li>✓ Kunci jawaban harus jelas</li>
+                        <li>✓ Tentukan waktu pengerjaan soal</li>
                     </ul>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Hidden form for main submission -->
+    <form action="{{ route('guru.soal.update-custom', [$serial->id, $exercise->id]) }}" method="POST" id="mainForm" style="display:none;">
+        @csrf
+        @method('PUT')
+        <input type="hidden" name="mapel_id" value="{{ $exercise->lesson->mapel_id }}">
+        <input type="hidden" name="exercise_type_id" value="{{ $exercise->exercise_type_id }}">
+        <input type="hidden" name="title" value="{{ $exercise->title }}">
+        <input type="hidden" name="time_limit" value="{{ $exercise->time_limit }}">
+    </form>
 </div>
 
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const questionTypeSelect = document.getElementById('question_type');
-    const optionsContainer = document.getElementById('optionsContainer');
     const selectAllCheckbox = document.getElementById('selectAllClassrooms');
     const classroomCheckboxes = document.querySelectorAll('.classroom-checkbox');
+    const questionTypeSelects = document.querySelectorAll('.question-type-select');
 
-    // Toggle options based on question type
-    questionTypeSelect.addEventListener('change', function() {
-        if (this.value === 'pilihan_ganda') {
-            optionsContainer.style.display = 'block';
-        } else {
-            optionsContainer.style.display = 'none';
-        }
+    // Handle question type change for each tab
+    questionTypeSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            const tabPane = this.closest('.tab-pane');
+            const optionsSection = tabPane.querySelector('.options-section');
+            
+            if (this.value === 'pilihan_ganda') {
+                optionsSection.style.display = 'block';
+            } else {
+                optionsSection.style.display = 'none';
+            }
+        });
     });
 
     // Select all classrooms

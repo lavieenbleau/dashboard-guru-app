@@ -1,0 +1,259 @@
+@startuml 10f-ai-generator-erd
+!define BGCOLOR #F5F5F5
+!define PRIMARY_COLOR #87CEEB
+!define HIGHLIGHT_COLOR #FFE5B4
+
+title Entity Relationship Diagram: AI Question Generator
+
+skinparam backgroundColor BGCOLOR
+skinparam classBorderColor #333333
+skinparam classBackgroundColor #FFFFFF
+
+' === CORE ENTITIES ===
+
+class Users {
+    --
+    id : INT PK
+    name : VARCHAR(255)
+    email : VARCHAR(255)
+    role : ENUM('guru', 'admin', 'siswa')
+    created_at : TIMESTAMP
+}
+
+class Serial {
+    --
+    id : INT PK
+    user_id : INT FK
+    code : VARCHAR(100)
+    active : BOOLEAN
+    created_at : TIMESTAMP
+}
+
+' === MATERIAL SOURCES ===
+
+class Post {
+    --
+    id : INT PK
+    serial_id : INT FK (nullable)
+    user_id : INT FK
+    title : VARCHAR(255)
+    content : LONGTEXT
+    type : ENUM('text', 'pdf', 'document')
+    file_path : VARCHAR(255) (nullable)
+    created_at : TIMESTAMP
+    **Note: Source untuk material guru**
+}
+
+class Lesson {
+    --
+    id : INT PK
+    mapel_id : INT FK
+    category : ENUM('materi', 'soal')
+    nama : VARCHAR(255)
+    content : LONGTEXT
+    image : VARCHAR(255) (nullable)
+    created_at : TIMESTAMP
+    **Note: Source untuk material admin**
+}
+
+' === EXERCISE/QUESTION BANK ===
+
+class Exercise {
+    --
+    id : INT PK
+    serial_id : INT FK (nullable)
+    lesson_id : INT FK (nullable)
+    exercise_type_id : INT FK (nullable)
+    title : VARCHAR(255)
+    description : TEXT
+    is_admin : BOOLEAN (0 atau 1)
+    generated_by : ENUM('manual', 'ai')
+    created_at : TIMESTAMP
+    **Note: Container untuk soal**
+}
+
+class ExerciseItem {
+    --
+    id : INT PK
+    exercise_id : INT FK
+    question : LONGTEXT
+    image : VARCHAR(255) (nullable)
+    type : ENUM('mcq', 'essay', 'true_false')
+    position : INT
+    created_at : TIMESTAMP
+    **Note: Individual pertanyaan dalam soal**
+}
+
+class ExerciseItemAnswer {
+    --
+    id : INT PK
+    exercise_item_id : INT FK
+    answer_text : LONGTEXT
+    is_correct : BOOLEAN
+    position : INT
+    created_at : TIMESTAMP
+    **Note: Pilihan jawaban untuk pertanyaan**
+}
+
+class ExerciseType {
+    --
+    id : INT PK
+    kode : VARCHAR(50)
+    nama : VARCHAR(255)
+    description : TEXT
+    created_at : TIMESTAMP
+}
+
+' === SUPPORTING ENTITIES ===
+
+class Mapel {
+    --
+    id : INT PK
+    name : VARCHAR(255)
+    code : VARCHAR(50)
+    description : TEXT
+    created_at : TIMESTAMP
+}
+
+class Classroom {
+    --
+    id : INT PK
+    serial_id : INT FK
+    name : VARCHAR(255)
+    description : TEXT
+    created_at : TIMESTAMP
+}
+
+class ClassroomStudent {
+    --
+    id : INT PK
+    classroom_id : INT FK
+    user_id : INT FK
+    joined_at : TIMESTAMP
+}
+
+' === CACHE & LOG ENTITIES ===
+
+class AIGenerationLog {
+    --
+    id : INT PK
+    user_id : INT FK
+    material_source : ENUM('post', 'lesson')
+    material_id : INT
+    question_count : INT
+    difficulty : VARCHAR(50)
+    question_types : JSON
+    api_model : VARCHAR(50)
+    status : ENUM('success', 'failed', 'pending')
+    error_message : TEXT (nullable)
+    processing_time_ms : INT
+    tokens_used : INT
+    cost : DECIMAL(10,4)
+    created_at : TIMESTAMP
+    **Note: Audit & monitoring**
+}
+
+' === RELATIONSHIPS ===
+
+' Post relationships
+Post ||--o{ Exercise : "generates"
+Post "1" --o "many" Users : "belongs to"
+
+' Lesson relationships
+Lesson ||--o{ Exercise : "generates"
+Lesson "many" --o "1" Mapel : "belongs to"
+
+' Exercise relationships
+Exercise ||--o{ ExerciseItem : "contains"
+Exercise "many" --o "1" ExerciseType : "has type"
+Exercise "many" --o "1" Serial : "belongs to"
+Exercise "many" --o "1" Classroom : "optional link"
+
+' ExerciseItem relationships
+ExerciseItem ||--o{ ExerciseItemAnswer : "has options"
+
+' Classroom relationships
+Classroom ||--o{ ClassroomStudent : "enrolls"
+Classroom "many" --o "1" Serial : "belongs to"
+
+' User relationships
+Users "1" --o "many" Serial : "has"
+Users "1" --o "many" Post : "author"
+Users "1" --o "many" ClassroomStudent : "enrolled"
+
+' Logging
+AIGenerationLog "many" --o "1" Users : "tracks"
+
+' === NOTES ===
+
+note on link Post, Exercise
+    Post material → Exercise
+    (Teacher uploads)
+end note
+
+note on link Lesson, Exercise
+    Lesson material → Exercise
+    (Admin setup)
+end note
+
+note bottom of Post
+    Sumber Material 1:
+    ✅ Teacher uploads
+    ✅ Per serial_id
+    ✅ Various formats
+    
+    Query: post:312
+    Token format dalam form
+end note
+
+note bottom of Lesson
+    Sumber Material 2:
+    ✅ Admin content
+    ✅ Shared globally
+    ✅ Curriculum-based
+    
+    Query: lesson:156
+    Token format dalam form
+end note
+
+note bottom of Exercise
+    Container untuk soal:
+    ✅ Bisa manual input
+    ✅ Bisa AI generated
+    ✅ Link ke type & classroom
+    
+    is_admin=0 → Custom
+    is_admin=1 → Admin questions
+end note
+
+note bottom of ExerciseItem
+    Individual pertanyaan:
+    ✅ Multiple types
+    ✅ Optional images
+    ✅ Position ordered
+    
+    Types:
+    • MCQ (Multiple Choice)
+    • Essay (Short answer)
+    • True/False
+end note
+
+note bottom of AIGenerationLog
+    Usage Tracking:
+    ✅ Monitor API usage
+    ✅ Track costs
+    ✅ Performance metrics
+    ✅ Error analysis
+    ✅ User behavior
+end note
+
+' === LEGEND ===
+
+note top of Users
+    **Legend:**
+    PK = Primary Key
+    FK = Foreign Key
+    **Bold** = Key field
+end note
+
+@enduml

@@ -10,7 +10,6 @@ class OnlineMeeting extends Model
         'serial_id',
         'classroom_id',
         'user_id',
-        'mapel_id',
         'title',
         'description',
         'meeting_code',
@@ -19,17 +18,11 @@ class OnlineMeeting extends Model
         'start_time',
         'end_time',
         'status',
-        'room_id',
-        'is_internal',
-        'max_participants',
-        'participants'
     ];
 
     protected $casts = [
         'start_time' => 'datetime',
         'end_time' => 'datetime',
-        'participants' => 'array',
-        'is_internal' => 'boolean',
     ];
 
     public function serial()
@@ -47,9 +40,9 @@ class OnlineMeeting extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function mapel()
+    public function participants()
     {
-        return $this->belongsTo(Mapel::class);
+        return $this->hasMany(OnlineMeetingParticipant::class);
     }
 
     // Generate unique meeting code
@@ -66,7 +59,7 @@ class OnlineMeeting extends Model
     public function isActive()
     {
         $now = now();
-        return $this->status === 'ongoing' || 
-               ($this->status === 'scheduled' && $now->between($this->start_time, $this->end_time));
+        return $this->status === 'live' ||
+            ($this->status === 'upcoming' && $now->between($this->start_time, $this->end_time));
     }
 }

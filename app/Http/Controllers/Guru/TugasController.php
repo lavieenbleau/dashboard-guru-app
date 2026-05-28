@@ -84,9 +84,8 @@ class TugasController extends Controller
             'slug' => Str::slug($request->title) . '-' . time(),
             'link' => $request->link,
             'attachment' => $attachmentPath,
-            'deadline' => $request->deadline,
+            'due_date' => $request->deadline,
             'category' => null,
-            'shared_to_classes' => $request->classrooms,
             'is_task' => 1,
         ]);
 
@@ -110,7 +109,7 @@ class TugasController extends Controller
         $task = Post::findOrFail($id);
         $classrooms = Classroom::where('serial_id', $serial->id)->orderBy('name')->get();
         
-        $sharedClasses = $task->shared_to_classes ?? [];
+        $sharedClasses = $classrooms->pluck('id')->toArray();
 
         return view('guru.tugas.edit', compact('serial', 'mapel', 'task', 'classrooms', 'sharedClasses'));
     }
@@ -157,9 +156,8 @@ class TugasController extends Controller
             'title' => $request->title,
             'description' => $request->description,
             'link' => $request->link,
-            'deadline' => $request->deadline,
+            'due_date' => $request->deadline,
             'attachment' => $attachmentPath,
-            'shared_to_classes' => $request->classrooms,
         ]);
 
         return redirect()->route('guru.tugas.mapel', [$serial->id, $mapel->id])

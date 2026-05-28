@@ -1,0 +1,120 @@
+@startuml 10h-ai-generator-state-diagram
+!define BGCOLOR #FAFAFA
+
+title State Diagram: AI Generation Request & Question States
+
+skinparam backgroundColor BGCOLOR
+skinparam stateBorderColor #333333
+skinparam stateBackgroundColor #FFFFFF
+
+' === REQUEST STATES ===
+
+state "Request Lifecycle" {
+    [*] --> PENDING: User submit\nform
+    
+    PENDING --> VALIDATING: Validate\ninput & material\ntoken
+    
+    VALIDATING --> VALIDATED: ✓ All valid
+    VALIDATING --> INVALID: ✗ Missing/bad\ninput
+    
+    INVALID --> [*]: Show error to user\n(back to form)
+    
+    VALIDATED --> FETCHING: Fetch material\nfrom DB or cache
+    
+    FETCHING --> FETCHED: Material\nretrieved
+    FETCHING --> NOT_FOUND: Material\nnot found
+    
+    NOT_FOUND --> [*]: Error:\nMaterial missing\n(back to form)
+    
+    FETCHED --> BUILDING_PROMPT: Build\nAI prompt\nwith material
+    
+    BUILDING_PROMPT --> PROMPT_READY: Prompt\nformatted
+    
+    PROMPT_READY --> CALLING_API: Call\nOpenAI API
+    
+    CALLING_API --> API_SUCCESS: ✓ 200 OK\nReceived response
+    CALLING_API --> API_FAILED: ✗ API error\n(timeout, rate limit, key)
+    
+    API_FAILED --> [*]: Notify user:\nRetry or abandon
+    
+    API_SUCCESS --> PARSING: Parse\nJSON response
+    
+    PARSING --> PARSED: Response\nparsed
+    PARSING --> PARSE_ERROR: ✗ Invalid\nJSON format
+    
+    PARSE_ERROR --> [*]: Notify user:\nMalformed response
+    
+    PARSED --> VALIDATING_QUESTIONS: Validate each\nquestion structure
+    
+    VALIDATING_QUESTIONS --> QUESTIONS_VALID: ✓ All questions\nvalid
+    VALIDATING_QUESTIONS --> SOME_INVALID: ~ Some questions\ninvalid
+    
+    SOME_INVALID --> QUESTIONS_VALID: Filter invalid\nKeep valid ones
+    
+    QUESTIONS_VALID --> STORING_TEMP: Store to\ntemp cache\nfor preview
+    
+    STORING_TEMP --> PREVIEW_READY: Preview data\nready for UI
+    
+    PREVIEW_READY --> [*]: Send to frontend\nfor user review
+}
+
+' === QUESTION STATES ===
+
+state "Question Lifecycle" {
+    [*] --> TEMP: Question in\ntemp cache\n(preview)
+    
+    TEMP --> USER_REVIEW: Show preview\nto user
+    
+    USER_REVIEW --> ACCEPTED: User accepts\nquestion
+    USER_REVIEW --> EDITED: User edits\nquestion
+    USER_REVIEW --> REJECTED: User rejects\n& regenerates
+    
+    EDITED --> TEMP: Save edit\nto temp
+    EDITED --> USER_REVIEW: Show updated\npreview
+    
+    REJECTED --> [*]: Clear temp\nDiscard question
+    
+    ACCEPTED --> SAVING: Save to\nExercise\nExerciseItem
+    
+    SAVING --> PERSISTED: Question\npersisted in DB
+    
+    PERSISTED --> PUBLISHED: Question\npublished in\nBank Soal
+    
+    PUBLISHED --> SHAREABLE: Can be\nshared to\nclassrooms
+    
+    SHAREABLE --> [*]: Question\navailable\nfor students
+}
+
+' === EXERCISE STATES ===
+
+state "Exercise (Question Set) Lifecycle" {
+    [*] --> CREATED: Create new\nExercise record\n(skeleton)
+    
+    CREATED --> ITEMS_ADDING: Add items\n(ExerciseItem +\nAnswers)
+    
+    ITEMS_ADDING --> ITEMS_COMPLETE: All items\nadded &\nlinked
+    
+    ITEMS_COMPLETE --> DRAFT: Exercise in\nDRAFT status\n(not visible)
+    
+    DRAFT --> EDITING: Teacher can\nedit exercise\n& items
+    
+    EDITING --> DRAFT: Changes\nsaved
+    
+    DRAFT --> PUBLISHED: Teacher\npublishes\n(Set public)
+    
+    PUBLISHED --> SHAREABLE_EXERCISE: Can share\nto classrooms
+    
+    SHAREABLE_EXERCISE --> ASSIGNED: Assigned to\nclassroom &\nstudents
+    
+    ASSIGNED --> COMPLETED: Students\ncompleted\ntaking quiz
+    
+    COMPLETED --> ARCHIVED: Question\narchived after\nperiod
+    
+    ARCHIVED --> [*]: Question\narchived\n(historical)
+    
+    DRAFT --> DELETED: Teacher\ndeletes\nquestion set
+    
+    DELETED --> [*]: Exercise\ndeleted\n(cascaded)
+}
+
+@enduml

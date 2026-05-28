@@ -1,0 +1,479 @@
+<mxfile host="app.diagrams.net" modified="2026-01-27T00:00:00.000Z" agent="5.0" version="22.1.16" etag="drawio-version" type="device">
+  <diagram name="Laporan Pembelajaran Harian" id="laporan-harian">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="2600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Start -->
+        <mxCell id="start" value="Guru Akses Menu Laporan" style="ellipse;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeColor=#000000;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="40" width="160" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="loadLaporan" value="Load Halaman Laporan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="150" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="showCalendar" value="Tampilkan Kalender Laporan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="250" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="calendarAction" value="Pilih Aksi" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="350" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- CREATE LAPORAN -->
+        <mxCell id="selectDate" value="Pilih Tanggal" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="490" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="checkExisting" value="Laporan Sudah Ada?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="60" y="590" width="180" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="showWarning" value="Warning: Laporan Sudah Ada" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E6;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="280" y="610" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="overwriteConfirm" value="Overwrite?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="290" y="710" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="loadFormEdit" value="Load Form untuk Edit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="280" y="850" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="loadFormCreate" value="Load Form Buat Baru" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="730" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="selectKelas" value="Pilih Kelas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="830" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="selectMapel" value="Pilih Mata Pelajaran" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="930" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="selectTheme" value="Pilih Tema/Subtema" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1030" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="autoFillTemplate" value="Auto-fill Template" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1130" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="inputKompetensi" value="Input Kompetensi Dasar" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1230" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="inputMateri" value="Input Materi yang Diajarkan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1330" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="inputKegiatan" value="Input Kegiatan Pembelajaran" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1430" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="inputMetode" value="Input Metode Pembelajaran" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1530" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="inputMedia" value="Input Media yang Digunakan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1630" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="inputPenilaian" value="Input Teknik Penilaian" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1730" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="inputCatatan" value="Input Catatan Tambahan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1830" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="validateForm" value="Form Lengkap?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1930" width="180" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="errorValidation" value="Error: Field Wajib Kosong" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="280" y="1950" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="reviewLaporan" value="Preview Laporan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="60" y="2070" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="confirmSave" value="Simpan?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="60" y="2170" width="180" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="saveLaporan" value="Simpan ke Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="60" y="2310" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="generatePDFAuto" value="Auto-generate PDF" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="60" y="2410" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="successSave" value="Success: Laporan Disimpan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="60" y="2510" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- VIEW LAPORAN -->
+        <mxCell id="selectDateView" value="Pilih Tanggal dari Kalender" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="500" y="490" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="checkReport" value="Ada Laporan?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="520" y="590" width="160" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="noReport" value="Tidak Ada Laporan di Tanggal Ini" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E6;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="730" y="610" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="loadReportDetail" value="Load Detail Laporan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="500" y="730" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="showReportDetail" value="Tampilkan Detail Lengkap" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="500" y="830" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="reportAction" value="Pilih Aksi" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="530" y="930" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- EXPORT PDF -->
+        <mxCell id="generatePDFManual" value="Generate PDF" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1070" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="loadTemplate" value="Load Template PDF" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1170" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="fillData" value="Isi Data Laporan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1270" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="addHeaderFooter" value="Tambah Header/Footer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1370" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="addLogo" value="Tambah Logo Sekolah" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1470" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="finalPDF" value="Finalisasi PDF" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1570" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="downloadPDF" value="Download PDF" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1670" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- EXPORT EXCEL -->
+        <mxCell id="generateExcel" value="Generate Excel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="760" y="1070" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="formatSheet" value="Format Sheet" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="760" y="1170" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="downloadExcel" value="Download Excel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="760" y="1270" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- EDIT LAPORAN -->
+        <mxCell id="editData" value="Edit Data Laporan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="980" y="1070" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="validateEdit" value="Valid?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="990" y="1170" width="160" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="errorEdit" value="Error Validasi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="1190" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="updateLaporan" value="Update Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="980" y="1310" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="regeneratePDF" value="Regenerate PDF" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="980" y="1410" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="successEdit" value="Success: Laporan Diupdate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="980" y="1510" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- DELETE LAPORAN -->
+        <mxCell id="confirmDelete" value="Konfirmasi Hapus" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="1070" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="deletePDFFile" value="Hapus File PDF" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="1170" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="deleteFromDB" value="Hapus dari Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="1270" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="successDelete" value="Success: Laporan Dihapus" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="1370" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- FILTER & SEARCH -->
+        <mxCell id="showFilterForm" value="Tampilkan Form Filter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="1430" y="490" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="filterOptions" value="Filter By" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="1440" y="590" width="160" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="selectDateRange" value="Pilih Rentang Tanggal" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="1430" y="730" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="selectKelasFilter" value="Pilih Kelas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="1650" y="730" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="selectMapelFilter" value="Pilih Mata Pelajaran" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="1650" y="830" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="applyFilter" value="Apply Filter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1430" y="950" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="showFilteredResults" value="Tampilkan Hasil Filter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1430" y="1050" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- BULK EXPORT -->
+        <mxCell id="selectPeriod" value="Pilih Periode" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="1870" y="490" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="fetchAllReports" value="Ambil Semua Laporan di Periode" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1870" y="590" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="generateBulkPDF" value="Generate PDF Gabungan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1870" y="690" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="createZIPFile" value="Buat File ZIP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1870" y="790" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="downloadZIP" value="Download ZIP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1870" y="890" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- STATISTIK -->
+        <mxCell id="loadStats" value="Load Statistik" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="2100" y="490" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="calculateStats" value="Hitung Statistik" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="2100" y="590" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="showStats" value="Tampilkan Statistik" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="2100" y="690" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="statsDetail" value="Detail" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="2120" y="790" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="showTotalReports" value="Jumlah Laporan Dibuat" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="2100" y="930" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="showMonthlyChart" value="Grafik Laporan Bulanan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="2100" y="1030" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="showTopMapel" value="Mapel dengan Laporan Terbanyak" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="2100" y="1130" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- End -->
+        <mxCell id="end" value="End" style="ellipse;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeColor=#000000;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="2120" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Main Edges -->
+        <mxCell id="e1" edge="1" parent="1" source="start" target="loadLaporan"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="loadLaporan" target="showCalendar"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="showCalendar" target="calendarAction"><mxGeometry relative="1" as="geometry" /></mxCell>
+        
+        <!-- Create Branch -->
+        <mxCell id="e4" value="Buat Laporan" edge="1" parent="1" source="calendarAction" target="selectDate"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="selectDate" target="checkExisting"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e6" value="Ya" edge="1" parent="1" source="checkExisting" target="showWarning"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="showWarning" target="overwriteConfirm"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e8" value="Tidak" edge="1" parent="1" source="overwriteConfirm" target="loadLaporan">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="250" y="760" /><mxPoint x="30" y="760" /><mxPoint x="30" y="180" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e9" value="Ya" edge="1" parent="1" source="overwriteConfirm" target="loadFormEdit"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="loadFormEdit" target="inputKompetensi">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="360" y="950" /><mxPoint x="150" y="950" /><mxPoint x="150" y="1200" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e11" value="Tidak" edge="1" parent="1" source="checkExisting" target="loadFormCreate"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="loadFormCreate" target="selectKelas"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="selectKelas" target="selectMapel"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="selectMapel" target="selectTheme"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e15" edge="1" parent="1" source="selectTheme" target="autoFillTemplate"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e16" edge="1" parent="1" source="autoFillTemplate" target="inputKompetensi"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e17" edge="1" parent="1" source="inputKompetensi" target="inputMateri"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e18" edge="1" parent="1" source="inputMateri" target="inputKegiatan"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e19" edge="1" parent="1" source="inputKegiatan" target="inputMetode"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e20" edge="1" parent="1" source="inputMetode" target="inputMedia"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e21" edge="1" parent="1" source="inputMedia" target="inputPenilaian"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e22" edge="1" parent="1" source="inputPenilaian" target="inputCatatan"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e23" edge="1" parent="1" source="inputCatatan" target="validateForm"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e24" value="Tidak" edge="1" parent="1" source="validateForm" target="errorValidation"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e25" edge="1" parent="1" source="errorValidation" target="inputKompetensi">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="360" y="2050" /><mxPoint x="460" y="2050" /><mxPoint x="460" y="1260" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e26" value="Ya" edge="1" parent="1" source="validateForm" target="reviewLaporan"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e27" edge="1" parent="1" source="reviewLaporan" target="confirmSave"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e28" value="Tidak" edge="1" parent="1" source="confirmSave" target="inputKompetensi">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="20" y="2220" /><mxPoint x="20" y="1260" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e29" value="Ya" edge="1" parent="1" source="confirmSave" target="saveLaporan"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e30" edge="1" parent="1" source="saveLaporan" target="generatePDFAuto"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e31" edge="1" parent="1" source="generatePDFAuto" target="successSave"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e32" edge="1" parent="1" source="successSave" target="loadLaporan">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="150" y="2600" /><mxPoint x="30" y="2600" /><mxPoint x="30" y="180" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- View Branch -->
+        <mxCell id="e33" value="Lihat Laporan" edge="1" parent="1" source="calendarAction" target="selectDateView"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e34" edge="1" parent="1" source="selectDateView" target="checkReport"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e35" value="Tidak" edge="1" parent="1" source="checkReport" target="noReport"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e36" edge="1" parent="1" source="noReport" target="loadLaporan">
+          <parameter name="geometry"><Array as="points"><mxPoint x="820" y="180" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e37" value="Ya" edge="1" parent="1" source="checkReport" target="loadReportDetail"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e38" edge="1" parent="1" source="loadReportDetail" target="showReportDetail"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e39" edge="1" parent="1" source="showReportDetail" target="reportAction"><mxGeometry relative="1" as="geometry" /></mxCell>
+        
+        <!-- Export PDF -->
+        <mxCell id="e40" value="Export PDF" edge="1" parent="1" source="reportAction" target="generatePDFManual"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e41" edge="1" parent="1" source="generatePDFManual" target="loadTemplate"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e42" edge="1" parent="1" source="loadTemplate" target="fillData"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e43" edge="1" parent="1" source="fillData" target="addHeaderFooter"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e44" edge="1" parent="1" source="addHeaderFooter" target="addLogo"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e45" edge="1" parent="1" source="addLogo" target="finalPDF"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e46" edge="1" parent="1" source="finalPDF" target="downloadPDF"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e47" edge="1" parent="1" source="downloadPDF" target="showReportDetail">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="600" y="1760" /><mxPoint x="460" y="1760" /><mxPoint x="460" y="860" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- Export Excel -->
+        <mxCell id="e48" value="Export Excel" edge="1" parent="1" source="reportAction" target="generateExcel"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e49" edge="1" parent="1" source="generateExcel" target="formatSheet"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e50" edge="1" parent="1" source="formatSheet" target="downloadExcel"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e51" edge="1" parent="1" source="downloadExcel" target="showReportDetail">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="850" y="1360" /><mxPoint x="460" y="1360" /><mxPoint x="460" y="860" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- Edit -->
+        <mxCell id="e52" value="Edit" edge="1" parent="1" source="reportAction" target="editData"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e53" edge="1" parent="1" source="editData" target="validateEdit"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e54" value="Tidak" edge="1" parent="1" source="validateEdit" target="errorEdit"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e55" edge="1" parent="1" source="errorEdit" target="editData">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1270" y="1100" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e56" value="Ya" edge="1" parent="1" source="validateEdit" target="updateLaporan"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e57" edge="1" parent="1" source="updateLaporan" target="regeneratePDF"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e58" edge="1" parent="1" source="regeneratePDF" target="successEdit"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e59" edge="1" parent="1" source="successEdit" target="loadLaporan">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1070" y="1600" /><mxPoint x="30" y="1600" /><mxPoint x="30" y="180" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- Delete -->
+        <mxCell id="e60" value="Hapus" edge="1" parent="1" source="reportAction" target="confirmDelete"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e61" edge="1" parent="1" source="confirmDelete" target="deletePDFFile"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e62" edge="1" parent="1" source="deletePDFFile" target="deleteFromDB"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e63" edge="1" parent="1" source="deleteFromDB" target="successDelete"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e64" edge="1" parent="1" source="successDelete" target="loadLaporan">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1290" y="1460" /><mxPoint x="30" y="1460" /><mxPoint x="30" y="180" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- Kembali -->
+        <mxCell id="e65" value="Kembali" edge="1" parent="1" source="reportAction" target="loadLaporan">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="460" y="980" /><mxPoint x="30" y="980" /><mxPoint x="30" y="180" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- Filter -->
+        <mxCell id="e66" value="Filter" edge="1" parent="1" source="calendarAction" target="showFilterForm"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e67" edge="1" parent="1" source="showFilterForm" target="filterOptions"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e68" value="Tanggal Range" edge="1" parent="1" source="filterOptions" target="selectDateRange"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e69" edge="1" parent="1" source="selectDateRange" target="applyFilter">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1520" y="820" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e70" value="Kelas" edge="1" parent="1" source="filterOptions" target="selectKelasFilter"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e71" edge="1" parent="1" source="selectKelasFilter" target="applyFilter">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1730" y="820" /><mxPoint x="1730" y="980" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e72" value="Mata Pelajaran" edge="1" parent="1" source="filterOptions" target="selectMapelFilter"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e73" edge="1" parent="1" source="selectMapelFilter" target="applyFilter">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1730" y="920" /><mxPoint x="1730" y="980" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e74" edge="1" parent="1" source="applyFilter" target="showFilteredResults"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e75" edge="1" parent="1" source="showFilteredResults" target="loadLaporan">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1520" y="1140" /><mxPoint x="30" y="1140" /><mxPoint x="30" y="180" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- Bulk Export -->
+        <mxCell id="e76" value="Export Periode" edge="1" parent="1" source="calendarAction" target="selectPeriod"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e77" edge="1" parent="1" source="selectPeriod" target="fetchAllReports"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e78" edge="1" parent="1" source="fetchAllReports" target="generateBulkPDF"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e79" edge="1" parent="1" source="generateBulkPDF" target="createZIPFile"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e80" edge="1" parent="1" source="createZIPFile" target="downloadZIP"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e81" edge="1" parent="1" source="downloadZIP" target="loadLaporan">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1960" y="980" /><mxPoint x="30" y="980" /><mxPoint x="30" y="180" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- Statistik -->
+        <mxCell id="e82" value="Lihat Statistik" edge="1" parent="1" source="calendarAction" target="loadStats"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e83" edge="1" parent="1" source="loadStats" target="calculateStats"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e84" edge="1" parent="1" source="calculateStats" target="showStats"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e85" edge="1" parent="1" source="showStats" target="statsDetail"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e86" value="Total Laporan" edge="1" parent="1" source="statsDetail" target="showTotalReports"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e87" edge="1" parent="1" source="showTotalReports" target="showStats">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="2190" y="1020" /><mxPoint x="2060" y="1020" /><mxPoint x="2060" y="720" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e88" value="Laporan per Bulan" edge="1" parent="1" source="statsDetail" target="showMonthlyChart"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e89" edge="1" parent="1" source="showMonthlyChart" target="showStats">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="2190" y="1120" /><mxPoint x="2060" y="1120" /><mxPoint x="2060" y="720" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e90" value="Mapel Terbanyak" edge="1" parent="1" source="statsDetail" target="showTopMapel"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e91" edge="1" parent="1" source="showTopMapel" target="showStats">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="2190" y="1220" /><mxPoint x="2060" y="1220" /><mxPoint x="2060" y="720" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e92" value="Kembali" edge="1" parent="1" source="statsDetail" target="loadLaporan">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="2300" y="840" /><mxPoint x="2300" y="180" /></Array></mxGeometry>
+        </mxCell>
+        
+        <!-- To End -->
+        <mxCell id="e93" edge="1" parent="1" source="loadLaporan" target="end">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="2340" y="180" /><mxPoint x="2340" y="2150" /></Array></mxGeometry>
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

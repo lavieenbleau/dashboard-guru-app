@@ -1,0 +1,21 @@
+
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `lesson_id` int unsigned NOT NULL,
+  `theme_id` int unsigned NOT NULL,
+  `subtheme_id` int unsigned NOT NULL,
+  `admin_id` int unsigned NOT NULL,
+  `number` int NOT NULL,
+  `title` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `embed` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `lesson_items_lesson_id_foreign` (`lesson_id`),
+  KEY `lesson_items_theme_id_foreign` (`theme_id`),
+  KEY `lesson_items_subtheme_id_foreign` (`subtheme_id`),
+  KEY `lesson_items_admin_id_foreign` (`admin_id`),
+  CONSTRAINT `lesson_items_admin_id_foreign` FOREIGN KEY (`admin_id`) REFERENCES `admins` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `lesson_items_lesson_id_foreign` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `lesson_items_subtheme_id_foreign` FOREIGN KEY (`subtheme_id`) REFERENCES `subthemes` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `lesson_items_theme_id_foreign` FOREIGN KEY (`theme_id`) REFERENCES `themes` (`id`) ON DELETE CASCADE
+

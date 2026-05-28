@@ -15,11 +15,6 @@ class Subtheme extends Model
         return $this->belongsTo(Theme::class, 'theme_id');
     }
 
-    public function materi()
-    {
-        return $this->hasMany(Lesson::class, 'subtheme_id');
-    }
-
     public function lessonItems()
     {
         return $this->hasMany(LessonItem::class, 'subtheme_id');

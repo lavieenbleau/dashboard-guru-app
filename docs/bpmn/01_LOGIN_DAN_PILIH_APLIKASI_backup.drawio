@@ -1,0 +1,230 @@
+<mxfile host="app.diagrams.net" modified="2026-01-27T00:00:00.000Z" agent="5.0" version="22.1.16" etag="drawio-version" type="device">
+  <diagram name="Login dan Pilih Aplikasi" id="login-pilih-aplikasi">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1654" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Start Event -->
+        <mxCell id="start" value="Guru Mengakses Sistem" style="ellipse;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeColor=#000000;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="520" y="40" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Login Page -->
+        <mxCell id="loginPage" value="Tampilkan Halaman Login" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="500" y="140" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Input Credentials -->
+        <mxCell id="inputCred" value="Input Email &amp; Password" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="500" y="240" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Validate Auth Gateway -->
+        <mxCell id="validateAuth" value="Validasi Kredensial" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="510" y="340" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Error Message -->
+        <mxCell id="errorMsg" value="Tampilkan Pesan Error" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="280" y="360" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Check Role Gateway -->
+        <mxCell id="checkRole" value="Cek Role User" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="510" y="480" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Access Denied -->
+        <mxCell id="accessDenied" value="Akses Ditolak" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="720" y="500" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Set Session -->
+        <mxCell id="setSession" value="Set Session &amp; Token" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="500" y="620" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Redirect Aplikasi -->
+        <mxCell id="redirectApp" value="Redirect ke /aplikasi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="500" y="720" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Fetch Serials -->
+        <mxCell id="fetchSerials" value="Ambil Data Serial User" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="500" y="820" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Check Serials Gateway -->
+        <mxCell id="checkSerials" value="Ada Serial?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="510" y="920" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- No Apps -->
+        <mxCell id="noApps" value="Tampilkan: Tidak Ada Aplikasi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="280" y="940" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Contact Admin -->
+        <mxCell id="contactAdmin" value="Hubungi Admin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="280" y="1040" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- End 1 -->
+        <mxCell id="end1" value="End" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFB6C1;strokeColor=#000000;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="290" y="1140" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Show Apps -->
+        <mxCell id="showApps" value="Tampilkan Daftar Aplikasi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1060" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Guru Pilih -->
+        <mxCell id="guruPilih" value="Guru Pilih Aplikasi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1160" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Validate Serial Gateway -->
+        <mxCell id="validateSerial" value="Serial Valid?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="510" y="1260" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Error 404 -->
+        <mxCell id="error404" value="Error 404" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="720" y="1280" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Load Dashboard -->
+        <mxCell id="loadDashboard" value="Load Dashboard Aplikasi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1400" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Fetch Stats -->
+        <mxCell id="fetchStats" value="Ambil Statistik" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1500" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Show Dashboard -->
+        <mxCell id="showDashboard" value="Tampilkan Dashboard" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1600" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- End 2 -->
+        <mxCell id="end2" value="End: Guru di Dashboard" style="ellipse;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeColor=#000000;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="520" y="1700" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Connections -->
+        <mxCell id="edge1" edge="1" parent="1" source="start" target="loginPage">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge2" edge="1" parent="1" source="loginPage" target="inputCred">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge3" edge="1" parent="1" source="inputCred" target="validateAuth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge4" value="Invalid" edge="1" parent="1" source="validateAuth" target="errorMsg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge5" edge="1" parent="1" source="errorMsg" target="loginPage">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="350" y="170" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="edge6" value="Valid" edge="1" parent="1" source="validateAuth" target="checkRole">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge7" value="Bukan Guru" edge="1" parent="1" source="checkRole" target="accessDenied">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge8" edge="1" parent="1" source="accessDenied" target="loginPage">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="780" y="170" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="edge9" value="Guru" edge="1" parent="1" source="checkRole" target="setSession">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge10" edge="1" parent="1" source="setSession" target="redirectApp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge11" edge="1" parent="1" source="redirectApp" target="fetchSerials">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge12" edge="1" parent="1" source="fetchSerials" target="checkSerials">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge13" value="Tidak Ada" edge="1" parent="1" source="checkSerials" target="noApps">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge14" edge="1" parent="1" source="noApps" target="contactAdmin">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge15" edge="1" parent="1" source="contactAdmin" target="end1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge16" value="Ada" edge="1" parent="1" source="checkSerials" target="showApps">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge17" edge="1" parent="1" source="showApps" target="guruPilih">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge18" edge="1" parent="1" source="guruPilih" target="validateSerial">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge19" value="Tidak" edge="1" parent="1" source="validateSerial" target="error404">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge20" edge="1" parent="1" source="error404" target="showApps">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="780" y="1090" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="edge21" value="Valid" edge="1" parent="1" source="validateSerial" target="loadDashboard">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge22" edge="1" parent="1" source="loadDashboard" target="fetchStats">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge23" edge="1" parent="1" source="fetchStats" target="showDashboard">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge24" edge="1" parent="1" source="showDashboard" target="end2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

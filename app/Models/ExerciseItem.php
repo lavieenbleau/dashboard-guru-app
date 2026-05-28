@@ -39,4 +39,14 @@ class ExerciseItem extends Model
     {
         return $this->belongsTo(ExerciseModel::class, 'exercise_model_id');
     }
+
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class, 'admin_id');
+    }
+
+    public function competence()
+    {
+        return $this->belongsTo(Competence::class, 'competence_id');
+    }
 }

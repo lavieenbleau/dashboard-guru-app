@@ -6,5 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Help extends Model
 {
-    //
+    protected $fillable = [
+        'title',
+        'description',
+        'priority',
+    ];
 }

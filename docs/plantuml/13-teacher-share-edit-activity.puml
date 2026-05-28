@@ -1,0 +1,127 @@
+@startuml 13-teacher-share-edit-activity
+title Activity Diagram: Teacher Share & Edit AI-Generated Questions
+
+skinparam defaultFontSize 11
+skinparam activity {
+  BackgroundColor<<Process>> LightBlue
+  BackgroundColor<<Decision>> LightYellow
+  BackgroundColor<<Success>> LightGreen
+  BackgroundColor<<Error>> LightCoral
+  BackgroundColor<<Start>> #90EE90
+  BackgroundColor<<End>> #FFB6C1
+}
+
+start
+:Guru login;
+
+:Akses Bank Soal\n(Soal Tambahan);
+
+:Lihat daftar Exercise\nyang sudah dibuat\n(include AI-generated);
+
+switch (Pilih aksi?)
+case (Share ke Kelas)
+    :Pilih Exercise\n(AI-generated question set);
+    
+    :Klik: "Share ke Kelas";
+    
+    :Tampilkan daftar\nKelas milik Guru;
+    
+    :Guru pilih satu/beberapa\nkelas;
+    
+    :Optionally set:\n- Deadline\n- Durasi pengerjaan\n- Passing score\n- Attempt count;
+    
+    :Create Exercise Assignment\nlink to Classroom(s);
+    
+    :Update Exercise status\n→ 'assigned';
+    
+    :Notifikasi ke siswa\ndi kelas tersebut\n(email/in-app);
+    
+    :Show success:\n"Soal dibagikan ke\nX siswa di Y kelas";
+    
+case (Edit Pertanyaan)
+    :Pilih Exercise;
+    
+    :Show detail soal\n+ list semua pertanyaan;
+    
+    repeat
+        :Pilih ExerciseItem\nyang akan diedit;
+        
+        :Edit field:\n- Pertanyaan\n- Gambar (optional)\n- Tipe soal\n- Jawaban & opsi\n- Bobot nilai;
+        
+        if (Valid data?) then (NO)
+            :Show error;
+            :Kembali ke edit;
+        else (YES)
+            :Update ExerciseItem\nke database;
+        endif
+        
+        :Show: "Pertanyaan diperbarui";
+        
+    repeat while (Edit soal lain?) is (YES)
+    
+    :Validasi total bobot = 100;
+    
+    if (Total bobot benar?) then (NO)
+        :Show error:\n"Total bobot harus 100";
+        :Re-edit soal;
+    else (YES)
+        :Perubahan tersimpan;
+    endif
+    
+    if (Soal sudah dibagikan\nke kelas?) then (YES)
+        :Tanyakan guru:\n"Perubahan ini akan\nmempengaruhi siswa\nyang sudah kerjakan.\n\nLanjutkan?";
+        
+        if (Confirm?) then (NO)
+            :Cancel perubahan;
+        else (YES)
+            :Simpan & notifikasi\nke siswa;
+        endif
+    else (NO)
+        :Simpan perubahan;
+    endif
+    
+case (Duplicate Soal)
+    :Pilih Exercise;
+    
+    :Klik: "Duplicate";
+    
+    :System copy:\n- Exercise record\n- All ExerciseItems\n- All answers;
+    
+    :Generate new ID\ndan tambahkan suffix:\n"(Copy - [tanggal])";
+    
+    :Show: "Soal berhasil\ndiduplikasi";
+    
+    :Guru bisa langsung\nedit atau share copy;
+    
+case (Lihat Analytics)
+    :Pilih Exercise\n(yang sudah dibagikan);
+    
+    :Show analytics:\n- Total siswa\n- Siswa selesai\n- Siswa belum\n- Average score\n- Passing rate;
+    
+    :Show per-item analysis:\n- Item kesulitan\n- Item discrimination\n- Item efficacy;
+    
+    :Optional: Download\ndetail report\n(PDF/Excel);
+
+endswitch
+
+:Soal siap untuk\nstudent assignment|
+
+:Siswa menerima notifikasi\n& dapat mengakses soal;
+
+:Hasil siswa otomatis\ntersimpan & ter-evaluasi;
+
+:Guru dapat monitor\nhalaman Analytics;
+
+stop
+
+note bottom
+    **Key Features:**
+    ✓ Share ke multiple kelas
+    ✓ Edit even after shared
+    ✓ Duplicate untuk reuse
+    ✓ Real-time analytics
+    ✓ Auto evaluation
+    ✓ Notification system
+end note
+
+@enduml

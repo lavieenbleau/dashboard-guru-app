@@ -40,16 +40,13 @@ class AplikasiController extends Controller
                 $q->where('serial_id', $serial->id)
                   ->where('is_admin', 0);
                 
-                // OR admin soal that have been shared to this serial's classrooms
-                $classroomIds = \App\Models\Classroom::where('serial_id', $serial->id)->pluck('id');
-                if ($classroomIds->isNotEmpty()) {
-                    $q->orWhere(function($subQ) use ($classroomIds) {
-                        $subQ->where('is_admin', 1)
-                             ->whereHas('classrooms', function($query) use ($classroomIds) {
-                                 $query->whereIn('classrooms.id', $classroomIds);
-                             });
-                    });
-                }
+                // OR admin soal that have been shared to this serial
+                $q->orWhere(function($subQ) use ($serial) {
+                    $subQ->where('is_admin', 1)
+                         ->whereHas('sharedSerials', function($query) use ($serial) {
+                             $query->where('serials.id', $serial->id);
+                         });
+                });
             })
             ->count(),
             
