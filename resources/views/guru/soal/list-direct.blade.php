@@ -40,98 +40,94 @@
     @endif
 
     <!-- Exercises List -->
-    <div class="row g-4 row-cols-1 row-cols-md-2 row-cols-lg-3">
+    <div class="row g-3">
         @forelse ($exercises as $exercise)
-        <div class="col">
-            <div class="card shadow-sm exercise-card h-100 d-flex flex-column">
-                <div class="card-body flex-grow-1 d-flex flex-column">
-                    <div class="mb-2">
-                        <h5 class="mb-1">{{ $exercise->title }}</h5>
-                    </div>
-                    
-                    <div class="d-flex gap-2 flex-wrap mb-3">
-                        @if($exercise->lesson && $exercise->lesson->mapel)
-                        <span class="badge bg-label-info">
-                            <i class='bx bx-book me-1'></i>{{ $exercise->lesson->mapel->name }}
-                        </span>
-                        @endif
-                        
-                        @if($exercise->lesson && $exercise->lesson->curriculum)
-                        <span class="badge bg-label-secondary">
-                            {{ $exercise->lesson->curriculum }} {{ $exercise->lesson->grade_level }}
-                        </span>
-                        @endif
-                    </div>
+        <div class="col-12">
+            <div class="card shadow-sm exercise-card">
+                <div class="card-body py-3">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <h5 class="mb-0">{{ $exercise->title }}</h5>
+                            </div>
+                            
+                            <div class="d-flex gap-2 flex-wrap align-items-center mb-2">
+                                @if($exercise->lesson && $exercise->lesson->mapel)
+                                <span class="badge bg-label-info">
+                                    <i class='bx bx-book me-1'></i>{{ $exercise->lesson->mapel->name }}
+                                </span>
+                                @endif
+                                
+                                @if($exercise->lesson && $exercise->lesson->curriculum)
+                                <span class="badge bg-label-secondary">
+                                    {{ $exercise->lesson->curriculum }} {{ $exercise->lesson->grade_level }}
+                                </span>
+                                @endif
 
-                    @php
-                        $sharedClassroomIds = \Illuminate\Support\Facades\DB::table('share_exercises')
-                            ->where('exercise_id', $exercise->id)
-                            ->whereNotNull('classroom_id')
-                            ->pluck('classroom_id')
-                            ->toArray();
-                        $sharedCount = count($sharedClassroomIds);
-                        $allClassrooms = \App\Models\Classroom::where('serial_id', $serial->id)->get();
-                        $sharedClassroomsList = $allClassrooms->filter(function($c) use ($sharedClassroomIds) {
-                            return in_array($c->id, $sharedClassroomIds);
-                        });
-                    @endphp
-                    
-                    @if($sharedCount > 0)
-                    <div class="mb-3">
-                        <span class="badge bg-label-success mb-2">
-                            <i class='bx bx-share-alt me-1'></i> Dibagikan ke {{ $sharedCount }} Kelas
-                        </span>
-                        <div class="text-muted small">
-                            @if($sharedCount <= 2)
-                                @foreach($sharedClassroomsList as $sc)
-                                    <span class="d-block"><i class='bx bx-check text-success me-1'></i>{{ $sc->name }}</span>
-                                @endforeach
-                            @else
-                                <span class="d-block"><i class='bx bx-check text-success me-1'></i>{{ $sharedClassroomsList->first()->name }}</span>
-                                <span class="d-block fst-italic">+ {{ $sharedCount - 1 }} kelas lainnya</span>
-                            @endif
+                                @php
+                                    $sharedClassroomIds = \Illuminate\Support\Facades\DB::table('share_exercises')
+                                        ->where('exercise_id', $exercise->id)
+                                        ->whereNotNull('classroom_id')
+                                        ->pluck('classroom_id')
+                                        ->toArray();
+                                    $sharedCount = count($sharedClassroomIds);
+                                    $allClassrooms = \App\Models\Classroom::where('serial_id', $serial->id)->get();
+                                    $sharedClassroomsList = $allClassrooms->filter(function($c) use ($sharedClassroomIds) {
+                                        return in_array($c->id, $sharedClassroomIds);
+                                    });
+                                @endphp
+
+                                @if($sharedCount > 0)
+                                <span class="badge bg-label-success">
+                                    <i class='bx bx-share-alt me-1'></i> Dibagikan ke {{ $sharedCount }} Kelas
+                                </span>
+                                @else
+                                <span class="badge bg-label-secondary">
+                                    <i class='bx bx-lock-alt me-1'></i> Belum dibagikan
+                                </span>
+                                @endif
+                            </div>
+
+                            <div class="d-flex align-items-center flex-wrap gap-2 text-muted small">
+                                @if($sharedCount > 0)
+                                    <div class="d-flex align-items-center gap-1 border-end pe-2 me-1">
+                                        <i class='bx bx-check-circle text-success'></i>
+                                        @if($sharedCount <= 2)
+                                            {{ $sharedClassroomsList->pluck('name')->join(', ') }}
+                                        @else
+                                            {{ $sharedClassroomsList->take(2)->pluck('name')->join(', ') }} 
+                                            <span class="fst-italic">(+{{ $sharedCount - 2 }} kelas)</span>
+                                        @endif
+                                    </div>
+                                @endif
+                                <span><i class='bx bx-time'></i> Dibuat: {{ \Carbon\Carbon::parse($exercise->created_at)->locale('id')->diffForHumans() }}</span>
+                            </div>
                         </div>
-                    </div>
-                    @else
-                    <div class="mb-3">
-                        <span class="badge bg-label-secondary">
-                            <i class='bx bx-lock-alt me-1'></i> Belum dibagikan
-                        </span>
-                    </div>
-                    @endif
-                    
-                    <small class="text-muted mt-auto pt-2 border-top">
-                        <i class='bx bx-time'></i> Dibuat: {{ $exercise->created_at->diffForHumans() }}
-                    </small>
-                </div>
 
-                <div class="card-footer bg-transparent border-top p-3">
-                    <div class="d-flex align-items-center justify-content-between gap-2">
-                        @if($category === 'tambahan')
-                            <div class="d-flex gap-1">
-                                <a href="{{ route('guru.soal.view-exercise', ['serial' => $serial->id, 'lesson' => $lesson->id, 'exerciseId' => $exercise->id]) }}" class="btn btn-sm btn-icon btn-outline-secondary" title="Lihat Soal">
-                                    <i class="bx bx-show"></i>
+                        <!-- Action Buttons -->
+                        <div class="d-flex align-items-center gap-2 mt-3 mt-md-0">
+                            @if($category === 'tambahan')
+                                <a href="{{ route('guru.soal.view-exercise', ['serial' => $serial->id, 'lesson' => $lesson->id, 'exerciseId' => $exercise->id]) }}" class="btn btn-sm btn-outline-secondary" title="Lihat Soal">
+                                    <i class="bx bx-show me-1"></i> Lihat
                                 </a>
-                                <a href="{{ route('guru.soal.edit-custom', [$serial->id, $lesson->id, $exercise->id]) }}" class="btn btn-sm btn-icon btn-outline-primary" title="Edit Soal">
-                                    <i class="bx bx-edit-alt"></i>
+                                <a href="{{ route('guru.soal.edit-custom', [$serial->id, $lesson->id, $exercise->id]) }}" class="btn btn-sm btn-outline-primary" title="Edit Soal">
+                                    <i class="bx bx-edit-alt me-1"></i> Edit
                                 </a>
                                 <form action="{{ route('guru.soal.destroy-custom', [$serial->id, $lesson->id, $exercise->id]) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-icon btn-outline-danger" onclick="return confirm('Hapus soal ini?')" title="Hapus Soal">
-                                        <i class="bx bx-trash"></i>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus soal ini?')" title="Hapus Soal">
+                                        <i class="bx bx-trash me-1"></i> Hapus
                                     </button>
                                 </form>
-                            </div>
-                        @else
-                            <div></div>
-                        @endif
-                        
-                        <button type="button" class="btn btn-sm {{ $sharedCount > 0 ? 'btn-outline-primary' : 'btn-primary' }}" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#shareModal{{ $exercise->id }}">
-                            <i class='bx bx-share-alt me-1'></i> {{ $sharedCount > 0 ? 'Kelola Pembagian' : 'Bagikan' }}
-                        </button>
+                            @endif
+                            
+                            <button type="button" class="btn btn-sm {{ $sharedCount > 0 ? 'btn-outline-primary' : 'btn-primary' }}" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#shareModal{{ $exercise->id }}">
+                                <i class='bx bx-share-alt me-1'></i> {{ $sharedCount > 0 ? 'Kelola Pembagian' : 'Bagikan' }}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
