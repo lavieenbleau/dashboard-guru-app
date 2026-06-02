@@ -67,9 +67,6 @@ class MateriController extends Controller
         
         $classrooms = $request->classrooms ?? [];
         
-        // Sync classrooms to the lesson (this updates the lesson_classroom pivot table)
-        $lesson->classrooms()->sync($classrooms);
-        
         // If share as task is enabled, create posts for each classroom
         if ($request->has('as_task') && $request->as_task == 1 && count($classrooms) > 0) {
             $deadline = $request->deadline ? \Carbon\Carbon::parse($request->deadline) : null;

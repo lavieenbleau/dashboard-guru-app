@@ -166,20 +166,6 @@ class SoalController extends Controller
             'is_admin' => 0, // Custom dari guru
         ]);
 
-        // Share to selected classrooms
-        if ($request->has('classrooms') && is_array($request->classrooms)) {
-            foreach ($request->classrooms as $classroomId) {
-                \App\Models\Post::create([
-                    'classroom_id' => $classroomId,
-                    'exercise_id' => $exercise->id,
-                    'title' => $exercise->title,
-                    'type' => 'exercise',
-                    'date' => now()->toDateString(),
-                    'deadline' => now()->addDays(7)->toDateString(),
-                ]);
-            }
-        }
-
         // Loop through all questions and create items
         $createdCount = 0;
         foreach ($request->questions as $index => $questionData) {

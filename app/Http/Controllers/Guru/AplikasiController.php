@@ -24,12 +24,8 @@ class AplikasiController extends Controller
         
         // Get statistics - using Posts for Materi & Tugas, Exercises for Soal
         $stats = [
-            // Materi Admin: lesson items shared to this serial
-            'materi_admin' => \App\Models\LessonItem::whereHas('lesson', function($q) use ($serial) {
-                $q->whereHas('classrooms', function($query) use ($serial) {
-                    $query->where('serial_id', $serial->id);
-                });
-            })->count(),
+            // Materi Admin: lesson items from product's assigned lessons
+            'materi_admin' => \App\Models\LessonItem::whereIn('lesson_id', json_decode($serial->product->lesson_id ?? '[]', true) ?? [])->count(),
             
             // Materi Guru: custom posts from teacher
             'materi_guru' => \App\Models\Post::where('serial_id', $serial->id)
