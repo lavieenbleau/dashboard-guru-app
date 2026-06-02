@@ -142,26 +142,41 @@
                         @csrf
                         @method('PUT')
 
-                        <div class="mb-3">
+                        <div class="mb-3 form-password-toggle">
                             <label for="current_password" class="form-label">Password Saat Ini</label>
-                            <input type="password" class="form-control @error('current_password') is-invalid @enderror" id="current_password" name="current_password" required>
+                            <div class="position-relative">
+                                <input type="password" class="form-control @error('current_password') is-invalid @enderror" id="current_password" name="current_password" required style="padding-right: 40px;">
+                                <span class="position-absolute top-50 end-0 translate-middle-y me-3 cursor-pointer text-muted" id="toggleCurrentPassword" style="z-index: 10;">
+                                    <i class="bx bx-hide fs-5" id="toggleCurrentIcon"></i>
+                                </span>
+                            </div>
                             @error('current_password')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        <div class="mb-3">
+                        <div class="mb-3 form-password-toggle">
                             <label for="password" class="form-label">Password Baru</label>
-                            <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" required>
+                            <div class="position-relative">
+                                <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" required style="padding-right: 40px;">
+                                <span class="position-absolute top-50 end-0 translate-middle-y me-3 cursor-pointer text-muted" id="togglePassword" style="z-index: 10;">
+                                    <i class="bx bx-hide fs-5" id="toggleIcon"></i>
+                                </span>
+                            </div>
                             @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                             <small class="text-muted">Minimal 8 karakter</small>
                         </div>
 
-                        <div class="mb-3">
+                        <div class="mb-3 form-password-toggle">
                             <label for="password_confirmation" class="form-label">Konfirmasi Password Baru</label>
-                            <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
+                            <div class="position-relative">
+                                <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required style="padding-right: 40px;">
+                                <span class="position-absolute top-50 end-0 translate-middle-y me-3 cursor-pointer text-muted" id="toggleConfirmPassword" style="z-index: 10;">
+                                    <i class="bx bx-hide fs-5" id="toggleConfirmIcon"></i>
+                                </span>
+                            </div>
                         </div>
 
                         <div class="mt-4">
@@ -347,5 +362,29 @@
             alertDiv.remove();
         }, 5000);
     }
+    // Show/Hide Password Toggle
+    function setupToggle(toggleId, inputId, iconId) {
+        const toggle = document.getElementById(toggleId);
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+
+        if (toggle && input) {
+            toggle.addEventListener("click", function () {
+                const type = input.getAttribute("type") === "password" ? "text" : "password";
+                input.setAttribute("type", type);
+                
+                if (type === "text") {
+                    icon.classList.remove("bx-hide");
+                    icon.classList.add("bx-show");
+                } else {
+                    icon.classList.remove("bx-show");
+                    icon.classList.add("bx-hide");
+                }
+            });
+        }
+    }
+    setupToggle("toggleCurrentPassword", "current_password", "toggleCurrentIcon");
+    setupToggle("togglePassword", "password", "toggleIcon");
+    setupToggle("toggleConfirmPassword", "password_confirmation", "toggleConfirmIcon");
 </script>
 @endsection

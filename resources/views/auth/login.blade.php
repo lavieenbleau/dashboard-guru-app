@@ -123,6 +123,13 @@
                 <div class="mb-3">
                     <button class="btn btn-premium d-grid w-100" type="submit">Masuk ke Dashboard</button>
                 </div>
+
+                <p class="text-center mt-4">
+                    <span class="text-muted">Belum memiliki akun?</span>
+                    <a href="{{ route('register') }}" class="text-primary fw-bold text-decoration-none">
+                        <span>Daftar Sekarang</span>
+                    </a>
+                </p>
             </form>
         </div>
     </div>

@@ -43,18 +43,24 @@
 
         // Check if on pilih aplikasi page
         $isPilihAplikasi = request()->is('aplikasi') || request()->is('pilih-aplikasi');
+        
+        // Check if user has no serials
+        $userSerialCount = auth()->check() ? \App\Models\Serial::where('user_id', auth()->id())->count() : 0;
+        $hasNoSerial = auth()->check() && $userSerialCount == 0;
         @endphp
 
-        @if(!$isPilihAplikasi)
-        <!-- Dashboard -->
+        <!-- Dashboard always shown if no serial -->
+        @if(!$isPilihAplikasi || $hasNoSerial)
         <li
-            class="menu-item {{ (request()->is('aplikasi/'.$serialId) && request()->path() == 'aplikasi/'.$serialId) || request()->routeIs('guru.dashboard') ? 'active' : '' }}">
-            <a href="{{ $dashboardUrl }}" class="menu-link">
+            class="menu-item {{ (request()->is('aplikasi') || request()->is('aplikasi/'.$serialId) && request()->path() == 'aplikasi/'.$serialId) || request()->routeIs('guru.dashboard') ? 'active' : '' }}">
+            <a href="{{ $hasNoSerial ? route('guru.aplikasi') : $dashboardUrl }}" class="menu-link">
                 <span class="menu-icon"><i data-lucide="layout-dashboard"></i></span>
                 <div>Dashboard</div>
             </a>
         </li>
+        @endif
 
+        @if(!$isPilihAplikasi && !$hasNoSerial)
         <!-- Materi -->
         <li class="menu-item {{ request()->routeIs('guru.materi*') ? 'active' : '' }}">
             <a href="{{ $serialId ? route('guru.materi', $serialId) : route('pilih.aplikasi') }}" class="menu-link">
@@ -127,16 +133,26 @@
         <li class="menu-item {{ request()->is('aplikasi/*/pengaturan*') ? 'active' : '' }}">
             <a href="{{ route('guru.pengaturan', $pengaturanSerial ?? 1) }}" class="menu-link">
                 <span class="menu-icon"><i data-lucide="settings"></i></span>
-                <div class="menu-text">Pengaturan</div>
+                <div class="menu-text">Profil & Pengaturan</div>
             </a>
         </li>
+
+        @if($hasNoSerial)
+        <!-- Hubungi Admin -->
+        <li class="menu-item">
+            <a href="https://tak-scimediaonline.my.id/layanan-pelanggan-pelapor" target="_blank" class="menu-link">
+                <span class="menu-icon"><i data-lucide="help-circle"></i></span>
+                <div class="menu-text">Hubungi Admin</div>
+            </a>
+        </li>
+        @endif
 
     </ul>
 
     <!-- Bottom Actions -->
     <div class="menu-bottom px-3 py-3 border-top">
         <div class="d-flex flex-column gap-2">
-            @if(!$isPilihAplikasi)
+            @if(!$isPilihAplikasi && !$hasNoSerial)
             <a href="{{ route('guru.aplikasi') }}" class="btn btn-sm btn-outline-primary w-100">
                 <i data-lucide="grid" class="me-2" style="width:16px;"></i>
                 <span class="menu-text">Pilih Aplikasi</span>

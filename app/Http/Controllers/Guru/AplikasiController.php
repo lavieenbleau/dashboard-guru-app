@@ -15,6 +15,10 @@ class AplikasiController extends Controller
             ->where('user_id', auth()->id())
             ->get();
 
+        if ($serials->isEmpty()) {
+            return view('guru.aplikasi.empty-state');
+        }
+
         return view('guru.aplikasi.index', compact('serials'));
     }
 
