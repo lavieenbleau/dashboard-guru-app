@@ -218,7 +218,7 @@
                     
                     @php
                         $classrooms = \App\Models\Classroom::where('serial_id', $serial->id)->get();
-                        $sharedClassroomIds = $item->lesson->classrooms->pluck('id')->toArray();
+                        $sharedClassroomIds = [];
                     @endphp
                     
                     @if($classrooms->count() > 0)
