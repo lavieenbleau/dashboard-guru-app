@@ -141,7 +141,9 @@ class MateriController extends Controller
         $lesson = Lesson::findOrFail($lesson);
         
         // Get all posts (materi) for this lesson and serial
-        $materis = Post::where('serial_id', $serial->id)
+        $materis = Post::where(function($q) use ($serial) {
+                $q->whereNull('serial_id')->orWhere('serial_id', $serial->id);
+            })
             ->where('category', 'like', '%"lesson_id":' . $lesson->id . '%')
             ->where('is_task', 0)
             ->latest()
@@ -424,7 +426,9 @@ class MateriController extends Controller
                 ->get();
         } else {
             // Custom materials from posts (backward compatibility)
-            $materials = Post::where('serial_id', $serial->id)
+            $materials = Post::where(function($q) use ($serial) {
+                    $q->whereNull('serial_id')->orWhere('serial_id', $serial->id);
+                })
                 ->where('is_task', 0)
                 ->orderBy('created_at', 'desc')
                 ->get()

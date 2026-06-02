@@ -21,11 +21,13 @@ class QuizMonitoringController extends Controller
         $serialModel = Serial::findOrFail($serial);
         
         // Retrieve filters
-        $exercises = Exercise::where('serial_id', $serialModel->id)->get();
+        $exercises = Exercise::where(function($q) use ($serialModel) {
+            $q->whereNull('serial_id')->orWhere('serial_id', $serialModel->id);
+        })->get();
         
         // Summary calculations
         $query = QuizActivityLog::whereHas('exercise', function($q) use ($serialModel) {
-            $q->where('serial_id', $serialModel->id);
+            $q->whereNull('serial_id')->orWhere('serial_id', $serialModel->id);
         });
 
         // Current status for each student-exercise combo
@@ -76,7 +78,7 @@ class QuizMonitoringController extends Controller
                      ->on('quiz_activity_logs.created_at', '=', 'latest_logs.max_time');
             })
             ->whereHas('exercise', function($q) use ($serialModel) {
-                $q->where('serial_id', $serialModel->id);
+                $q->whereNull('serial_id')->orWhere('serial_id', $serialModel->id);
             });
 
         // Apply filters
@@ -205,7 +207,7 @@ class QuizMonitoringController extends Controller
         
         $query = QuizActivityLog::with(['student', 'exercise'])
             ->whereHas('exercise', function($q) use ($serialModel) {
-                $q->where('serial_id', $serialModel->id);
+                $q->whereNull('serial_id')->orWhere('serial_id', $serialModel->id);
             });
 
         if ($request->exercise_id) {
@@ -251,7 +253,7 @@ class QuizMonitoringController extends Controller
         
         $query = QuizActivityLog::with(['student', 'exercise'])
             ->whereHas('exercise', function($q) use ($serialModel) {
-                $q->where('serial_id', $serialModel->id);
+                $q->whereNull('serial_id')->orWhere('serial_id', $serialModel->id);
             });
 
         if ($request->exercise_id) {

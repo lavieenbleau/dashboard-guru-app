@@ -37,7 +37,9 @@ class TugasController extends Controller
         $lesson = Lesson::findOrFail($lesson);
         
         // Get all posts (tugas) for this lesson and serial
-        $tugas = Post::where('serial_id', $serial->id)
+        $tugas = Post::where(function($q) use ($serial) {
+                $q->whereNull('serial_id')->orWhere('serial_id', $serial->id);
+            })
             ->where('category', 'like', '%"lesson_id":' . $lesson->id . '%')
             ->where('is_task', 1)
             ->latest()
