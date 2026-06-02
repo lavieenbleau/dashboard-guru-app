@@ -168,7 +168,7 @@ class QuizMonitoringController extends Controller
             \Illuminate\Support\Facades\Log::error('Database Log Error (DataTable): ' . $e->getMessage());
             return response()->json([
                 'data' => [],
-                'error' => 'Gagal mengambil data dari Database Log.'
+                'error' => 'DEBUG: ' . $e->getMessage()
             ]);
         }
     }
