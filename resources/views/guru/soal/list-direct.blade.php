@@ -78,16 +78,36 @@
                                     </span>
                                     @endif
                                     
-                                    @if($exercise->shared_to_classes)
                                     @php
-                                        $sharedCount = count(json_decode($exercise->shared_to_classes, true) ?? []);
+                                        $sharedClassroomIds = json_decode($exercise->shared_to_classes, true) ?? [];
+                                        $sharedCount = count($sharedClassroomIds);
+                                        $allClassrooms = \App\Models\Classroom::where('serial_id', $serial->id)->get();
+                                        $sharedClassroomsList = $allClassrooms->filter(function($c) use ($sharedClassroomIds) {
+                                            return in_array($c->id, $sharedClassroomIds);
+                                        });
                                     @endphp
+                                    
                                     @if($sharedCount > 0)
                                     <span class="badge bg-label-success">
-                                        <i class='bx bx-share-alt'></i> Shared ke {{ $sharedCount }} kelas
+                                        <i class='bx bx-share-alt'></i> Dibagikan ke {{ $sharedCount }} kelas
+                                    </span>
+                                    @else
+                                    <span class="badge bg-label-secondary">
+                                        <i class='bx bx-share-alt'></i> Belum dibagikan ke kelas manapun
                                     </span>
                                     @endif
-                                    @endif
+                                </div>
+                                
+                                @if($sharedCount > 0)
+                                <div class="mb-2">
+                                    <small class="text-muted d-block mb-1">Daftar kelas penerima:</small>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @foreach($sharedClassroomsList as $sc)
+                                            <span class="badge bg-label-primary" style="font-size: 0.75rem;">{{ $sc->name }} ({{ $sc->code }})</span>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                @endif
                                 </div>
 
                                 <small class="text-muted">
@@ -120,12 +140,11 @@
                                         </form>
                                     </li>
                                 </x-action-dropdown>
-                        @else
                             <!-- Tombol Share untuk soal admin -->
-                            <button type="button" class="btn btn-primary" 
+                            <button type="button" class="btn {{ $sharedCount > 0 ? 'btn-outline-primary' : 'btn-primary' }}" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#shareModal{{ $exercise->id }}">
-                                <i class='bx bx-share-alt'></i> Share
+                                <i class='bx bx-share-alt'></i> {{ $sharedCount > 0 ? 'Kelola Pembagian' : 'Bagikan Soal' }}
                             </button>
                         @endif
                     </div>
@@ -162,11 +181,37 @@
                     
                     @php
                         $classrooms = \App\Models\Classroom::where('serial_id', $serial->id)->get();
-                        $isSharedToCurrentSerial = $exercise->sharedSerials
-                            ? $exercise->sharedSerials->pluck('id')->contains($serial->id)
-                            : false;
-                        $sharedClassroomIds = $isSharedToCurrentSerial ? $classrooms->pluck('id')->toArray() : [];
+                        $sharedClassroomIds = json_decode($exercise->shared_to_classes, true) ?? [];
+                        $sharedCount = count($sharedClassroomIds);
+                        $sharedClassroomsList = $classrooms->filter(function($c) use ($sharedClassroomIds) {
+                            return in_array($c->id, $sharedClassroomIds);
+                        });
                     @endphp
+
+                    @if($sharedCount > 0)
+                        <div class="alert alert-success py-2 px-3 mb-3">
+                            <i class='bx bx-check-circle me-1'></i> <strong>Saat ini soal dibagikan ke {{ $sharedCount }} kelas.</strong>
+                        </div>
+                        
+                        <div class="mb-3 p-3 bg-lighter rounded">
+                            <label class="form-label mb-2 fw-semibold">Dibagikan ke:</label>
+                            <ul class="list-unstyled mb-0">
+                                @foreach($sharedClassroomsList as $sc)
+                                    <li class="mb-1"><i class='bx bx-check text-success me-2'></i>{{ $sc->name }} ({{ $sc->code }})</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        
+                        @if($exercise->updated_at)
+                        <p class="text-muted small mb-3"><i class='bx bx-time'></i> Terakhir diperbarui: {{ $exercise->updated_at->isoFormat('D MMMM YYYY HH:mm') }}</p>
+                        @endif
+                    @else
+                        <div class="alert alert-secondary py-2 px-3 mb-3">
+                            <i class='bx bx-info-circle me-1'></i> <strong>Soal ini belum dibagikan ke kelas manapun.</strong>
+                        </div>
+                    @endif
+                    
+                    <p class="text-muted small mb-2 mt-4">Kelola akses kelas (centang untuk memberikan akses):</p>
                     
                     @forelse($classrooms as $classroom)
                     <div class="form-check mb-2">
@@ -180,7 +225,7 @@
                         </label>
                     </div>
                     @empty
-                    <div class="alert alert-info">
+                    <div class="alert alert-warning">
                         <i class='bx bx-info-circle'></i> Belum ada kelas. Silakan buat kelas terlebih dahulu.
                     </div>
                     @endforelse

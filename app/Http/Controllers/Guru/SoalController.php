@@ -681,12 +681,10 @@ class SoalController extends Controller
         }
 
         $classrooms = $request->classrooms ?? [];
-
-        if (empty($classrooms)) {
-            return back()->with('error', 'Belum ada kelas yang dibuat!');
-        }
-
-        return back()->with('success', 'Soal berhasil diproses untuk serial ini!');
+        $exercise->shared_to_classes = empty($classrooms) ? null : json_encode($classrooms);
+        $exercise->save();
+        
+        return back()->with('success', 'Pembagian soal berhasil diperbarui. Saat ini soal dibagikan ke ' . count($classrooms) . ' kelas.');
     }
 
     // Bulk share by category
@@ -711,11 +709,13 @@ class SoalController extends Controller
             $exercise = Exercise::find($exerciseId);
 
             if ($exercise && $exercise->is_admin == 1) {
+                $exercise->shared_to_classes = json_encode($classrooms);
+                $exercise->save();
                 $updated++;
             }
         }
 
-        return back()->with('success', "$updated soal berhasil diproses untuk serial ini!");
+        return back()->with('success', "$updated soal berhasil dibagikan ke semua kelas (" . count($classrooms) . " kelas)!");
     }
 
     /**
