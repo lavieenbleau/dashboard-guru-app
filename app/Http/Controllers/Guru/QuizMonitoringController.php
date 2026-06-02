@@ -81,8 +81,7 @@ class QuizMonitoringController extends Controller
                 ->select('student_id', 'exercise_id', DB::raw('MAX(created_at) as max_time'))
                 ->groupBy('student_id', 'exercise_id');
 
-            $query = QuizActivityLog::with(['student', 'exercise'])
-                ->joinSub($subQuery, 'latest_logs', function ($join) {
+            $query = QuizActivityLog::joinSub($subQuery, 'latest_logs', function ($join) {
                     $join->on('quiz_activity_logs.student_id', '=', 'latest_logs.student_id')
                          ->on('quiz_activity_logs.exercise_id', '=', 'latest_logs.exercise_id')
                          ->on('quiz_activity_logs.created_at', '=', 'latest_logs.max_time');
@@ -100,10 +99,17 @@ class QuizMonitoringController extends Controller
 
             $logs = $query->get();
 
+            // Manual Eager Loading to bypass Eloquent connection inheritance bug
+            $students = Student::whereIn('id', $logs->pluck('student_id')->unique())->get()->keyBy('id');
+            $exercises = Exercise::whereIn('id', $logs->pluck('exercise_id')->unique())->get()->keyBy('id');
+
             $data = [];
             foreach ($logs as $log) {
-                $student = $log->student;
-                $exercise = $log->exercise;
+                $student = $students->get($log->student_id);
+                $exercise = $exercises->get($log->exercise_id);
+                
+                $log->setRelation('student', $student);
+                $log->setRelation('exercise', $exercise);
 
                 // Fetch all logs for this student and exercise
                 $allLogs = QuizActivityLog::where('student_id', $log->student_id)
@@ -253,14 +259,21 @@ class QuizMonitoringController extends Controller
         $exerciseIds = Exercise::where('serial_id', $serialModel->id)->pluck('id');
         
         try {
-            $query = QuizActivityLog::with(['student', 'exercise'])
-                ->whereIn('exercise_id', $exerciseIds);
+            $query = QuizActivityLog::whereIn('exercise_id', $exerciseIds);
 
             if ($request->exercise_id) {
                 $query->where('exercise_id', $request->exercise_id);
             }
 
             $logs = $query->orderBy('created_at', 'desc')->get();
+
+            // Manual Eager Loading
+            $students = Student::whereIn('id', $logs->pluck('student_id')->unique())->get()->keyBy('id');
+            $exercises = Exercise::whereIn('id', $logs->pluck('exercise_id')->unique())->get()->keyBy('id');
+            foreach ($logs as $log) {
+                $log->setRelation('student', $students->get($log->student_id));
+                $log->setRelation('exercise', $exercises->get($log->exercise_id));
+            }
 
             $headers = [
                 "Content-type" => "text/csv",
@@ -312,14 +325,21 @@ class QuizMonitoringController extends Controller
         $exerciseIds = Exercise::where('serial_id', $serialModel->id)->pluck('id');
         
         try {
-            $query = QuizActivityLog::with(['student', 'exercise'])
-                ->whereIn('exercise_id', $exerciseIds);
+            $query = QuizActivityLog::whereIn('exercise_id', $exerciseIds);
 
             if ($request->exercise_id) {
                 $query->where('exercise_id', $request->exercise_id);
             }
 
             $logs = $query->orderBy('created_at', 'desc')->get();
+            
+            // Manual Eager Loading
+            $students = Student::whereIn('id', $logs->pluck('student_id')->unique())->get()->keyBy('id');
+            $exercises = Exercise::whereIn('id', $logs->pluck('exercise_id')->unique())->get()->keyBy('id');
+            foreach ($logs as $log) {
+                $log->setRelation('student', $students->get($log->student_id));
+                $log->setRelation('exercise', $exercises->get($log->exercise_id));
+            }
             
             $pdf = \PDF::loadView('guru.soal.monitoring_pdf', compact('logs', 'serialModel'));
             return $pdf->download('monitoring_quiz_'.date('Ymd').'.pdf');
