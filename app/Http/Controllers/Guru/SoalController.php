@@ -103,10 +103,9 @@ class SoalController extends Controller
             
             $exerciseTypeId = $exerciseType->id;
             
-            // Admin exercises (UH, PTS, PAS) - is_admin = 1 and serial_id is null
-            $query = Exercise::where('is_admin', 1)
-                ->where('lesson_id', $lesson->id)
-                ->whereNull('serial_id'); // Soal admin tidak punya serial_id
+            // All exercises (Admin & Guru) for this type
+            $query = Exercise::where('lesson_id', $lesson->id)
+                ->where('serial_id', $serial->id);
             
             if ($exerciseTypeId) {
                 $query->where('exercise_type_id', $exerciseTypeId);

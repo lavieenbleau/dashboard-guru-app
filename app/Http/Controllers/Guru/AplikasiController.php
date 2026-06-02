@@ -44,21 +44,8 @@ class AplikasiController extends Controller
                 ->where('is_task', 1)
                 ->count(),
             
-            // Soal: exercises (custom soal from teacher + admin soal shared to classrooms)
-            'soal' => \App\Models\Exercise::where(function($q) use ($serial) {
-                // Custom soal created by teacher for this serial
-                $q->where('serial_id', $serial->id)
-                  ->where('is_admin', 0);
-                
-                // OR admin soal that have been shared to this serial
-                $q->orWhere(function($subQ) use ($serial) {
-                    $subQ->where('is_admin', 1)
-                         ->whereHas('sharedSerials', function($query) use ($serial) {
-                             $query->where('serials.id', $serial->id);
-                         });
-                });
-            })
-            ->count(),
+            // Soal: exercises for this serial
+            'soal' => \App\Models\Exercise::where('serial_id', $serial->id)->count(),
             
             'classrooms' => \App\Models\Classroom::where('serial_id', $serial->id)->count(),
             'students' => \App\Models\Student::whereHas('classroom', function($q) use ($serial) {
