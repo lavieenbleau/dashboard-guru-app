@@ -117,9 +117,10 @@
                         </div>
 
                         <!-- Action Buttons -->
-                        @if($category === 'tambahan')
-                            <!-- Edit & Delete untuk Soal Tambahan -->
-                            <x-action-dropdown>
+                        <div class="d-flex align-items-center gap-2">
+                            @if($category === 'tambahan')
+                                <!-- Edit & Delete untuk Soal Tambahan -->
+                                <x-action-dropdown>
                                     <li>
                                         <a class="dropdown-item" href="{{ route('guru.soal.view-exercise', ['serial' => $serial->id, 'lesson' => $lesson->id, 'exerciseId' => $exercise->id]) }}">
                                             <i class="bx bx-show me-1"></i> Lihat Soal
@@ -140,13 +141,15 @@
                                         </form>
                                     </li>
                                 </x-action-dropdown>
-                            <!-- Tombol Share untuk soal admin -->
+                            @endif
+
+                            <!-- Tombol Share untuk semua kategori -->
                             <button type="button" class="btn {{ $sharedCount > 0 ? 'btn-outline-primary' : 'btn-primary' }}" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#shareModal{{ $exercise->id }}">
                                 <i class='bx bx-share-alt'></i> {{ $sharedCount > 0 ? 'Kelola Pembagian' : 'Bagikan Soal' }}
                             </button>
-                        @endif
+                        </div>
                     </div>
                 </div>
             </div>
