@@ -109,11 +109,6 @@
                                 <span style="display:inline-block; width: 4px; height: 24px; background-color: #4F46E5; border-radius: 4px; margin-right: 12px;"></span>
                                 Daftar Isi: {{ $lesson->name }}
                             </h5>
-                            @if($lesson->classrooms && $lesson->classrooms->count() > 0)
-                            <span class="edu-badge badge-indigo border" style="border-color: #C7D2FE !important;">
-                                <i class='bx bx-check-circle me-1'></i> Bagikan ke {{ $lesson->classrooms->count() }} Kelas
-                            </span>
-                            @endif
                         </div>
                     
                         @forelse ($themesGroup as $themeId => $themeItems)
