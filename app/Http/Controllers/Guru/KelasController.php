@@ -78,7 +78,7 @@ class KelasController extends Controller
             ->get();
         
         $studentCount = $students->count();
-        $maxStudents = Classroom::MAX_STUDENTS;
+        $maxStudents = $classroom->getMaxStudents();
         $isFull = $studentCount >= $maxStudents;
         $isOverCapacity = $studentCount > $maxStudents;
 
@@ -101,7 +101,7 @@ class KelasController extends Controller
         // Check capacity
         if ($classroom->isFull()) {
             return redirect()->route('guru.kelas.dashboard', [$serial->id, $classroom->id])
-                ->with('error', 'Kelas sudah mencapai kapasitas maksimum ' . Classroom::MAX_STUDENTS . ' siswa.');
+                ->with('error', 'Kelas sudah mencapai kapasitas maksimum ' . $classroom->getMaxStudents() . ' siswa.');
         }
         
         // Generate username from NIS or name
@@ -192,11 +192,12 @@ class KelasController extends Controller
         
         // Check if classroom is already full before import
         $currentCount = $classroom->students()->count();
-        $remaining = Classroom::MAX_STUDENTS - $currentCount;
+        $maxStudents = $classroom->getMaxStudents();
+        $remaining = $maxStudents - $currentCount;
         
         if ($remaining <= 0) {
             return redirect()->route('guru.kelas.dashboard', [$serial->id, $classroom->id])
-                ->with('error', 'Kelas sudah mencapai kapasitas maksimum ' . Classroom::MAX_STUDENTS . ' siswa. Tidak dapat mengimpor siswa baru.');
+                ->with('error', 'Kelas sudah mencapai kapasitas maksimum ' . $maxStudents . ' siswa. Tidak dapat mengimpor siswa baru.');
         }
         
         $file = $request->file('csv_file');
@@ -283,7 +284,7 @@ class KelasController extends Controller
         
         $message = "{$imported} siswa berhasil diimpor.";
         if ($skippedCapacity > 0) {
-            $message .= " {$skippedCapacity} siswa tidak diimpor karena kelas sudah mencapai kapasitas maksimum " . Classroom::MAX_STUDENTS . " siswa.";
+            $message .= " {$skippedCapacity} siswa tidak diimpor karena kelas sudah mencapai kapasitas maksimum " . $maxStudents . " siswa.";
         }
         if (!empty($errors)) {
             $message .= " Namun ada " . count($errors) . " baris yang gagal diimpor.";

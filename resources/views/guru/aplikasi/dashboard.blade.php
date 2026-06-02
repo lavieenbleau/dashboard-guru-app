@@ -398,6 +398,32 @@
         </div>
     </div>
 
+    <!-- CAPACITY WARNINGS -->
+    @if($classLimitExceeded)
+    <div class="alert alert-danger d-flex align-items-start mb-4" role="alert" style="border-radius: 16px; border: 1px solid rgba(220,53,69,0.2);">
+        <i data-lucide="alert-triangle" style="width: 20px; height: 20px; margin-right: 12px; margin-top: 2px; flex-shrink: 0;"></i>
+        <div>
+            <strong>Serial melebihi batas kelas yang diizinkan</strong><br>
+            <span class="text-muted">Paket Anda mengizinkan {{ $maxClasses }} kelas, namun saat ini terdapat {{ $currentClassCount }} kelas.</span>
+        </div>
+    </div>
+    @endif
+
+    @if(isset($overCapacityClasses) && $overCapacityClasses->count() > 0)
+    <div class="alert alert-warning d-flex align-items-start mb-4" role="alert" style="border-radius: 16px; border: 1px solid rgba(255,193,7,0.3);">
+        <i data-lucide="users" style="width: 20px; height: 20px; margin-right: 12px; margin-top: 2px; flex-shrink: 0;"></i>
+        <div>
+            <strong>{{ $overCapacityClasses->count() }} kelas melebihi kapasitas siswa</strong>
+            <span class="text-muted d-block mb-2">Batas maksimum: {{ $maxStudentsPerClass }} siswa per kelas</span>
+            <ul class="mb-0 ps-3" style="font-size: 0.875rem;">
+                @foreach($overCapacityClasses as $oc)
+                <li><strong>{{ $oc->name }}</strong> — {{ $oc->students_count }} / {{ $maxStudentsPerClass }} siswa</li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+    @endif
+
     <!-- STATS GRID (ONLY 4 RELEVANT CARDS) -->
     <h5 class="section-title"><i data-lucide="bar-chart-2" style="width: 22px; color: #696CFF;"></i> Ringkasan Pembelajaran</h5>
     <div class="row g-4 mb-5">

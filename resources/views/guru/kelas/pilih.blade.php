@@ -41,7 +41,7 @@
                         
                         <div class="mb-3">
                             @php
-                                $maxStudents = \App\Models\Classroom::MAX_STUDENTS;
+                                $maxStudents = $serial->getMaxStudentsPerClass();
                                 $count = $classroom->students_count;
                                 $isFull = $count >= $maxStudents;
                                 $isOver = $count > $maxStudents;

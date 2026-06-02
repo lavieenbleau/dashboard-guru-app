@@ -11,9 +11,18 @@ class Serial extends Model
         'product_id',
         'serial',
         'paket',
+        'max_students_per_class',
         'active',
         'expired_at',
     ];
+
+    /**
+     * Get max students per class (configurable per serial, default 45)
+     */
+    public function getMaxStudentsPerClass(): int
+    {
+        return (int) ($this->max_students_per_class ?? 45);
+    }
 
     public function product()
     {

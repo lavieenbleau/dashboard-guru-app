@@ -74,6 +74,21 @@ class AplikasiController extends Controller
             ->limit(5)
             ->get();
 
+        // Check for over-capacity classrooms
+        $maxStudentsPerClass = $serial->getMaxStudentsPerClass();
+        $classrooms = \App\Models\Classroom::where('serial_id', $serial->id)
+            ->withCount('students')
+            ->get();
+        
+        $overCapacityClasses = $classrooms->filter(function ($c) use ($maxStudentsPerClass) {
+            return $c->students_count > $maxStudentsPerClass;
+        });
+        
+        // Check class limit vs paket
+        $maxClasses = (int) $serial->paket;
+        $currentClassCount = $classrooms->count();
+        $classLimitExceeded = $currentClassCount > $maxClasses;
+
         // Define stat cards for dashboard view
         $statCards = [
             [
@@ -115,6 +130,9 @@ class AplikasiController extends Controller
             ],
         ];
 
-        return view('guru.aplikasi.dashboard', compact('serial', 'stats', 'statCards', 'upcomingMeetings', 'recentActivities'));
+        return view('guru.aplikasi.dashboard', compact(
+            'serial', 'stats', 'statCards', 'upcomingMeetings', 'recentActivities',
+            'overCapacityClasses', 'maxStudentsPerClass', 'classLimitExceeded', 'maxClasses', 'currentClassCount'
+        ));
     }
 }

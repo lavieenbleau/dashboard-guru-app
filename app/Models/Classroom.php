@@ -23,11 +23,22 @@ class Classroom extends Model
     }
 
     /**
+     * Get the max students limit from this classroom's serial, or fallback to constant
+     */
+    public function getMaxStudents(): int
+    {
+        if ($this->serial) {
+            return $this->serial->getMaxStudentsPerClass();
+        }
+        return self::MAX_STUDENTS;
+    }
+
+    /**
      * Check if classroom has reached maximum capacity
      */
     public function isFull(): bool
     {
-        return $this->students()->count() >= self::MAX_STUDENTS;
+        return $this->students()->count() >= $this->getMaxStudents();
     }
 
     /**
@@ -35,7 +46,7 @@ class Classroom extends Model
      */
     public function isOverCapacity(): bool
     {
-        return $this->students()->count() > self::MAX_STUDENTS;
+        return $this->students()->count() > $this->getMaxStudents();
     }
 
     /**
@@ -43,6 +54,6 @@ class Classroom extends Model
      */
     public function remainingCapacity(): int
     {
-        return max(0, self::MAX_STUDENTS - $this->students()->count());
+        return max(0, $this->getMaxStudents() - $this->students()->count());
     }
 }
