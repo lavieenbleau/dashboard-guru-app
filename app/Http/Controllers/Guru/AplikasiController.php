@@ -33,25 +33,31 @@ class AplikasiController extends Controller
                 ->count(),
             
             // Total Materi
-            'materi' => (\App\Models\Post::where(function($q) use ($serial) {
-                    $q->whereNull('serial_id')->orWhere('serial_id', $serial->id);
-                })
+            'materi' => (\App\Models\Post::where('serial_id', $serial->id)
                 ->where('is_task', 0)
                 ->count()) + (\App\Models\LessonItem::whereHas('lesson', function($q) {
                     $q->where('category', \App\Models\Lesson::CATEGORY_MATERI);
                 })->count()),
             
             // Tugas: posts with is_task = 1
-            'tugas' => \App\Models\Post::where(function($q) use ($serial) {
-                    $q->whereNull('serial_id')->orWhere('serial_id', $serial->id);
-                })
+            'tugas' => \App\Models\Post::where('serial_id', $serial->id)
                 ->where('is_task', 1)
                 ->count(),
             
-            // Soal: exercises (custom soal from teacher + admin soal)
+            // Soal: exercises (custom soal from teacher + admin soal shared to classrooms)
             'soal' => \App\Models\Exercise::where(function($q) use ($serial) {
-                    $q->whereNull('serial_id')->orWhere('serial_id', $serial->id);
-                })
+                // Custom soal created by teacher for this serial
+                $q->where('serial_id', $serial->id)
+                  ->where('is_admin', 0);
+                
+                // OR admin soal that have been shared to this serial
+                $q->orWhere(function($subQ) use ($serial) {
+                    $subQ->where('is_admin', 1)
+                         ->whereHas('sharedSerials', function($query) use ($serial) {
+                             $query->where('serials.id', $serial->id);
+                         });
+                });
+            })
             ->count(),
             
             'classrooms' => \App\Models\Classroom::where('serial_id', $serial->id)->count(),

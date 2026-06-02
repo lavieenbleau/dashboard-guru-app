@@ -81,9 +81,7 @@ class SoalController extends Controller
             $exerciseTypeId = null;
             
             // Soal Tambahan: custom exercises from teacher (is_admin = 0)
-            $exercises = Exercise::where(function($q) use ($serial) {
-                    $q->whereNull('serial_id')->orWhere('serial_id', $serial->id);
-                })
+            $exercises = Exercise::where('serial_id', $serial->id)
                 ->where('lesson_id', $lesson->id)
                 ->where('is_admin', 0)
                 ->with(['lesson.mapel', 'exerciseItems', 'exerciseType'])
@@ -105,11 +103,10 @@ class SoalController extends Controller
             
             $exerciseTypeId = $exerciseType->id;
             
-            // All exercises (Admin & Guru) for this type
-            $query = Exercise::where('lesson_id', $lesson->id)
-                ->where(function($q) use ($serial) {
-                    $q->whereNull('serial_id')->orWhere('serial_id', $serial->id);
-                });
+            // Admin exercises (UH, PTS, PAS) - is_admin = 1 and serial_id is null
+            $query = Exercise::where('is_admin', 1)
+                ->where('lesson_id', $lesson->id)
+                ->whereNull('serial_id'); // Soal admin tidak punya serial_id
             
             if ($exerciseTypeId) {
                 $query->where('exercise_type_id', $exerciseTypeId);
@@ -617,9 +614,7 @@ class SoalController extends Controller
         $exerciseType = ExerciseType::findOrFail($exerciseTypeId);
         
         // Get exercises filtered by is_admin
-        $exercises = Exercise::where(function($q) use ($serial) {
-                $q->whereNull('serial_id')->orWhere('serial_id', $serial->id);
-            })
+        $exercises = Exercise::where('serial_id', $serial->id)
             ->where('exercise_type_id', $exerciseTypeId)
             ->where('is_admin', $type === 'admin' ? 1 : 0)
             ->with('lesson')
@@ -743,9 +738,7 @@ class SoalController extends Controller
         $classrooms = Classroom::where('serial_id', $serial->id)->get();
 
         // Get uploaded materials (custom materi) for dropdown
-        $uploadedMaterials = Post::where(function($q) use ($serial) {
-                $q->whereNull('serial_id')->orWhere('serial_id', $serial->id);
-            })
+        $uploadedMaterials = Post::where('serial_id', $serial->id)
             ->where('category', 'like', '%"lesson_id":' . $lesson->id . '%')
             ->where('is_task', 0)
             ->where(function ($query) {
@@ -797,9 +790,7 @@ class SoalController extends Controller
         if ($materialType === 'lesson_item') {
             $material = LessonItem::where('lesson_id', $lesson)->findOrFail($materialKey);
         } else {
-            $material = Post::where(function($q) use ($serial) {
-                    $q->whereNull('serial_id')->orWhere('serial_id', $serial->id);
-                })
+            $material = Post::where('serial_id', $serial->id)
                 ->where('category', 'like', '%"lesson_id":' . $lesson . '%')
                 ->where('is_task', 0)
                 ->findOrFail($materialKey);

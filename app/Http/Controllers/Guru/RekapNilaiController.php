@@ -46,9 +46,7 @@ class RekapNilaiController extends Controller
         // Group posts (tugas) by lesson
         $allTasks = [];
         foreach ($lessons as $lesson) {
-            $posts = Post::where(function($q) use ($serial) {
-                    $q->whereNull('serial_id')->orWhere('serial_id', $serial->id);
-                })
+            $posts = Post::where('serial_id', $serial->id)
                 ->where('category', 'like', '%"lesson_id":' . $lesson->id . '%')
                 ->where('is_task', 1)
                 ->orderBy('created_at')
@@ -188,9 +186,7 @@ class RekapNilaiController extends Controller
         // Group posts (tugas) by lesson
         $allTasks = [];
         foreach ($lessons as $lesson) {
-            $posts = Post::where(function($q) use ($serial) {
-                    $q->whereNull('serial_id')->orWhere('serial_id', $serial->id);
-                })
+            $posts = Post::where('serial_id', $serial->id)
                 ->where('category', 'like', '%"lesson_id":' . $lesson->id . '%')
                 ->where('is_task', 1)
                 ->orderBy('created_at')
