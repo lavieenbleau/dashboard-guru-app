@@ -106,17 +106,16 @@ class MateriController extends Controller
         $serial = Serial::findOrFail($serial);
         $post = Post::findOrFail($postId);
         
-        // Update task settings
-        $post->is_task = $request->has('as_task') && $request->as_task == 1 ? 1 : 0;
-        $post->due_date = $request->deadline ? \Carbon\Carbon::parse($request->deadline) : null;
+        $category = json_decode($post->category, true) ?? [];
+        $category['is_shared'] = true;
+        
+        $post->category = $category;
+        // Make sure it doesn't accidentally become a task
+        $post->is_task = 0;
         
         $post->save();
         
-        $message = $post->is_task 
-            ? 'Materi berhasil dibagikan sebagai tugas!' 
-            : 'Materi berhasil dibagikan!';
-            
-        return back()->with('success', $message);
+        return back()->with('success', 'Materi berhasil dibagikan ke seluruh kelas');
     }
 
     // Materi Tambahan (Custom)

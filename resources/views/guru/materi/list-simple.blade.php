@@ -49,6 +49,18 @@
                                 <h5 class="mb-0">{{ $materi->title }}</h5>
                             </div>
                             
+                            <div class="mb-2">
+                                @php
+                                    $categoryData = json_decode($materi->category, true) ?? [];
+                                    $isShared = isset($categoryData['is_shared']) && $categoryData['is_shared'] === true;
+                                @endphp
+                                @if($isShared)
+                                    <span class="badge bg-label-success"><i class='bx bx-check-circle me-1'></i>Dibagikan ke Semua Kelas</span>
+                                @else
+                                    <span class="badge bg-label-secondary"><i class='bx bx-info-circle me-1'></i>Belum Dibagikan</span>
+                                @endif
+                            </div>
+                            
                             @if($materi->description)
                             <p class="text-muted mb-3">{{ Str::limit($materi->description, 200) }}</p>
                             @endif
@@ -88,9 +100,16 @@
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#shareModal{{ $materi->id }}">
-                                        <i class='bx bx-share-alt me-2'></i>Bagikan
-                                    </a>
+                                    @php
+                                        $categoryData = json_decode($materi->category, true) ?? [];
+                                        $isShared = isset($categoryData['is_shared']) && $categoryData['is_shared'] === true;
+                                    @endphp
+                                    <form action="{{ route('guru.materi.share', [$serial->id, $materi->id]) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="dropdown-item">
+                                            <i class='bx bx-share-alt me-2'></i>Bagikan
+                                        </button>
+                                    </form>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
@@ -158,113 +177,4 @@
     </div>
 </div>
 
-<!-- Share Modals -->
-@foreach ($materis as $materi)
-<div class="modal fade" id="shareModal{{ $materi->id }}" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Bagikan Materi</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ route('guru.materi.share', [$serial->id, $materi->id]) }}" method="POST">
-                @csrf
-                <div class="modal-body">
-                    <p class="mb-3"><strong>{{ $materi->title }}</strong></p>
-                    <p class="text-muted small mb-3">Pilih kelas yang dapat mengakses materi ini:</p>
-                    
-                    @php
-                        $classrooms = \App\Models\Classroom::where('serial_id', $serial->id)->get();
-                        $sharedClassroomIds = [];
-                        if ($materi->shared_to_classes) {
-                            $sharedClassroomIds = is_array($materi->shared_to_classes) 
-                                ? $materi->shared_to_classes 
-                                : json_decode($materi->shared_to_classes, true) ?? [];
-                        }
-                    @endphp
-                    
-                    @if($classrooms->count() > 0)
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" 
-                                   id="selectAll{{ $materi->id }}"
-                                   onclick="toggleAllClassrooms{{ $materi->id }}(this)">
-                            <label class="form-check-label fw-bold" for="selectAll{{ $materi->id }}">
-                                Pilih Semua Kelas
-                            </label>
-                        </div>
-                        <hr class="mb-3">
-                    @endif
-                    
-                    @forelse($classrooms as $classroom)
-                    <div class="form-check mb-2">
-                        <input class="form-check-input classroom-checkbox-{{ $materi->id }}" type="checkbox" 
-                               name="classrooms[]" 
-                               value="{{ $classroom->id }}" 
-                               id="classroom{{ $materi->id }}_{{ $classroom->id }}"
-                               {{ in_array($classroom->id, $sharedClassroomIds) ? 'checked' : '' }}>
-                        <label class="form-check-label" for="classroom{{ $materi->id }}_{{ $classroom->id }}">
-                            {{ $classroom->name }} ({{ $classroom->code }})
-                        </label>
-                    </div>
-                    @empty
-                    <div class="alert alert-info">
-                        <i class='bx bx-info-circle'></i> Belum ada kelas. Silakan buat kelas terlebih dahulu.
-                    </div>
-                    @endforelse
-                    
-                    @if($classrooms->count() > 0)
-                        <hr class="mt-3 mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" 
-                                   name="as_task" 
-                                   value="1"
-                                   id="asTask{{ $materi->id }}"
-                                   {{ $materi->is_task ? 'checked' : '' }}>
-                            <label class="form-check-label" for="asTask{{ $materi->id }}">
-                                <i class='bx bx-task me-1'></i> Bagikan sebagai Tugas
-                            </label>
-                            <small class="form-text text-muted d-block mt-1">
-                                Jika diaktifkan, materi ini akan dibagikan sebagai tugas yang harus dikerjakan siswa.
-                            </small>
-                        </div>
-                        
-                        <div id="taskOptions{{ $materi->id }}" class="mt-3" style="display: {{ $materi->is_task ? 'block' : 'none' }};">
-                            <div class="mb-2">
-                                <label class="form-label small">Deadline (opsional)</label>
-                                <input type="datetime-local" class="form-control form-control-sm" 
-                                       name="deadline"
-                                       value="{{ $materi->deadline ? \Carbon\Carbon::parse($materi->deadline)->format('Y-m-d\TH:i') : '' }}">
-                            </div>
-                        </div>
-                    @endif
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class='bx bx-save'></i> Simpan
-                    </button>
-                </div>
-            </form>
-            
-            <script>
-                function toggleAllClassrooms{{ $materi->id }}(source) {
-                    const checkboxes = document.querySelectorAll('.classroom-checkbox-{{ $materi->id }}');
-                    checkboxes.forEach(checkbox => {
-                        checkbox.checked = source.checked;
-                    });
-                }
-                
-                document.getElementById('asTask{{ $materi->id }}')?.addEventListener('change', function() {
-                    const taskOptions = document.getElementById('taskOptions{{ $materi->id }}');
-                    if (this.checked) {
-                        taskOptions.style.display = 'block';
-                    } else {
-                        taskOptions.style.display = 'none';
-                    }
-                });
-            </script>
-        </div>
-    </div>
-</div>
-@endforeach
 @endsection

@@ -41,6 +41,19 @@
                                     <a href="{{ route('guru.tugas.show', [$serial->id, $lesson->id, $task->id]) }}" class="text-decoration-none">
                                         <h6 class="mb-0">{{ $task->title }}</h6>
                                     </a>
+                                    
+                                    <div class="mt-1 mb-1">
+                                        @php
+                                            $categoryData = json_decode($task->category, true) ?? [];
+                                            $isShared = isset($categoryData['is_shared']) && $categoryData['is_shared'] === true;
+                                        @endphp
+                                        @if($isShared)
+                                            <span class="badge bg-label-success"><i class='bx bx-check-circle me-1'></i>Dibagikan ke Semua Kelas</span>
+                                        @else
+                                            <span class="badge bg-label-secondary"><i class='bx bx-info-circle me-1'></i>Belum Dibagikan</span>
+                                        @endif
+                                    </div>
+                                    
                                     <small class="text-muted">
                                         {{ $task->created_at->format('d M Y') }}
                                         @if($task->deadline)
@@ -59,6 +72,14 @@
                                     <a class="dropdown-item" href="{{ route('guru.tugas.edit', [$serial->id, $lesson->id, $task->id]) }}">
                                         <i class='bx bx-edit me-1'></i> Edit
                                     </a>
+                                </li>
+                                <li>
+                                    <form action="{{ route('guru.tugas.share', [$serial->id, $lesson->id, $task->id]) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="dropdown-item">
+                                            <i class='bx bx-share-alt me-1'></i> Bagikan
+                                        </button>
+                                    </form>
                                 </li>
                                 <li>
                                     <form action="{{ route('guru.tugas.destroy', [$serial->id, $lesson->id, $task->id]) }}" method="POST" onsubmit="return confirm('Hapus tugas ini?')">

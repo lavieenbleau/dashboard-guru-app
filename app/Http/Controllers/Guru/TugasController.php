@@ -63,8 +63,6 @@ class TugasController extends Controller
             'link' => 'nullable|url',
             'deadline' => 'nullable|date',
             'attachment' => 'nullable|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,zip,rar,jpg,jpeg,png',
-            'classrooms' => 'nullable|array',
-            'classrooms.*' => 'exists:classrooms,id',
         ]);
         
         $serial = Serial::findOrFail($serial);
@@ -127,8 +125,6 @@ class TugasController extends Controller
             'deadline' => 'nullable|date',
             'attachment' => 'nullable|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,zip,rar,jpg,jpeg,png',
             'remove_attachment' => 'nullable|boolean',
-            'classrooms' => 'nullable|array',
-            'classrooms.*' => 'exists:classrooms,id',
         ]);
 
         $serial = Serial::findOrFail($serial);
@@ -183,6 +179,21 @@ class TugasController extends Controller
 
         return redirect()->route('guru.tugas.mapel', [$serial->id, $lesson->id])
             ->with('success', 'Tugas berhasil dihapus!');
+    }
+
+    public function share(Request $request, $serial, $lesson, $id)
+    {
+        $serial = Serial::findOrFail($serial);
+        $lesson = Lesson::findOrFail($lesson);
+        $task = Post::where('is_task', 1)->findOrFail($id);
+        
+        $category = json_decode($task->category, true) ?? [];
+        $category['is_shared'] = true;
+        
+        $task->category = $category;
+        $task->save();
+        
+        return back()->with('success', 'Tugas berhasil dibagikan ke seluruh kelas!');
     }
 
     // Store comment

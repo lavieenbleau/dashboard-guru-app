@@ -186,6 +186,7 @@ Route::prefix('aplikasi/{serial}/tugas')->group(function() {
     Route::get('/lesson/{lesson}/{id}/edit', [TugasController::class, 'edit'])->name('guru.tugas.edit');
     Route::put('/lesson/{lesson}/{id}', [TugasController::class, 'update'])->name('guru.tugas.update');
     Route::delete('/lesson/{lesson}/{id}', [TugasController::class, 'destroy'])->name('guru.tugas.destroy');
+    Route::post('/lesson/{lesson}/{id}/share', [TugasController::class, 'share'])->name('guru.tugas.share');
     
     // Comments & Discussion
     Route::post('/lesson/{lesson}/{id}/comment', [TugasController::class, 'storeComment'])->name('guru.tugas.comment.store');

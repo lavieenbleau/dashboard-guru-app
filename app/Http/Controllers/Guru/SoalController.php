@@ -675,16 +675,33 @@ class SoalController extends Controller
         $serial = Serial::findOrFail($serial);
         $lesson = Lesson::findOrFail($lesson);
         $exercise = Exercise::findOrFail($id);
-        
-        if ($exercise->is_admin != 1) {
-            return back()->with('error', 'Hanya soal admin yang bisa di-share!');
-        }
 
         $classrooms = $request->classrooms ?? [];
-        $exercise->shared_to_classes = empty($classrooms) ? null : json_encode($classrooms);
-        $exercise->save();
         
-        return back()->with('success', 'Pembagian soal berhasil diperbarui. Saat ini soal dibagikan ke ' . count($classrooms) . ' kelas.');
+        // Only keep classrooms that are selected
+        // We do this by inserting/updating for selected ones and we can remove unselected ones
+        
+        // Remove existing shares for this exercise in this serial
+        DB::table('share_exercises')
+            ->where('exercise_id', $exercise->id)
+            ->whereIn('classroom_id', function($query) use ($serial) {
+                $query->select('id')
+                      ->from('classrooms')
+                      ->where('serial_id', $serial->id);
+            })
+            ->delete();
+            
+        // Insert new shares
+        foreach ($classrooms as $classroomId) {
+            DB::table('share_exercises')->insert([
+                'exercise_id' => $exercise->id,
+                'classroom_id' => $classroomId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+        
+        return back()->with('success', 'Pembagian kuis berhasil diperbarui. Saat ini kuis dibagikan ke ' . count($classrooms) . ' kelas.');
     }
 
     // Bulk share by category
@@ -695,7 +712,7 @@ class SoalController extends Controller
         $exerciseIds = json_decode($request->input('exercise_ids', '[]'), true);
         
         if (empty($exerciseIds)) {
-            return back()->with('error', 'Tidak ada soal yang dipilih!');
+            return back()->with('error', 'Tidak ada kuis yang dipilih!');
         }
 
         $classrooms = \App\Models\Classroom::where('serial_id', $serial)->pluck('id')->toArray();
@@ -708,14 +725,27 @@ class SoalController extends Controller
         foreach ($exerciseIds as $exerciseId) {
             $exercise = Exercise::find($exerciseId);
 
-            if ($exercise && $exercise->is_admin == 1) {
-                $exercise->shared_to_classes = json_encode($classrooms);
-                $exercise->save();
+            if ($exercise) {
+                // Remove existing shares for this exercise in this serial
+                DB::table('share_exercises')
+                    ->where('exercise_id', $exercise->id)
+                    ->whereIn('classroom_id', $classrooms)
+                    ->delete();
+                    
+                // Insert new shares
+                foreach ($classrooms as $classroomId) {
+                    DB::table('share_exercises')->insert([
+                        'exercise_id' => $exercise->id,
+                        'classroom_id' => $classroomId,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
                 $updated++;
             }
         }
 
-        return back()->with('success', "$updated soal berhasil dibagikan ke semua kelas (" . count($classrooms) . " kelas)!");
+        return back()->with('success', "$updated kuis berhasil dibagikan ke semua kelas (" . count($classrooms) . " kelas)!");
     }
 
     /**

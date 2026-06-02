@@ -115,68 +115,9 @@
                         </li>
                     </ul>
                 </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">Bagikan ke Kelas</h6>
-                    <div class="form-check mb-0">
-                        <input class="form-check-input" type="checkbox" id="selectAllClasses">
-                        <label class="form-check-label small" for="selectAllClasses">
-                            Pilih Semua
-                        </label>
-                    </div>
-                </div>
-                <div class="card-body" style="max-height: 300px; overflow-y: auto;">
-                    @if($classrooms->count() > 0)
-                        @foreach($classrooms as $classroom)
-                            <div class="form-check mb-2">
-                                <input class="form-check-input classroom-checkbox" type="checkbox" 
-                                       name="classrooms[]" value="{{ $classroom->id }}" 
-                                       id="classroom{{ $classroom->id }}"
-                                       {{ in_array($classroom->id, $sharedClasses) ? 'checked' : '' }}>
-                                <label class="form-check-label" for="classroom{{ $classroom->id }}">
-                                    {{ $classroom->name }}
-                                    <small class="text-muted">({{ $classroom->grade }})</small>
-                                </label>
-                            </div>
-                        @endforeach
-                    @else
-                        <p class="text-muted small mb-0">Belum ada kelas tersedia</p>
-                    @endif
-                </div>
-            </div>
         </div>
     </div>
 </div>
 
-<script>
-// Select all classrooms functionality
-const selectAllCheckbox = document.getElementById('selectAllClasses');
-const classroomCheckboxes = document.querySelectorAll('.classroom-checkbox');
-
-if (selectAllCheckbox) {
-    // Set initial state
-    const allChecked = Array.from(classroomCheckboxes).every(cb => cb.checked);
-    const someChecked = Array.from(classroomCheckboxes).some(cb => cb.checked);
-    selectAllCheckbox.checked = allChecked;
-    selectAllCheckbox.indeterminate = someChecked && !allChecked;
-
-    selectAllCheckbox.addEventListener('change', function() {
-        classroomCheckboxes.forEach(checkbox => {
-            checkbox.checked = this.checked;
-        });
-    });
-
-    classroomCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            const allChecked = Array.from(classroomCheckboxes).every(cb => cb.checked);
-            const someChecked = Array.from(classroomCheckboxes).some(cb => cb.checked);
-            
-            selectAllCheckbox.checked = allChecked;
-            selectAllCheckbox.indeterminate = someChecked && !allChecked;
-        });
-    });
-}
 </script>
 @endsection

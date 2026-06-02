@@ -79,7 +79,11 @@
                                     @endif
                                     
                                     @php
-                                        $sharedClassroomIds = json_decode($exercise->shared_to_classes, true) ?? [];
+                                        $sharedClassroomIds = \Illuminate\Support\Facades\DB::table('share_exercises')
+                                            ->where('exercise_id', $exercise->id)
+                                            ->whereNotNull('classroom_id')
+                                            ->pluck('classroom_id')
+                                            ->toArray();
                                         $sharedCount = count($sharedClassroomIds);
                                         $allClassrooms = \App\Models\Classroom::where('serial_id', $serial->id)->get();
                                         $sharedClassroomsList = $allClassrooms->filter(function($c) use ($sharedClassroomIds) {
@@ -143,11 +147,10 @@
                                 </x-action-dropdown>
                             @endif
 
-                            <!-- Tombol Share untuk semua kategori -->
                             <button type="button" class="btn {{ $sharedCount > 0 ? 'btn-outline-primary' : 'btn-primary' }}" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#shareModal{{ $exercise->id }}">
-                                <i class='bx bx-share-alt'></i> {{ $sharedCount > 0 ? 'Kelola Pembagian' : 'Bagikan Soal' }}
+                                <i class='bx bx-share-alt'></i> {{ $sharedCount > 0 ? 'Kelola Pembagian' : 'Buka Kuis' }}
                             </button>
                         </div>
                     </div>
@@ -173,7 +176,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Bagikan Soal</h5>
+                <h5 class="modal-title">Buka Kuis</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ route('guru.soal.share-direct', [$serial->id, $lesson->id, $category, $exercise->id]) }}" method="POST">
@@ -184,7 +187,11 @@
                     
                     @php
                         $classrooms = \App\Models\Classroom::where('serial_id', $serial->id)->get();
-                        $sharedClassroomIds = json_decode($exercise->shared_to_classes, true) ?? [];
+                        $sharedClassroomIds = \Illuminate\Support\Facades\DB::table('share_exercises')
+                            ->where('exercise_id', $exercise->id)
+                            ->whereNotNull('classroom_id')
+                            ->pluck('classroom_id')
+                            ->toArray();
                         $sharedCount = count($sharedClassroomIds);
                         $sharedClassroomsList = $classrooms->filter(function($c) use ($sharedClassroomIds) {
                             return in_array($c->id, $sharedClassroomIds);
@@ -217,16 +224,17 @@
                     <p class="text-muted small mb-2 mt-4">Kelola akses kelas (centang untuk memberikan akses):</p>
                     
                     @forelse($classrooms as $classroom)
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" 
-                               name="classrooms[]" 
-                               value="{{ $classroom->id }}" 
-                               id="classroom{{ $exercise->id }}_{{ $classroom->id }}"
-                               {{ in_array($classroom->id, $sharedClassroomIds) ? 'checked' : '' }}>
-                        <label class="form-check-label" for="classroom{{ $exercise->id }}_{{ $classroom->id }}">
-                            {{ $classroom->name }} ({{ $classroom->code }})
-                        </label>
-                    </div>
+                        @if(!in_array($classroom->id, $sharedClassroomIds))
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" 
+                                   name="classrooms[]" 
+                                   value="{{ $classroom->id }}" 
+                                   id="classroom{{ $exercise->id }}_{{ $classroom->id }}">
+                            <label class="form-check-label" for="classroom{{ $exercise->id }}_{{ $classroom->id }}">
+                                {{ $classroom->name }} ({{ $classroom->code }})
+                            </label>
+                        </div>
+                        @endif
                     @empty
                     <div class="alert alert-warning">
                         <i class='bx bx-info-circle'></i> Belum ada kelas. Silakan buat kelas terlebih dahulu.
