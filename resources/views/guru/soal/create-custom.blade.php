@@ -1,12 +1,21 @@
 @extends('layouts.sneat')
 
+@section('styles')
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+<style>
+    .note-editor .note-editing-area { min-height: 150px; }
+    .note-editor .note-dropzone { opacity: 0 !important; }
+</style>
+@endsection
+
 @section('content')
 <div class="container-xxl py-4">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('guru.soal', $serial->id) }}">Bank Soal</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('guru.soal.list-direct', [$serial->id, $category]) }}">{{ $categoryInfo['name'] }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.soal.lesson', [$serial->id, $lesson->id]) }}">{{ $lesson->name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.soal.list-direct', [$serial->id, $lesson->id, $category]) }}">{{ $categoryInfo['name'] }}</a></li>
             <li class="breadcrumb-item active">Tambah Soal</li>
         </ol>
     </nav>
@@ -18,7 +27,7 @@
                     <h5 class="mb-0">Tambah {{ $categoryInfo['name'] }}</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('guru.soal.store-custom', [$serial->id]) }}" method="POST" id="createExerciseForm">
+                    <form action="{{ route('guru.soal.store-custom', [$serial->id, $lesson->id]) }}" method="POST" id="createExerciseForm">
                         @csrf
 
                         <div class="row">
@@ -29,7 +38,7 @@
                                     <select class="form-select @error('exercise_type_id') is-invalid @enderror" id="exercise_type_id" name="exercise_type_id" required>
                                         <option value="">-- Pilih Tipe Soal --</option>
                                         @foreach($exerciseTypes as $type)
-                                            <option value="{{ $type->id }}" {{ old('exercise_type_id') == $type->id ? 'selected' : '' }}>
+                                            <option value="{{ $type->id }}" data-kode="{{ $type->kode }}" {{ old('exercise_type_id') == $type->id ? 'selected' : '' }}>
                                                 {{ $type->name }}
                                             </option>
                                         @endforeach
@@ -44,10 +53,13 @@
                                     <label for="question_type" class="form-label">Jenis Soal <span class="text-danger">*</span></label>
                                     <select class="form-select @error('question_type') is-invalid @enderror" id="question_type" name="question_type" required>
                                         <option value="">-- Pilih Jenis Soal --</option>
-                                        <option value="pilihan_ganda" {{ old('question_type') == 'pilihan_ganda' ? 'selected' : '' }}>Pilihan Ganda</option>
-                                        <option value="essai" {{ old('question_type') == 'essai' ? 'selected' : '' }}>Essai</option>
-                                        <option value="jawaban_singkat" {{ old('question_type') == 'jawaban_singkat' ? 'selected' : '' }}>Jawaban Singkat</option>
+                                        @foreach($exerciseModels as $model)
+                                            <option value="{{ $model->id }}" data-type="{{ in_array($model->id, [1, 2]) ? 'pilihan_ganda' : 'essai' }}" {{ old('question_type') == $model->id ? 'selected' : '' }}>
+                                                {{ $model->name }}
+                                            </option>
+                                        @endforeach
                                     </select>
+                                    <div id="questionTypeRuleHint" class="form-text text-danger" style="display:none;"></div>
                                     @error('question_type')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -56,18 +68,18 @@
                                 <!-- Form Inputs (muncul setelah pilih tipe soal) -->
                                 <div id="mainFormSection" style="display: none;">
                                     <div class="row">
-                                        <!-- Pilih Mapel -->
+                                        <!-- Paket Materi (Lesson) -->
                                         <div class="col-md-6 mb-3">
-                                            <label for="mapel_id" class="form-label">Pilih Mapel <span class="text-danger">*</span></label>
-                                            <select class="form-select @error('mapel_id') is-invalid @enderror" id="mapel_id" name="mapel_id" required>
-                                                <option value="">-- Pilih Mapel --</option>
-                                                @foreach($mapels as $mapel)
-                                                    <option value="{{ $mapel->id }}" {{ old('mapel_id') == $mapel->id ? 'selected' : '' }}>
-                                                        {{ $mapel->name }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            @error('mapel_id')
+                                            <label class="form-label">Paket Materi</label>
+                                            <input type="text" class="form-control" value="{{ $lesson->name }} (Mapel: {{ $lesson->mapel->name ?? '-' }})" disabled>
+                                            <input type="hidden" name="lesson_id" value="{{ $lesson->id }}">
+                                        </div>
+
+                                        <!-- Judul Paket Soal -->
+                                        <div class="col-md-6 mb-3">
+                                            <label for="title" class="form-label">Judul Paket Soal <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control @error('title') is-invalid @enderror" id="title" name="title" value="{{ old('title') }}" placeholder="Contoh: Latihan Soal Matematika" required>
+                                            @error('title')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
@@ -102,37 +114,31 @@
                                                 </button>
                                             </div>
 
-                                            <!-- Judul Soal -->
-                                            <div class="mb-3">
-                                                <label class="form-label">Judul Soal <span class="text-danger">*</span></label>
-                                                <input type="text" class="form-control" name="questions[0][title]" placeholder="Contoh: Latihan Perkalian" required>
-                                            </div>
-
                                             <!-- Pertanyaan -->
                                             <div class="mb-3">
                                                 <label class="form-label">Pertanyaan/Soal <span class="text-danger">*</span></label>
-                                                <textarea class="form-control" name="questions[0][question]" rows="4" placeholder="Tulis pertanyaan atau soal di sini..." required></textarea>
+                                                <textarea class="form-control summernote" name="questions[0][question]" placeholder="Tulis pertanyaan atau soal di sini..." required></textarea>
                                             </div>
 
                                             <!-- Pilihan Ganda Options -->
                                             <div class="mb-3 options-section" style="display: none;">
                                                 <label class="form-label">Pilihan Jawaban</label>
                                                 <div class="options-container">
-                                                    <div class="input-group mb-2">
-                                                        <span class="input-group-text">A</span>
-                                                        <input type="text" class="form-control" name="questions[0][options][]" placeholder="Opsi A">
+                                                    <div class="mb-3 border p-2 rounded">
+                                                        <label class="form-label mb-1 fw-bold">Pilihan A</label>
+                                                        <textarea class="form-control summernote" name="questions[0][options][]" placeholder="Opsi A"></textarea>
                                                     </div>
-                                                    <div class="input-group mb-2">
-                                                        <span class="input-group-text">B</span>
-                                                        <input type="text" class="form-control" name="questions[0][options][]" placeholder="Opsi B">
+                                                    <div class="mb-3 border p-2 rounded">
+                                                        <label class="form-label mb-1 fw-bold">Pilihan B</label>
+                                                        <textarea class="form-control summernote" name="questions[0][options][]" placeholder="Opsi B"></textarea>
                                                     </div>
-                                                    <div class="input-group mb-2">
-                                                        <span class="input-group-text">C</span>
-                                                        <input type="text" class="form-control" name="questions[0][options][]" placeholder="Opsi C">
+                                                    <div class="mb-3 border p-2 rounded">
+                                                        <label class="form-label mb-1 fw-bold">Pilihan C</label>
+                                                        <textarea class="form-control summernote" name="questions[0][options][]" placeholder="Opsi C"></textarea>
                                                     </div>
-                                                    <div class="input-group mb-2">
-                                                        <span class="input-group-text">D</span>
-                                                        <input type="text" class="form-control" name="questions[0][options][]" placeholder="Opsi D">
+                                                    <div class="mb-3 border p-2 rounded">
+                                                        <label class="form-label mb-1 fw-bold">Pilihan D</label>
+                                                        <textarea class="form-control summernote" name="questions[0][options][]" placeholder="Opsi D"></textarea>
                                                     </div>
                                                 </div>
                                             </div>
@@ -193,7 +199,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class='bx bx-save me-1'></i>Simpan
                             </button>
-                            <a href="{{ route('guru.soal.list-direct', [$serial->id, $category]) }}" class="btn btn-label-secondary">
+                            <a href="{{ route('guru.soal.list-direct', [$serial->id, $lesson->id, $category]) }}" class="btn btn-label-secondary">
                                 <i class='bx bx-x me-1'></i>Batal
                             </a>
                         </div>
@@ -203,7 +209,11 @@
         </div>
     </div>
 </div>
+@endsection
 
+@section('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const exerciseTypeSelect = document.getElementById('exercise_type_id');
@@ -216,7 +226,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const questionsContainer = document.getElementById('questionsContainer');
     let questionCount = 1;
 
-    // Show question type after selecting exercise type
+    // Show question type section when type selected
     exerciseTypeSelect.addEventListener('change', function() {
         if (this.value) {
             questionTypeSection.style.display = 'block';
@@ -226,15 +236,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Show main form and handle options after selecting question type
+    // Show main form after selecting question type
     questionTypeSelect.addEventListener('change', function() {
         if (this.value) {
             mainFormSection.style.display = 'block';
             
             // Show/hide options based on question type for all question items
             const optionsSections = document.querySelectorAll('.options-section');
+            const isPilihanGanda = [1, 2].includes(parseInt(this.value));
+            
             optionsSections.forEach(section => {
-                if (questionTypeSelect.value === 'pilihan_ganda') {
+                if (isPilihanGanda) {
                     section.style.display = 'block';
                 } else {
                     section.style.display = 'none';
@@ -242,6 +254,25 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } else {
             mainFormSection.style.display = 'none';
+        }
+    });
+
+    // Apply reusable exercise model rule for create form
+    window.applyExerciseModelRule({
+        typeSelectId: 'exercise_type_id',
+        modelSelectId: 'question_type',
+        hintId: 'questionTypeRuleHint',
+        onChange: function(currentModelValue) {
+            if (exerciseTypeSelect.value) {
+                questionTypeSection.style.display = 'block';
+            }
+            if (currentModelValue) {
+                mainFormSection.style.display = 'block';
+                // Trigger change event so options-section visibility is updated
+                questionTypeSelect.dispatchEvent(new Event('change'));
+            } else {
+                mainFormSection.style.display = 'none';
+            }
         }
     });
 
@@ -273,37 +304,31 @@ document.addEventListener('DOMContentLoaded', function() {
                     </button>
                 </div>
 
-                <!-- Judul Soal -->
-                <div class="mb-3">
-                    <label class="form-label">Judul Soal <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" name="questions[${questionCount}][title]" placeholder="Contoh: Latihan Perkalian" required>
-                </div>
-
                 <!-- Pertanyaan -->
                 <div class="mb-3">
                     <label class="form-label">Pertanyaan/Soal <span class="text-danger">*</span></label>
-                    <textarea class="form-control" name="questions[${questionCount}][question]" rows="4" placeholder="Tulis pertanyaan atau soal di sini..." required></textarea>
+                    <textarea class="form-control summernote" name="questions[${questionCount}][question]" placeholder="Tulis pertanyaan atau soal di sini..." required></textarea>
                 </div>
 
                 <!-- Pilihan Ganda Options -->
-                <div class="mb-3 options-section" style="display: ${questionTypeSelect.value === 'pilihan_ganda' ? 'block' : 'none'};">
+                <div class="mb-3 options-section" style="display: ${questionTypeSelect.options[questionTypeSelect.selectedIndex].dataset.type === 'pilihan_ganda' ? 'block' : 'none'};">
                     <label class="form-label">Pilihan Jawaban</label>
                     <div class="options-container">
-                        <div class="input-group mb-2">
-                            <span class="input-group-text">A</span>
-                            <input type="text" class="form-control" name="questions[${questionCount}][options][]" placeholder="Opsi A">
+                        <div class="mb-3 border p-2 rounded">
+                            <label class="form-label mb-1 fw-bold">Pilihan A</label>
+                            <textarea class="form-control summernote" name="questions[${questionCount}][options][]" placeholder="Opsi A"></textarea>
                         </div>
-                        <div class="input-group mb-2">
-                            <span class="input-group-text">B</span>
-                            <input type="text" class="form-control" name="questions[${questionCount}][options][]" placeholder="Opsi B">
+                        <div class="mb-3 border p-2 rounded">
+                            <label class="form-label mb-1 fw-bold">Pilihan B</label>
+                            <textarea class="form-control summernote" name="questions[${questionCount}][options][]" placeholder="Opsi B"></textarea>
                         </div>
-                        <div class="input-group mb-2">
-                            <span class="input-group-text">C</span>
-                            <input type="text" class="form-control" name="questions[${questionCount}][options][]" placeholder="Opsi C">
+                        <div class="mb-3 border p-2 rounded">
+                            <label class="form-label mb-1 fw-bold">Pilihan C</label>
+                            <textarea class="form-control summernote" name="questions[${questionCount}][options][]" placeholder="Opsi C"></textarea>
                         </div>
-                        <div class="input-group mb-2">
-                            <span class="input-group-text">D</span>
-                            <input type="text" class="form-control" name="questions[${questionCount}][options][]" placeholder="Opsi D">
+                        <div class="mb-3 border p-2 rounded">
+                            <label class="form-label mb-1 fw-bold">Pilihan D</label>
+                            <textarea class="form-control summernote" name="questions[${questionCount}][options][]" placeholder="Opsi D"></textarea>
                         </div>
                     </div>
                 </div>
@@ -318,6 +343,20 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         
         questionsContainer.insertAdjacentHTML('beforeend', newQuestionHTML);
+        
+        // Initialize Summernote on new textareas
+        const newTextareas = questionsContainer.lastElementChild.querySelectorAll('.summernote');
+        $(newTextareas).summernote({
+            height: 150,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['insert', ['picture', 'link']],
+                ['view', ['fullscreen', 'codeview']]
+            ]
+        });
+        
         questionCount++;
         updateRemoveButtons();
         updateQuestionNumbers();
@@ -352,19 +391,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Trigger change event if old values exist
-    if (exerciseTypeSelect.value) {
-        questionTypeSection.style.display = 'block';
-    }
-    if (questionTypeSelect.value) {
-        mainFormSection.style.display = 'block';
-        const optionsSections = document.querySelectorAll('.options-section');
-        optionsSections.forEach(section => {
-            if (questionTypeSelect.value === 'pilihan_ganda') {
-                section.style.display = 'block';
-            }
+    // Initialize initial Summernote editors
+    if (typeof $ !== 'undefined' && $.fn.summernote) {
+        $('.summernote').summernote({
+            height: 150,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['insert', ['picture', 'link']],
+                ['view', ['fullscreen', 'codeview']]
+            ]
         });
     }
 });
 </script>
+@include('guru.soal.partials.model-rule-script')
 @endsection

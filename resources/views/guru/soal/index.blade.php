@@ -2,9 +2,14 @@
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4">
-        <span class="text-muted fw-light">Materi / Soal /</span> Pilih Kategori
-    </h4>
+    <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+        <h4 class="fw-bold mb-0">
+            <span class="text-muted fw-light"><a href="{{ route('guru.soal', $serial->id) }}" class="text-muted">Bank Soal</a> / {{ $lesson->name }} /</span> Pilih Kategori
+        </h4>
+        <a href="{{ route('guru.monitoring-quiz', $serial->id) }}" class="btn btn-primary">
+            <i class="bx bx-desktop me-1"></i> Monitoring Kuis
+        </a>
+    </div>
 
     @if(session('success'))
         <div class="alert alert-success alert-dismissible" role="alert">
@@ -24,7 +29,7 @@
                             </span>
                         </div>
                         <h5 class="card-title mb-3">{{ $category['name'] }}</h5>
-                        <a href="{{ route('guru.soal.list-direct', [$serial->id, $category['id']]) }}" class="btn btn-{{ $category['color'] }} btn-sm w-100">
+                        <a href="{{ route('guru.soal.list-direct', [$serial->id, $lesson->id, $category['id']]) }}" class="btn btn-{{ $category['color'] }} btn-sm w-100">
                             <i class='bx bx-right-arrow-alt me-1'></i>Lihat Soal
                         </a>
                     </div>

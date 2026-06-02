@@ -6,7 +6,8 @@
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('guru.soal', $serial->id) }}">Bank Soal</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('guru.soal.list-direct', [$serial->id, 'tambahan']) }}">Soal Tambahan</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.soal.lesson', [$serial->id, $lesson->id]) }}">{{ $lesson->name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.soal.list-direct', [$serial->id, $lesson->id, 'tambahan']) }}">Soal Tambahan</a></li>
             <li class="breadcrumb-item active">Lihat Soal</li>
         </ol>
     </nav>
@@ -70,7 +71,7 @@
                             <!-- Question Text -->
                             <div class="mb-3">
                                 <h6 class="fw-bold mb-2">Pertanyaan:</h6>
-                                <p class="text-dark">{!! nl2br(e($item->question)) !!}</p>
+                                <div class="text-dark">{!! $item->question !!}</div>
                             </div>
 
                             <!-- Options (if multiple choice) -->
@@ -86,19 +87,25 @@
                                             @foreach($letters as $index => $letter)
                                                 @if(isset($options[$letter]) && $options[$letter])
                                                     <div class="option-item p-2 mb-2 border rounded bg-light">
-                                                        <strong>{{ $letter }}.</strong> {{ $options[$letter] }}
+                                                        <strong>{{ $letter }}.</strong> {!! $options[$letter] !!}
                                                     </div>
                                                 @endif
                                             @endforeach
                                         </div>
                                     </div>
-                                @endif
+                            @endif
                             @endif
 
                             <!-- Answer Key -->
                             <div class="alert alert-info mb-0">
                                 <strong><i class='bx bx-check-circle me-1'></i>Kunci Jawaban:</strong>
-                                <p class="mb-0 mt-2">{!! nl2br(e($item->answer ?? 'Tidak ada')) !!}</p>
+                                @php
+                                    $ans = $item->answer ?? 'Tidak ada';
+                                    if (is_array($ans)) {
+                                        $ans = implode(', ', $ans);
+                                    }
+                                @endphp
+                                <div class="mb-0 mt-2">{!! $ans !!}</div>
                             </div>
                         </div>
                     @empty
@@ -112,13 +119,13 @@
             <!-- Action Buttons -->
             <div class="card">
                 <div class="card-body d-flex gap-2">
-                    <a href="{{ route('guru.soal.list-direct', [$serial->id, 'tambahan']) }}" class="btn btn-secondary">
+                    <a href="{{ route('guru.soal.list-direct', [$serial->id, $lesson->id, 'tambahan']) }}" class="btn btn-secondary">
                         <i class='bx bx-arrow-back me-1'></i>Kembali
                     </a>
-                    <a href="{{ route('guru.soal.edit-custom', [$serial->id, $exercise->id]) }}" class="btn btn-primary">
+                    <a href="{{ route('guru.soal.edit-custom', [$serial->id, $lesson->id, $exercise->id]) }}" class="btn btn-primary">
                         <i class='bx bx-edit me-1'></i>Edit Soal
                     </a>
-                    <form method="POST" action="{{ route('guru.soal.destroy-custom', [$serial->id, $exercise->id]) }}" style="display: inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus soal ini?');">
+                    <form method="POST" action="{{ route('guru.soal.destroy-custom', [$serial->id, $lesson->id, $exercise->id]) }}" style="display: inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus soal ini?');">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger">

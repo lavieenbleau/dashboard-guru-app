@@ -77,31 +77,30 @@ class LaporanHarianController extends Controller
         $activities = $taskActivities->merge($exerciseActivities)
             ->sortByDesc('created_at')
             ->map(function($item) {
-                // Determine activity type based on lesson category
-                if ($item->lesson_category == 2) {
+                if ($item->source_type === 'task') {
                     $item->activity_type = 'Tugas';
                     $item->badge_color = 'success';
-                } elseif ($item->lesson_category == 3) {
-                    // Check semester for soal sub-category
-                    if ($item->lesson_semester == 1) {
-                        $item->activity_type = 'Ulangan Harian';
-                        $item->badge_color = 'primary';
-                    } elseif ($item->lesson_semester == 2) {
-                        $item->activity_type = 'PTS';
-                        $item->badge_color = 'warning';
-                    } elseif ($item->lesson_semester == 3) {
-                        $item->activity_type = 'PAS';
-                        $item->badge_color = 'danger';
-                    } elseif ($item->lesson_semester == 4) {
+                } elseif ($item->source_type === 'exercise') {
+                    if ($item->lesson_category == 3) {
+                        // Admin Soal
+                        if ($item->lesson_semester == 1) {
+                            $item->activity_type = 'Ulangan Harian';
+                            $item->badge_color = 'primary';
+                        } elseif ($item->lesson_semester == 2) {
+                            $item->activity_type = 'PTS';
+                            $item->badge_color = 'warning';
+                        } elseif ($item->lesson_semester == 3) {
+                            $item->activity_type = 'PAS';
+                            $item->badge_color = 'danger';
+                        } else {
+                            $item->activity_type = 'Soal';
+                            $item->badge_color = 'secondary';
+                        }
+                    } else {
+                        // Guru Soal (Tambahan)
                         $item->activity_type = 'Soal Tambahan';
                         $item->badge_color = 'info';
-                    } else {
-                        $item->activity_type = 'Soal';
-                        $item->badge_color = 'secondary';
                     }
-                } elseif ($item->lesson_category == 1) {
-                    $item->activity_type = 'Materi';
-                    $item->badge_color = 'dark';
                 } else {
                     $item->activity_type = 'Lainnya';
                     $item->badge_color = 'secondary';
@@ -208,31 +207,30 @@ class LaporanHarianController extends Controller
         $activities = $taskActivities->merge($exerciseActivities)
             ->sortByDesc('created_at')
             ->map(function($item) {
-                // Determine activity type based on lesson category
-                if ($item->lesson_category == 2) {
+                if ($item->source_type === 'task') {
                     $item->activity_type = 'Tugas';
                     $item->badge_color = 'success';
-                } elseif ($item->lesson_category == 3) {
-                    // Check semester for soal sub-category
-                    if ($item->lesson_semester == 1) {
-                        $item->activity_type = 'Ulangan Harian';
-                        $item->badge_color = 'primary';
-                    } elseif ($item->lesson_semester == 2) {
-                        $item->activity_type = 'PTS';
-                        $item->badge_color = 'warning';
-                    } elseif ($item->lesson_semester == 3) {
-                        $item->activity_type = 'PAS';
-                        $item->badge_color = 'danger';
-                    } elseif ($item->lesson_semester == 4) {
+                } elseif ($item->source_type === 'exercise') {
+                    if ($item->lesson_category == 3) {
+                        // Admin Soal
+                        if ($item->lesson_semester == 1) {
+                            $item->activity_type = 'Ulangan Harian';
+                            $item->badge_color = 'primary';
+                        } elseif ($item->lesson_semester == 2) {
+                            $item->activity_type = 'PTS';
+                            $item->badge_color = 'warning';
+                        } elseif ($item->lesson_semester == 3) {
+                            $item->activity_type = 'PAS';
+                            $item->badge_color = 'danger';
+                        } else {
+                            $item->activity_type = 'Soal';
+                            $item->badge_color = 'secondary';
+                        }
+                    } else {
+                        // Guru Soal (Tambahan)
                         $item->activity_type = 'Soal Tambahan';
                         $item->badge_color = 'info';
-                    } else {
-                        $item->activity_type = 'Soal';
-                        $item->badge_color = 'secondary';
                     }
-                } elseif ($item->lesson_category == 1) {
-                    $item->activity_type = 'Materi';
-                    $item->badge_color = 'dark';
                 } else {
                     $item->activity_type = 'Lainnya';
                     $item->badge_color = 'secondary';

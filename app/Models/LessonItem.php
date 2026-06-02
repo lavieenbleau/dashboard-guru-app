@@ -39,4 +39,9 @@ class LessonItem extends Model
     {
         return $this->belongsTo(Admin::class, 'admin_id');
     }
+
+    public function getIsAdminAttribute()
+    {
+        return !is_null($this->admin_id);
+    }
 }

@@ -5,8 +5,8 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('guru.soal', $serial->id) }}">Bank Soal</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('guru.soal.list-direct', [$serial->id, $category]) }}">{{ $categoryInfo['name'] }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.soal.lesson', [$serial->id, $lesson->id]) }}">{{ $lesson->name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.soal.list-direct', [$serial->id, $lesson->id, $category]) }}">{{ $categoryInfo['name'] }}</a></li>
             <li class="breadcrumb-item active">Edit Soal</li>
         </ol>
     </nav>
@@ -22,20 +22,10 @@
                         @csrf
                         @method('PUT')
 
-                        <!-- Pilih Mapel -->
+                        <!-- Paket Pembelajaran -->
                         <div class="mb-3">
-                            <label for="mapel_id" class="form-label">Pilih Mapel <span class="text-danger">*</span></label>
-                            <select class="form-select @error('mapel_id') is-invalid @enderror" id="mapel_id" name="mapel_id" required>
-                                <option value="">-- Pilih Mapel --</option>
-                                @foreach($mapels as $mapel)
-                                    <option value="{{ $mapel->id }}" {{ (old('mapel_id', $exercise->lesson->mapel_id ?? '') == $mapel->id) ? 'selected' : '' }}>
-                                        {{ $mapel->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('mapel_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <label class="form-label">Paket Pembelajaran</label>
+                            <input type="text" class="form-control" value="{{ $lesson->name }} ({{ $lesson->mapel->name ?? '-' }})" disabled>
                         </div>
 
                         <!-- Tipe Soal -->
@@ -122,7 +112,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class='bx bx-save me-1'></i>Update
                             </button>
-                            <a href="{{ route('guru.soal.list-direct', [$serial->id, $category]) }}" class="btn btn-label-secondary">
+                            <a href="{{ route('guru.soal.list-direct', [$serial->id, $lesson->id, $category]) }}" class="btn btn-label-secondary">
                                 <i class='bx bx-x me-1'></i>Batal
                             </a>
                         </div>

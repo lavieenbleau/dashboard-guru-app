@@ -29,9 +29,10 @@
                     <form action="{{ route('guru.pengaturan.profile', $serial->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
+                        <input type="hidden" name="delete_avatar" id="delete_avatar" value="0">
                         
                         <div class="d-flex align-items-start align-items-sm-center gap-4 mb-4">
-                            <img src="{{ $user->avatar ? asset('storage/avatars/' . $user->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=7367f0&color=fff&size=100' }}" 
+                            <img src="{{ $user->img ? asset('storage/avatars/' . $user->img) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=7367f0&color=fff&size=100' }}" 
                                  alt="user-avatar" class="d-block rounded" height="100" width="100" id="uploadedAvatar">
                             <div class="button-wrapper">
                                 <label for="avatar" class="btn btn-primary me-2 mb-2" tabindex="0">
@@ -42,6 +43,9 @@
                                 <button type="button" class="btn btn-outline-secondary account-image-reset mb-2">
                                     <i class="bx bx-reset d-block d-sm-none"></i>
                                     <span class="d-none d-sm-block">Reset</span>
+                                </button>
+                                <button type="submit" class="btn btn-success d-none mb-2" id="btn-save-avatar">
+                                    <i class="bx bx-save me-1"></i> Simpan Foto
                                 </button>
                                 <p class="text-muted mb-0">Format: JPG, JPEG, PNG. Max 2MB</p>
                             </div>
@@ -213,17 +217,38 @@
 <script>
     // Image upload preview
     document.getElementById('avatar').addEventListener('change', function(e) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            document.getElementById('uploadedAvatar').src = event.target.result;
+        if (e.target.files.length > 0) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.getElementById('uploadedAvatar').src = event.target.result;
+                document.getElementById('btn-save-avatar').classList.remove('d-none');
+            }
+            reader.readAsDataURL(e.target.files[0]);
         }
-        reader.readAsDataURL(e.target.files[0]);
     });
 
     // Reset image
     document.querySelector('.account-image-reset').addEventListener('click', function() {
-        document.getElementById('uploadedAvatar').src = '{{ $user->avatar ? asset("storage/avatars/" . $user->avatar) : "https://ui-avatars.com/api/?name=" . urlencode($user->name) . "&background=7367f0&color=fff&size=100" }}';
-        document.getElementById('avatar').value = '';
+        const fileInput = document.getElementById('avatar');
+        const hasUnsavedImage = fileInput.files.length > 0;
+        
+        if (hasUnsavedImage) {
+            // Cancel/reset unsaved selected image preview
+            document.getElementById('uploadedAvatar').src = '{{ $user->img ? asset("storage/avatars/" . $user->img) : "https://ui-avatars.com/api/?name=" . urlencode($user->name) . "&background=7367f0&color=fff&size=100" }}';
+            fileInput.value = '';
+            document.getElementById('btn-save-avatar').classList.add('d-none');
+        } else {
+            // No unsaved image selected. If there is a saved image in database, delete it!
+            @if($user->img)
+                if (confirm('Apakah Anda yakin ingin menghapus foto profil saat ini?')) {
+                    document.getElementById('delete_avatar').value = '1';
+                    fileInput.form.submit();
+                }
+            @else
+                // No image uploaded yet, nothing to reset
+                alert('Belum ada foto profil yang diunggah.');
+            @endif
+        }
     });
 
     // Enable edit for field

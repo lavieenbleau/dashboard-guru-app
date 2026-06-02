@@ -7,7 +7,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('guru.materi', $serial->id) }}">Materi</a></li>
             <li class="breadcrumb-item"><a href="{{ route('guru.materi.custom', $serial->id) }}">Materi Tambahan</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('guru.materi.mapel', [$serial->id, $mapel->id]) }}">{{ $mapel->name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.materi.mapel', [$serial->id, $lesson->id]) }}">{{ $lesson->name }}</a></li>
             <li class="breadcrumb-item active">Detail Materi</li>
         </ol>
     </nav>
@@ -20,7 +20,7 @@
                     <h3 class="mb-2">{{ $materi->title }}</h3>
                     <div class="d-flex flex-wrap gap-2 mb-3">
                         <span class="badge bg-label-primary">
-                            <i class='bx bx-book'></i> {{ $mapel->name }}
+                            <i class='bx bx-book'></i> {{ $lesson->name }}
                         </span>
                         
                         @if($materi->is_task)
@@ -73,12 +73,12 @@
                         </li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <a class="dropdown-item" href="{{ route('guru.materi.edit', [$serial->id, $mapel->id, $materi->id]) }}">
+                            <a class="dropdown-item" href="{{ route('guru.materi.edit', [$serial->id, $lesson->id, $materi->id]) }}">
                                 <i class='bx bx-edit me-2'></i>Edit
                             </a>
                         </li>
                         <li>
-                            <form action="{{ route('guru.materi.destroy', [$serial->id, $mapel->id, $materi->id]) }}" method="POST" onsubmit="return confirm('Hapus materi ini?')">
+                            <form action="{{ route('guru.materi.destroy', [$serial->id, $lesson->id, $materi->id]) }}" method="POST" onsubmit="return confirm('Hapus materi ini?')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="dropdown-item text-danger">
@@ -91,7 +91,7 @@
             </div>
             
             <div class="d-flex gap-2">
-                <a href="{{ route('guru.materi.mapel', [$serial->id, $mapel->id]) }}" class="btn btn-outline-secondary btn-sm">
+                <a href="{{ route('guru.materi.mapel', [$serial->id, $lesson->id]) }}" class="btn btn-outline-secondary btn-sm">
                     <i class='bx bx-arrow-back me-1'></i> Kembali
                 </a>
             </div>
@@ -232,7 +232,7 @@
                     <i class='bx bx-info-circle' style="font-size: 64px; opacity: 0.3;"></i>
                     <h5 class="mt-3">Belum Ada Konten</h5>
                     <p class="text-muted">Materi ini belum memiliki konten. Silakan edit untuk menambahkan.</p>
-                    <a href="{{ route('guru.materi.edit', [$serial->id, $mapel->id, $materi->id]) }}" class="btn btn-primary">
+                    <a href="{{ route('guru.materi.edit', [$serial->id, $lesson->id, $materi->id]) }}" class="btn btn-primary">
                         <i class='bx bx-edit me-1'></i>Edit Materi
                     </a>
                 </div>
@@ -251,7 +251,7 @@
                     <table class="table table-sm">
                         <tr>
                             <td class="text-muted" style="width: 120px;"><i class='bx bx-book me-1'></i> Mata Pelajaran</td>
-                            <td><strong>{{ $mapel->name }}</strong></td>
+                            <td><strong>{{ $lesson->name }}</strong></td>
                         </tr>
                         <tr>
                             <td class="text-muted"><i class='bx bx-user me-1'></i> Pembuat</td>
@@ -361,7 +361,7 @@
                 <div class="card-body">
                     <!-- Comment Form -->
                     <div class="mb-4 pb-4 border-bottom">
-                        <form action="{{ route('guru.materi.comment.store', [$serial->id, $mapel->id, $materi->id]) }}" method="POST">
+                        <form action="{{ route('guru.materi.comment.store', [$serial->id, $lesson->id, $materi->id]) }}" method="POST">
                             @csrf
                             <div class="d-flex gap-3">
                                 <div class="avatar avatar-sm flex-shrink-0">
@@ -414,15 +414,9 @@
                                         </div>
                                         
                                         @if($comment->user_id == auth()->id())
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-text-secondary rounded-pill btn-icon" 
-                                                    type="button" 
-                                                    data-bs-toggle="dropdown">
-                                                <i class='bx bx-dots-vertical-rounded'></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end">
+                                        <x-action-dropdown>
                                                 <li>
-                                                    <form action="{{ route('guru.materi.comment.delete', [$serial->id, $mapel->id, $materi->id, $comment->id]) }}" 
+                                                    <form action="{{ route('guru.materi.comment.delete', [$serial->id, $lesson->id, $materi->id, $comment->id]) }}" 
                                                           method="POST" 
                                                           onsubmit="return confirm('Hapus komentar ini?')">
                                                         @csrf
@@ -432,8 +426,7 @@
                                                         </button>
                                                     </form>
                                                 </li>
-                                            </ul>
-                                        </div>
+                                            </x-action-dropdown>
                                         @endif
                                     </div>
                                     <p class="mb-0">{{ $comment->message }}</p>
@@ -455,7 +448,7 @@
 
                                 <!-- Reply Form (Hidden by default) -->
                                 <div id="reply-form-{{ $comment->id }}" class="mt-3" style="display: none;">
-                                    <form action="{{ route('guru.materi.comment.reply', [$serial->id, $mapel->id, $materi->id, $comment->id]) }}" method="POST">
+                                    <form action="{{ route('guru.materi.comment.reply', [$serial->id, $lesson->id, $materi->id, $comment->id]) }}" method="POST">
                                         @csrf
                                         <div class="d-flex gap-2">
                                             <textarea name="message" 
@@ -501,15 +494,9 @@
                                                     </div>
                                                     
                                                     @if($reply->user_id == auth()->id())
-                                                    <div class="dropdown">
-                                                        <button class="btn btn-sm btn-text-secondary rounded-pill btn-icon" 
-                                                                type="button" 
-                                                                data-bs-toggle="dropdown">
-                                                            <i class='bx bx-dots-vertical-rounded'></i>
-                                                        </button>
-                                                        <ul class="dropdown-menu dropdown-menu-end">
+                                                    <x-action-dropdown>
                                                             <li>
-                                                                <form action="{{ route('guru.materi.reply.delete', [$serial->id, $mapel->id, $materi->id, $reply->id]) }}" 
+                                                                <form action="{{ route('guru.materi.reply.delete', [$serial->id, $lesson->id, $materi->id, $reply->id]) }}" 
                                                                       method="POST" 
                                                                       onsubmit="return confirm('Hapus balasan ini?')">
                                                                     @csrf
@@ -519,8 +506,7 @@
                                                                     </button>
                                                                 </form>
                                                             </li>
-                                                        </ul>
-                                                    </div>
+                                                        </x-action-dropdown>
                                                     @endif
                                                 </div>
                                                 <p class="mb-0 small">{{ $reply->message }}</p>

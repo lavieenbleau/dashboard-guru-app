@@ -29,48 +29,56 @@ class MateriController extends Controller
     // Materi dari Admin
     public function admin($serial)
     {
-        $serial = Serial::findOrFail($serial);
+        $serial = Serial::with('product')->findOrFail($serial);
+        $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
         
-        // Get all mapels that have admin materials (category = 1)
-        $mapels = Mapel::whereHas('lessons', function($query) {
-            $query->where('category', Lesson::CATEGORY_MATERI);
-        })->get();
-
-        return view('guru.materi.admin', compact('serial', 'mapels'));
-    }
-
-    // Show admin lessons for a mapel
-    public function adminLessons($serial, $mapel)
-    {
-        $serial = Serial::findOrFail($serial);
-        $mapel = Mapel::findOrFail($mapel);
-        
-        // Get all admin lessons for this mapel with classrooms relationship
-        $lessons = Lesson::where('mapel_id', $mapel->id)
+        // Get lessons that belong to this guru's serial product and have category MATERI (1)
+        $lessons = Lesson::whereIn('id', $lessonIds)
             ->where('category', Lesson::CATEGORY_MATERI)
-            ->with('classrooms')
+            ->with('mapel')
             ->get();
 
-        return view('guru.materi.admin-lessons', compact('serial', 'mapel', 'lessons'));
+        return view('guru.materi.admin', compact('serial', 'lessons'));
+    }
+
+    // Show admin lesson items
+    public function adminLessons($serial, $lesson)
+    {
+        $serial = Serial::findOrFail($serial);
+        $lesson = Lesson::findOrFail($lesson);
+        
+        // Get all admin lesson items (materials) for this lesson
+        $items = LessonItem::where('lesson_id', $lesson->id)
+            ->with(['theme', 'subtheme'])
+            ->orderBy('number')
+            ->get();
+
+        return view('guru.materi.admin-lessons', compact('serial', 'lesson', 'items'));
     }
 
     // Share admin lesson to classrooms
-    public function shareAdminLesson(Request $request, $serial, $lessonId)
+    public function shareAdminLesson(Request $request, $serial, $itemId)
     {
         $serial = Serial::findOrFail($serial);
-        $lesson = Lesson::findOrFail($lessonId);
+        
+        // Get the LessonItem and its parent Lesson
+        $item = LessonItem::findOrFail($itemId);
+        $lesson = $item->lesson;
         
         $classrooms = $request->classrooms ?? [];
+        
+        // Sync classrooms to the lesson (this updates the lesson_classroom pivot table)
+        $lesson->classrooms()->sync($classrooms);
         
         // If share as task is enabled, create posts for each classroom
         if ($request->has('as_task') && $request->as_task == 1 && count($classrooms) > 0) {
             $deadline = $request->deadline ? \Carbon\Carbon::parse($request->deadline) : null;
             
             foreach ($classrooms as $classroomId) {
-                // Check if post already exists for this lesson and classroom
+                // Check if post already exists for this item and classroom
                 $existingPost = Post::where('serial_id', $serial->id)
                     ->where('mapel_id', $lesson->mapel_id)
-                    ->where('title', $lesson->name)
+                    ->where('title', $item->title)
                     ->first();
                 
                 if (!$existingPost) {
@@ -79,10 +87,10 @@ class MateriController extends Controller
                         'serial_id' => $serial->id,
                         'user_id' => auth()->id(),
                         'mapel_id' => $lesson->mapel_id,
-                        'title' => $lesson->name,
-                        'description' => 'Tugas dari materi: ' . $lesson->name,
-                        'slug' => \Str::slug($lesson->name) . '-' . time(),
-                        'category' => json_encode(['lesson_id' => $lesson->id]),
+                        'title' => $item->title,
+                        'description' => 'Tugas dari materi: ' . $item->title,
+                        'slug' => \Str::slug($item->title) . '-' . time(),
+                        'category' => ['lesson_item_id' => $item->id, 'lesson_id' => $lesson->id],
                         'due_date' => $deadline,
                         'is_task' => 1,
                     ]);
@@ -117,41 +125,45 @@ class MateriController extends Controller
     // Materi Tambahan (Custom)
     public function custom($serial)
     {
-        $serial = Serial::findOrFail($serial);
+        $serial = Serial::with('product')->findOrFail($serial);
+        $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
         
-        // Get all mapels
-        $mapels = Mapel::all();
+        // Get lessons that belong to this guru's serial product and have category MATERI (1)
+        $lessons = Lesson::whereIn('id', $lessonIds)
+            ->where('category', Lesson::CATEGORY_MATERI)
+            ->with('mapel')
+            ->get();
 
-        return view('guru.materi.custom', compact('serial', 'mapels'));
+        return view('guru.materi.custom', compact('serial', 'lessons'));
     }
 
-    // List materi by mapel
-    public function listByMapel($serial, $mapel)
+    // List materi by lesson
+    public function listByLesson($serial, $lesson)
     {
         $serial = Serial::findOrFail($serial);
-        $mapel = Mapel::findOrFail($mapel);
+        $lesson = Lesson::findOrFail($lesson);
         
-        // Get all posts (materi) for this mapel and serial
+        // Get all posts (materi) for this lesson and serial
         $materis = Post::where('serial_id', $serial->id)
-            ->where('mapel_id', $mapel->id)
+            ->where('category', 'like', '%"lesson_id":' . $lesson->id . '%')
             ->where('is_task', 0)
             ->latest()
             ->get();
 
-        return view('guru.materi.list-simple', compact('serial', 'mapel', 'materis'));
+        return view('guru.materi.list-simple', compact('serial', 'lesson', 'materis'));
     }
 
     // Create new materi
-    public function createMateri($serial, $mapel)
+    public function createMateri($serial, $lesson)
     {
         $serial = Serial::findOrFail($serial);
-        $mapel = Mapel::findOrFail($mapel);
+        $lesson = Lesson::findOrFail($lesson);
         
-        return view('guru.materi.create-simple', compact('serial', 'mapel'));
+        return view('guru.materi.create-simple', compact('serial', 'lesson'));
     }
 
     // Store new materi
-    public function storeMateri(Request $request, $serial, $mapel)
+    public function storeMateri(Request $request, $serial, $lesson)
     {
         $request->validate([
             'title' => 'required|max:255',
@@ -161,7 +173,7 @@ class MateriController extends Controller
         ]);
         
         $serial = Serial::findOrFail($serial);
-        $mapel = Mapel::findOrFail($mapel);
+        $lesson = Lesson::findOrFail($lesson);
         
         $attachmentPath = null;
         if ($request->hasFile('attachment')) {
@@ -171,33 +183,33 @@ class MateriController extends Controller
         Post::create([
             'serial_id' => $serial->id,
             'user_id' => auth()->id(),
-            'mapel_id' => $mapel->id,
+            'mapel_id' => $lesson->mapel_id,
             'title' => $request->title,
             'description' => $request->description,
             'slug' => Str::slug($request->title) . '-' . time(),
             'link' => $request->link,
             'attachment' => $attachmentPath,
             'embed' => $request->embed,
-            'category' => null,
+            'category' => ['lesson_id' => $lesson->id],
             'is_task' => 0,
         ]);
         
-        return redirect()->route('guru.materi.mapel', [$serial->id, $mapel->id])
+        return redirect()->route('guru.materi.mapel', [$serial->id, $lesson->id])
             ->with('success', 'Materi berhasil ditambahkan!');
     }
 
     // Edit materi
-    public function editMateri($serial, $mapel, $id)
+    public function editMateri($serial, $lesson, $id)
     {
         $serial = Serial::findOrFail($serial);
-        $mapel = Mapel::findOrFail($mapel);
+        $lesson = Lesson::findOrFail($lesson);
         $materi = Post::findOrFail($id);
         
-        return view('guru.materi.edit-simple', compact('serial', 'mapel', 'materi'));
+        return view('guru.materi.edit-simple', compact('serial', 'lesson', 'materi'));
     }
 
     // Update materi
-    public function updateMateri(Request $request, $serial, $mapel, $id)
+    public function updateMateri(Request $request, $serial, $lesson, $id)
     {
         $request->validate([
             'title' => 'required|max:255',
@@ -225,24 +237,24 @@ class MateriController extends Controller
             'embed' => $request->embed,
         ]);
         
-        return redirect()->route('guru.materi.mapel', [$serial, $mapel])
+        return redirect()->route('guru.materi.mapel', [$serial, $lesson])
             ->with('success', 'Materi berhasil diupdate!');
     }
 
     // Show detail materi
-    public function showDetail($serial, $mapel, $id)
+    public function showDetail($serial, $lesson, $id)
     {
         $serial = Serial::findOrFail($serial);
-        $mapel = Mapel::findOrFail($mapel);
+        $lesson = Lesson::findOrFail($lesson);
         $materi = Post::with(['comments.user', 'comments.student', 'comments.replies.user', 'comments.replies.student'])->findOrFail($id);
         
         $sharedClassrooms = Classroom::where('serial_id', $serial->id)->get();
         
-        return view('guru.materi.detail', compact('serial', 'mapel', 'materi', 'sharedClassrooms'));
+        return view('guru.materi.detail', compact('serial', 'lesson', 'materi', 'sharedClassrooms'));
     }
 
     // Store comment
-    public function storeComment(Request $request, $serial, $mapel, $id)
+    public function storeComment(Request $request, $serial, $lesson, $id)
     {
         $request->validate([
             'message' => 'required|string|max:1000',
@@ -263,7 +275,7 @@ class MateriController extends Controller
     }
 
     // Store reply to comment
-    public function storeReply(Request $request, $serial, $mapel, $id, $commentId)
+    public function storeReply(Request $request, $serial, $lesson, $id, $commentId)
     {
         $request->validate([
             'message' => 'required|string|max:1000',
@@ -283,7 +295,7 @@ class MateriController extends Controller
     }
 
     // Delete comment
-    public function deleteComment($serial, $mapel, $id, $commentId)
+    public function deleteComment($serial, $lesson, $id, $commentId)
     {
         $comment = PostComment::where('id', $commentId)
             ->where('user_id', auth()->id())
@@ -299,7 +311,7 @@ class MateriController extends Controller
     }
 
     // Delete reply
-    public function deleteReply($serial, $mapel, $id, $replyId)
+    public function deleteReply($serial, $lesson, $id, $replyId)
     {
         $reply = PostChildComment::where('id', $replyId)
             ->where('user_id', auth()->id())
@@ -311,7 +323,7 @@ class MateriController extends Controller
     }
 
     // Delete materi
-    public function destroyMateri($serial, $mapel, $id)
+    public function destroyMateri($serial, $lesson, $id)
     {
         $materi = Post::findOrFail($id);
         
@@ -320,9 +332,9 @@ class MateriController extends Controller
             \Storage::disk('public')->delete($materi->attachment);
         }
         
-        $materi->delete();
+        $materi->forceDelete();
         
-        return redirect()->route('guru.materi.mapel', [$serial, $mapel])
+        return redirect()->route('guru.materi.mapel', [$serial, $lesson])
             ->with('success', 'Materi berhasil dihapus!');
     }
     
@@ -409,7 +421,7 @@ class MateriController extends Controller
             // Admin materials from lesson_items
             $materials = LessonItem::where('theme_id', $tema->id)
                 ->where('subtheme_id', $subtema->id)
-                ->where('is_admin', true)
+                ->whereNotNull('admin_id')
                 ->with(['lesson.mapel'])
                 ->orderBy('number')
                 ->get();
@@ -569,7 +581,7 @@ class MateriController extends Controller
                 'attachment' => $attachmentPath,
                 'embed' => $request->embed,
                 'mapel_id' => $request->mapel_id,
-                'category' => json_encode($category),
+                'category' => $category,
             ]);
         }
 
@@ -587,7 +599,7 @@ class MateriController extends Controller
         } else {
             // Fall back to post
             $post = Post::findOrFail($id);
-            $post->delete();
+            $post->forceDelete();
         }
 
         return redirect()->route('guru.materi.list', [$serial, $tema, $subtema, 'custom'])

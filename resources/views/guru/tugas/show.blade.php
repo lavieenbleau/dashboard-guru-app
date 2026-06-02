@@ -5,7 +5,7 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('guru.tugas', $serial->id) }}">Tugas</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('guru.tugas.mapel', [$serial->id, $mapel->id]) }}">{{ $mapel->name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.tugas.mapel', [$serial->id, $lesson->id]) }}">{{ $lesson->name }}</a></li>
             <li class="breadcrumb-item active">{{ $task->title }}</li>
         </ol>
     </nav>
@@ -15,10 +15,10 @@
             <i class='bx bx-edit text-primary me-2'></i>{{ $task->title }}
         </h4>
         <div class="d-flex gap-2">
-            <a href="{{ route('guru.tugas.edit', [$serial->id, $mapel->id, $task->id]) }}" class="btn btn-primary">
+            <a href="{{ route('guru.tugas.edit', [$serial->id, $lesson->id, $task->id]) }}" class="btn btn-primary">
                 <i class='bx bx-edit me-1'></i>Edit Tugas
             </a>
-            <a href="{{ route('guru.tugas.mapel', [$serial->id, $mapel->id]) }}" class="btn btn-outline-secondary">
+            <a href="{{ route('guru.tugas.mapel', [$serial->id, $lesson->id]) }}" class="btn btn-outline-secondary">
                 <i class='bx bx-arrow-back me-1'></i>Kembali
             </a>
         </div>
@@ -40,7 +40,7 @@
                     <ul class="list-unstyled mb-0">
                         <li class="mb-3">
                             <strong class="d-block text-muted small">Mata Pelajaran</strong>
-                            {{ $mapel->name }}
+                            {{ $lesson->name }}
                         </li>
                         <li class="mb-3">
                             <strong class="d-block text-muted small">Serial</strong>
@@ -178,7 +178,7 @@
                 <div class="card-body">
                     <!-- Comment Form -->
                     <div class="mb-4 pb-4 border-bottom">
-                        <form action="{{ route('guru.tugas.comment.store', [$serial->id, $mapel->id, $task->id]) }}" method="POST">
+                        <form action="{{ route('guru.tugas.comment.store', [$serial->id, $lesson->id, $task->id]) }}" method="POST">
                             @csrf
                             <div class="d-flex gap-3">
                                 <div class="avatar avatar-sm flex-shrink-0">
@@ -231,15 +231,9 @@
                                         </div>
                                         
                                         @if($comment->user_id == auth()->id())
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-text-secondary rounded-pill btn-icon" 
-                                                    type="button" 
-                                                    data-bs-toggle="dropdown">
-                                                <i class='bx bx-dots-vertical-rounded'></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end">
+                                        <x-action-dropdown>
                                                 <li>
-                                                    <form action="{{ route('guru.tugas.comment.delete', [$serial->id, $mapel->id, $task->id, $comment->id]) }}" 
+                                                    <form action="{{ route('guru.tugas.comment.delete', [$serial->id, $lesson->id, $task->id, $comment->id]) }}" 
                                                           method="POST" 
                                                           onsubmit="return confirm('Hapus komentar ini?')">
                                                         @csrf
@@ -249,8 +243,7 @@
                                                         </button>
                                                     </form>
                                                 </li>
-                                            </ul>
-                                        </div>
+                                            </x-action-dropdown>
                                         @endif
                                     </div>
                                     <p class="mb-0">{{ $comment->message }}</p>
@@ -272,7 +265,7 @@
 
                                 <!-- Reply Form (Hidden by default) -->
                                 <div id="reply-form-{{ $comment->id }}" class="mt-3" style="display: none;">
-                                    <form action="{{ route('guru.tugas.comment.reply', [$serial->id, $mapel->id, $task->id, $comment->id]) }}" method="POST">
+                                    <form action="{{ route('guru.tugas.comment.reply', [$serial->id, $lesson->id, $task->id, $comment->id]) }}" method="POST">
                                         @csrf
                                         <div class="d-flex gap-2">
                                             <textarea name="message" 
@@ -318,15 +311,9 @@
                                                     </div>
                                                     
                                                     @if($reply->user_id == auth()->id())
-                                                    <div class="dropdown">
-                                                        <button class="btn btn-sm btn-text-secondary rounded-pill btn-icon" 
-                                                                type="button" 
-                                                                data-bs-toggle="dropdown">
-                                                            <i class='bx bx-dots-vertical-rounded'></i>
-                                                        </button>
-                                                        <ul class="dropdown-menu dropdown-menu-end">
+                                                    <x-action-dropdown>
                                                             <li>
-                                                                <form action="{{ route('guru.tugas.reply.delete', [$serial->id, $mapel->id, $task->id, $reply->id]) }}" 
+                                                                <form action="{{ route('guru.tugas.reply.delete', [$serial->id, $lesson->id, $task->id, $reply->id]) }}" 
                                                                       method="POST" 
                                                                       onsubmit="return confirm('Hapus balasan ini?')">
                                                                     @csrf
@@ -336,8 +323,7 @@
                                                                     </button>
                                                                 </form>
                                                             </li>
-                                                        </ul>
-                                                    </div>
+                                                        </x-action-dropdown>
                                                     @endif
                                                 </div>
                                                 <p class="mb-0 small">{{ $reply->message }}</p>

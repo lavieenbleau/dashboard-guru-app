@@ -24,10 +24,24 @@ class AplikasiController extends Controller
         
         // Get statistics - using Posts for Materi & Tugas, Exercises for Soal
         $stats = [
-            // Materi: posts with is_task = 0
-            'materi' => \App\Models\Post::where('serial_id', $serial->id)
+            // Materi Admin: lesson items shared to this serial
+            'materi_admin' => \App\Models\LessonItem::whereHas('lesson', function($q) use ($serial) {
+                $q->whereHas('classrooms', function($query) use ($serial) {
+                    $query->where('serial_id', $serial->id);
+                });
+            })->count(),
+            
+            // Materi Guru: custom posts from teacher
+            'materi_guru' => \App\Models\Post::where('serial_id', $serial->id)
                 ->where('is_task', 0)
                 ->count(),
+            
+            // Total Materi
+            'materi' => (\App\Models\Post::where('serial_id', $serial->id)
+                ->where('is_task', 0)
+                ->count()) + (\App\Models\LessonItem::whereHas('lesson', function($q) {
+                    $q->where('category', \App\Models\Lesson::CATEGORY_MATERI);
+                })->count()),
             
             // Tugas: posts with is_task = 1
             'tugas' => \App\Models\Post::where('serial_id', $serial->id)
@@ -77,6 +91,47 @@ class AplikasiController extends Controller
             ->limit(5)
             ->get();
 
-        return view('guru.aplikasi.dashboard', compact('serial', 'stats', 'upcomingMeetings', 'recentActivities'));
+        // Define stat cards for dashboard view
+        $statCards = [
+            [
+                'key' => 'materi',
+                'label' => 'Total Materi',
+                'icon' => 'library',
+                'iconClass' => 'indigo',
+            ],
+            [
+                'key' => 'materi_admin',
+                'label' => 'Materi Pusat',
+                'icon' => 'book-open',
+                'iconClass' => 'indigo',
+                'iconStyle' => 'background:#F4F4F5; color:#374151;',
+            ],
+            [
+                'key' => 'soal',
+                'label' => 'Bank Soal',
+                'icon' => 'file-text',
+                'iconClass' => 'cyan',
+            ],
+            [
+                'key' => 'students',
+                'label' => 'Total Siswa',
+                'icon' => 'users',
+                'iconClass' => 'emerald',
+            ],
+            [
+                'key' => 'tasks_pending',
+                'label' => 'Perlu Dinilai',
+                'icon' => 'clock',
+                'iconClass' => 'amber',
+            ],
+            [
+                'key' => 'online_meetings',
+                'label' => 'Meeting',
+                'icon' => 'video',
+                'iconClass' => 'rose',
+            ],
+        ];
+
+        return view('guru.aplikasi.dashboard', compact('serial', 'stats', 'statCards', 'upcomingMeetings', 'recentActivities'));
     }
 }

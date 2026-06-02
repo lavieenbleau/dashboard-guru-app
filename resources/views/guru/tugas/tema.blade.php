@@ -5,12 +5,12 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('guru.tugas', $serial->id) }}">Tugas</a></li>
-            <li class="breadcrumb-item active">{{ $mapel->name }}</li>
+            <li class="breadcrumb-item active">{{ $lesson->name }}</li>
         </ol>
     </nav>
 
     <h4 class="fw-bold py-3 mb-4">
-        <span class="text-muted fw-light">{{ $mapel->name }} /</span> Pilih Tema
+        <span class="text-muted fw-light">{{ $lesson->name }} /</span> Pilih Tema
     </h4>
 
     <div class="row">
@@ -29,7 +29,7 @@
                                 <h5 class="card-title mb-0">{{ $theme->name }}</h5>
                             </div>
                         </div>
-                        <a href="{{ route('guru.tugas.subtema', [$serial->id, $mapel->id, $theme->id]) }}" class="btn btn-warning btn-sm w-100">
+                        <a href="{{ route('guru.tugas.subtema', [$serial->id, $lesson->id, $theme->id]) }}" class="btn btn-warning btn-sm w-100">
                             <i class='bx bx-right-arrow-alt me-1'></i>Lihat Sub Tema
                         </a>
                     </div>

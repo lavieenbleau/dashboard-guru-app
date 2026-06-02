@@ -61,11 +61,7 @@
                         </div>
                         
                         @if($meeting->status === 'scheduled' || $meeting->status === 'ongoing')
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-label-secondary" type="button" data-bs-toggle="dropdown">
-                                <i class='bx bx-dots-vertical-rounded'></i>
-                            </button>
-                            <ul class="dropdown-menu">
+                        <x-action-dropdown>
                                 @if($meeting->status === 'scheduled')
                                 <li>
                                     <a class="dropdown-item" href="{{ route('guru.meeting.edit', [$serial->id, $meeting->id]) }}">
@@ -82,8 +78,7 @@
                                         </button>
                                     </form>
                                 </li>
-                            </ul>
-                        </div>
+                            </x-action-dropdown>
                         @endif
                     </div>
 

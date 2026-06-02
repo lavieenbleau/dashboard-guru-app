@@ -27,7 +27,7 @@ class RekapNilaiController extends Controller
 
     public function showClass($serial, $classroomId)
     {
-        $serial = Serial::findOrFail($serial);
+        $serial = Serial::with('product')->findOrFail($serial);
         $classroom = Classroom::findOrFail($classroomId);
         
         // Get all students in this classroom
@@ -35,20 +35,25 @@ class RekapNilaiController extends Controller
             ->orderBy('name')
             ->get();
 
-        // Get all mapels
-        $mapels = Mapel::all();
+        // Get all lessons (Paket Pembelajaran) for this serial product
+        $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
+        $lessons = Lesson::whereIn('id', $lessonIds)
+            ->where('category', Lesson::CATEGORY_MATERI)
+            ->with('mapel')
+            ->orderBy('name')
+            ->get();
 
-        // Get all distinct posts (tugas) grouped by mapel with lesson info
+        // Group posts (tugas) by lesson
         $allTasks = [];
-        foreach ($mapels as $mapel) {
-            $posts = Post::where('mapel_id', $mapel->id)
+        foreach ($lessons as $lesson) {
+            $posts = Post::where('serial_id', $serial->id)
+                ->where('category', 'like', '%"lesson_id":' . $lesson->id . '%')
                 ->where('is_task', 1)
-                ->where('serial_id', $serial->id)
                 ->orderBy('created_at')
                 ->get();
             
             foreach ($posts as $index => $post) {
-                $allTasks[$mapel->id][] = [
+                $allTasks[$lesson->id][] = [
                     'post' => $post,
                     'title' => $post->title,
                     'number' => $index + 1,
@@ -56,32 +61,46 @@ class RekapNilaiController extends Controller
             }
         }
 
-        // Get all distinct exercises grouped by mapel and type (UH, PTS, PAS)
+        // Group exercises by lesson (Tambahan) and mapel (Admin)
         $allExercises = [];
-        foreach ($mapels as $mapel) {
-            // Group by lesson semester (1=UH, 2=PTS, 3=PAS, 4=Soal Tambahan)
-            $exercises = Exercise::whereHas('lesson', function($q) use ($mapel) {
-                    $q->where('mapel_id', $mapel->id)
-                      ->where('category', 3); // category 3 = soal
+        foreach ($lessons as $lesson) {
+            // Guru exercises (Tambahan)
+            $guruExercises = Exercise::where('lesson_id', $lesson->id)
+                ->where('is_admin', 0)
+                ->orderBy('created_at')
+                ->get();
+                
+            foreach ($guruExercises as $index => $exercise) {
+                $allExercises[$lesson->id]['Tambahan'][] = [
+                    'exercise' => $exercise,
+                    'title' => $exercise->title,
+                    'number' => $index + 1,
+                ];
+            }
+
+            // Admin exercises for the same mapel
+            $adminExercises = Exercise::whereHas('lesson', function($q) use ($lesson) {
+                    $q->where('mapel_id', $lesson->mapel_id)
+                      ->where('category', Lesson::CATEGORY_SOAL);
                 })
+                ->where('is_admin', 1)
                 ->with(['lesson'])
                 ->orderBy('created_at')
                 ->get()
                 ->groupBy(function($item) {
                     return $item->lesson->semester ?? 0;
                 });
-
-            foreach ($exercises as $semester => $exList) {
+                
+            foreach ($adminExercises as $semester => $exList) {
                 $type = match($semester) {
                     1 => 'UH',
                     2 => 'PTS',
                     3 => 'PAS',
-                    4 => 'Tambahan',
                     default => 'Soal'
                 };
                 
                 foreach ($exList as $index => $exercise) {
-                    $allExercises[$mapel->id][$type][] = [
+                    $allExercises[$lesson->id][$type][] = [
                         'exercise' => $exercise,
                         'title' => $exercise->title,
                         'number' => $index + 1,
@@ -95,21 +114,21 @@ class RekapNilaiController extends Controller
         foreach ($students as $student) {
             $studentData = [
                 'student' => $student,
-                'mapels' => []
+                'lessons' => []
             ];
 
-            foreach ($mapels as $mapel) {
-                $mapelTasks = [];
-                $mapelExercises = [];
+            foreach ($lessons as $lesson) {
+                $lessonTasks = [];
+                $lessonExercises = [];
 
                 // Get individual task scores
-                if (isset($allTasks[$mapel->id])) {
-                    foreach ($allTasks[$mapel->id] as $taskInfo) {
+                if (isset($allTasks[$lesson->id])) {
+                    foreach ($allTasks[$lesson->id] as $taskInfo) {
                         $task = Task::where('student_id', $student->id)
                             ->where('post_id', $taskInfo['post']->id)
                             ->first();
                         
-                        $mapelTasks[] = [
+                        $lessonTasks[] = [
                             'number' => $taskInfo['number'],
                             'title' => $taskInfo['title'],
                             'point' => $task ? $task->point : null,
@@ -118,14 +137,14 @@ class RekapNilaiController extends Controller
                 }
 
                 // Get individual exercise scores by type
-                if (isset($allExercises[$mapel->id])) {
-                    foreach ($allExercises[$mapel->id] as $type => $exList) {
+                if (isset($allExercises[$lesson->id])) {
+                    foreach ($allExercises[$lesson->id] as $type => $exList) {
                         foreach ($exList as $exInfo) {
                             $exPoint = ExercisePoint::where('student_id', $student->id)
                                 ->where('exercise_id', $exInfo['exercise']->id)
                                 ->first();
                             
-                            $mapelExercises[$type][] = [
+                            $lessonExercises[$type][] = [
                                 'number' => $exInfo['number'],
                                 'title' => $exInfo['title'],
                                 'point' => $exPoint ? $exPoint->exercise_point : null,
@@ -134,21 +153,21 @@ class RekapNilaiController extends Controller
                     }
                 }
 
-                $studentData['mapels'][$mapel->id] = [
-                    'tasks' => $mapelTasks,
-                    'exercises' => $mapelExercises,
+                $studentData['lessons'][$lesson->id] = [
+                    'tasks' => $lessonTasks,
+                    'exercises' => $lessonExercises,
                 ];
             }
 
             $rekapData[] = $studentData;
         }
 
-        return view('guru.rekap-nilai.show-class', compact('serial', 'classroom', 'students', 'mapels', 'rekapData', 'allTasks', 'allExercises'));
+        return view('guru.rekap-nilai.show-class', compact('serial', 'classroom', 'students', 'lessons', 'rekapData', 'allTasks', 'allExercises'));
     }
 
     public function downloadClassPdf($serial, $classroomId)
     {
-        $serial = Serial::findOrFail($serial);
+        $serial = Serial::with('product')->findOrFail($serial);
         $classroom = Classroom::findOrFail($classroomId);
         
         // Get all students in this classroom
@@ -156,20 +175,25 @@ class RekapNilaiController extends Controller
             ->orderBy('name')
             ->get();
 
-        // Get all mapels
-        $mapels = Mapel::all();
+        // Get all lessons (Paket Pembelajaran) for this serial product
+        $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
+        $lessons = Lesson::whereIn('id', $lessonIds)
+            ->where('category', Lesson::CATEGORY_MATERI)
+            ->with('mapel')
+            ->orderBy('name')
+            ->get();
 
-        // Get all distinct posts (tugas) grouped by mapel
+        // Group posts (tugas) by lesson
         $allTasks = [];
-        foreach ($mapels as $mapel) {
-            $posts = Post::where('mapel_id', $mapel->id)
+        foreach ($lessons as $lesson) {
+            $posts = Post::where('serial_id', $serial->id)
+                ->where('category', 'like', '%"lesson_id":' . $lesson->id . '%')
                 ->where('is_task', 1)
-                ->where('serial_id', $serial->id)
                 ->orderBy('created_at')
                 ->get();
             
             foreach ($posts as $index => $post) {
-                $allTasks[$mapel->id][] = [
+                $allTasks[$lesson->id][] = [
                     'post' => $post,
                     'title' => $post->title,
                     'number' => $index + 1,
@@ -177,31 +201,46 @@ class RekapNilaiController extends Controller
             }
         }
 
-        // Get all distinct exercises grouped by mapel and type
+        // Group exercises by lesson
         $allExercises = [];
-        foreach ($mapels as $mapel) {
-            $exercises = Exercise::whereHas('lesson', function($q) use ($mapel) {
-                    $q->where('mapel_id', $mapel->id)
-                      ->where('category', 3);
+        foreach ($lessons as $lesson) {
+            // Guru exercises
+            $guruExercises = Exercise::where('lesson_id', $lesson->id)
+                ->where('is_admin', 0)
+                ->orderBy('created_at')
+                ->get();
+                
+            foreach ($guruExercises as $index => $exercise) {
+                $allExercises[$lesson->id]['Tambahan'][] = [
+                    'exercise' => $exercise,
+                    'title' => $exercise->title,
+                    'number' => $index + 1,
+                ];
+            }
+
+            // Admin exercises
+            $adminExercises = Exercise::whereHas('lesson', function($q) use ($lesson) {
+                    $q->where('mapel_id', $lesson->mapel_id)
+                      ->where('category', Lesson::CATEGORY_SOAL);
                 })
+                ->where('is_admin', 1)
                 ->with(['lesson'])
                 ->orderBy('created_at')
                 ->get()
                 ->groupBy(function($item) {
                     return $item->lesson->semester ?? 0;
                 });
-
-            foreach ($exercises as $semester => $exList) {
+                
+            foreach ($adminExercises as $semester => $exList) {
                 $type = match($semester) {
                     1 => 'UH',
                     2 => 'PTS',
                     3 => 'PAS',
-                    4 => 'Tambahan',
                     default => 'Soal'
                 };
                 
                 foreach ($exList as $index => $exercise) {
-                    $allExercises[$mapel->id][$type][] = [
+                    $allExercises[$lesson->id][$type][] = [
                         'exercise' => $exercise,
                         'title' => $exercise->title,
                         'number' => $index + 1,
@@ -215,21 +254,21 @@ class RekapNilaiController extends Controller
         foreach ($students as $student) {
             $studentData = [
                 'student' => $student,
-                'mapels' => []
+                'lessons' => []
             ];
 
-            foreach ($mapels as $mapel) {
-                $mapelTasks = [];
-                $mapelExercises = [];
+            foreach ($lessons as $lesson) {
+                $lessonTasks = [];
+                $lessonExercises = [];
 
                 // Get individual task scores
-                if (isset($allTasks[$mapel->id])) {
-                    foreach ($allTasks[$mapel->id] as $taskInfo) {
+                if (isset($allTasks[$lesson->id])) {
+                    foreach ($allTasks[$lesson->id] as $taskInfo) {
                         $task = Task::where('student_id', $student->id)
                             ->where('post_id', $taskInfo['post']->id)
                             ->first();
                         
-                        $mapelTasks[] = [
+                        $lessonTasks[] = [
                             'number' => $taskInfo['number'],
                             'title' => $taskInfo['title'],
                             'point' => $task ? $task->point : null,
@@ -238,14 +277,14 @@ class RekapNilaiController extends Controller
                 }
 
                 // Get individual exercise scores by type
-                if (isset($allExercises[$mapel->id])) {
-                    foreach ($allExercises[$mapel->id] as $type => $exList) {
+                if (isset($allExercises[$lesson->id])) {
+                    foreach ($allExercises[$lesson->id] as $type => $exList) {
                         foreach ($exList as $exInfo) {
                             $exPoint = ExercisePoint::where('student_id', $student->id)
                                 ->where('exercise_id', $exInfo['exercise']->id)
                                 ->first();
                             
-                            $mapelExercises[$type][] = [
+                            $lessonExercises[$type][] = [
                                 'number' => $exInfo['number'],
                                 'title' => $exInfo['title'],
                                 'point' => $exPoint ? $exPoint->exercise_point : null,
@@ -254,16 +293,16 @@ class RekapNilaiController extends Controller
                     }
                 }
 
-                $studentData['mapels'][$mapel->id] = [
-                    'tasks' => $mapelTasks,
-                    'exercises' => $mapelExercises,
+                $studentData['lessons'][$lesson->id] = [
+                    'tasks' => $lessonTasks,
+                    'exercises' => $lessonExercises,
                 ];
             }
 
             $rekapData[] = $studentData;
         }
 
-        $pdf = Pdf::loadView('guru.rekap-nilai.pdf.class', compact('serial', 'classroom', 'students', 'mapels', 'rekapData', 'allTasks', 'allExercises'));
+        $pdf = Pdf::loadView('guru.rekap-nilai.pdf.class', compact('serial', 'classroom', 'students', 'lessons', 'rekapData', 'allTasks', 'allExercises'));
         $pdf->setPaper('a4', 'landscape');
         
         return $pdf->download('Rekap-Nilai-' . str_replace(' ', '-', $classroom->name) . '.pdf');
@@ -287,7 +326,14 @@ class RekapNilaiController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('guru.rekap-nilai.show-student', compact('serial', 'classroom', 'student', 'tasks', 'exercisePoints'));
+        // Get lessons for tasks to map lesson_id to lesson name
+        $lessonIds = $tasks->map(function($task) {
+            $cat = is_string($task->post->category) ? json_decode($task->post->category, true) : $task->post->category;
+            return $cat['lesson_id'] ?? null;
+        })->filter()->unique()->toArray();
+        $lessonsForTasks = \App\Models\Lesson::whereIn('id', $lessonIds)->pluck('name', 'id');
+
+        return view('guru.rekap-nilai.show-student', compact('serial', 'classroom', 'student', 'tasks', 'exercisePoints', 'lessonsForTasks'));
     }
 
     public function downloadStudentPdf($serial, $classroomId, $studentId)
@@ -308,7 +354,14 @@ class RekapNilaiController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $pdf = Pdf::loadView('guru.rekap-nilai.pdf.student', compact('serial', 'classroom', 'student', 'tasks', 'exercisePoints'));
+        // Get lessons for tasks to map lesson_id to lesson name
+        $lessonIds = $tasks->map(function($task) {
+            $cat = is_string($task->post->category) ? json_decode($task->post->category, true) : $task->post->category;
+            return $cat['lesson_id'] ?? null;
+        })->filter()->unique()->toArray();
+        $lessonsForTasks = \App\Models\Lesson::whereIn('id', $lessonIds)->pluck('name', 'id');
+
+        $pdf = Pdf::loadView('guru.rekap-nilai.pdf.student', compact('serial', 'classroom', 'student', 'tasks', 'exercisePoints', 'lessonsForTasks'));
         $pdf->setPaper('a4', 'portrait');
         
         return $pdf->download('Rekap-Nilai-' . str_replace(' ', '-', $student->name) . '.pdf');

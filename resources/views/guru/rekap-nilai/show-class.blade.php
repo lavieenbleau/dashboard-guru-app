@@ -33,19 +33,19 @@
                             Belum ada siswa di kelas ini.
                         </div>
                     @else
-                        @foreach($mapels as $mapel)
+                        @foreach($lessons as $lesson)
                             @php
-                                $taskCount = isset($allTasks[$mapel->id]) ? count($allTasks[$mapel->id]) : 0;
-                                $exTypes = isset($allExercises[$mapel->id]) ? array_keys($allExercises[$mapel->id]) : [];
+                                $taskCount = isset($allTasks[$lesson->id]) ? count($allTasks[$lesson->id]) : 0;
+                                $exTypes = isset($allExercises[$lesson->id]) ? array_keys($allExercises[$lesson->id]) : [];
                                 $totalExCols = 0;
                                 foreach($exTypes as $type) {
-                                    $totalExCols += count($allExercises[$mapel->id][$type]);
+                                    $totalExCols += count($allExercises[$lesson->id][$type]);
                                 }
                             @endphp
                             
                             <div class="mb-4">
                                 <h5 class="card-title text-primary mb-3">
-                                    <i class='bx bx-book-content me-2'></i>{{ strtoupper($mapel->name) }}
+                                    <i class='bx bx-book-content me-2'></i>{{ strtoupper($lesson->name) }}
                                 </h5>
                                 @if($taskCount > 0 || $totalExCols > 0)
                                     <div class="table-responsive">
@@ -59,7 +59,7 @@
                                                     @endif
                                                     @foreach($exTypes as $type)
                                                         @php
-                                                            $exCount = count($allExercises[$mapel->id][$type]);
+                                                            $exCount = count($allExercises[$lesson->id][$type]);
                                                         @endphp
                                                         <th colspan="{{ $exCount }}" class="text-center">
                                                             {{ $type == 'UH' ? 'ULANGAN HARIAN' : ($type == 'Tambahan' ? 'SOAL TAMBAHAN' : $type) }}
@@ -68,13 +68,13 @@
                                                     <th rowspan="2" class="text-center align-middle">RATA-RATA</th>
                                                 </tr>
                                                 <tr>
-                                                    @if(isset($allTasks[$mapel->id]))
-                                                        @foreach($allTasks[$mapel->id] as $task)
+                                                    @if(isset($allTasks[$lesson->id]))
+                                                        @foreach($allTasks[$lesson->id] as $task)
                                                             <th class="text-center" style="width: 55px;" title="{{ $task['title'] }}">{{ $task['number'] }}</th>
                                                         @endforeach
                                                     @endif
-                                                    @if(isset($allExercises[$mapel->id]))
-                                                        @foreach($allExercises[$mapel->id] as $type => $exercises)
+                                                    @if(isset($allExercises[$lesson->id]))
+                                                        @foreach($allExercises[$lesson->id] as $type => $exercises)
                                                             @foreach($exercises as $ex)
                                                                 <th class="text-center" style="width: 55px;" title="{{ $ex['title'] }}">
                                                                     {{ $ex['number'] }}
@@ -90,12 +90,12 @@
                                                         <td class="text-center">{{ $index + 1 }}</td>
                                                         <td>{{ $data['student']->name }}</td>
                                                         @php
-                                                            $mapelData = $data['mapels'][$mapel->id];
+                                                            $lessonData = $data['lessons'][$lesson->id];
                                                             $allPoints = [];
                                                         @endphp
                                                         
                                                         {{-- Display tasks --}}
-                                                        @foreach($mapelData['tasks'] as $task)
+                                                        @foreach($lessonData['tasks'] as $task)
                                                             <td class="text-center">
                                                                 @if($task['point'] !== null)
                                                                     @php $allPoints[] = $task['point']; @endphp
@@ -108,8 +108,8 @@
                                                         
                                                         {{-- Display exercises by type --}}
                                                         @foreach(['UH', 'PTS', 'PAS', 'Tambahan'] as $type)
-                                                            @if(isset($mapelData['exercises'][$type]))
-                                                                @foreach($mapelData['exercises'][$type] as $ex)
+                                                            @if(isset($lessonData['exercises'][$type]))
+                                                                @foreach($lessonData['exercises'][$type] as $ex)
                                                                     <td class="text-center">
                                                                         @if($ex['point'] !== null)
                                                                             @php $allPoints[] = $ex['point']; @endphp

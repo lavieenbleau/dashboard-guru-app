@@ -6,6 +6,7 @@
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('guru.soal', $serial->id) }}">Bank Soal</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.soal.lesson', [$serial->id, $lesson->id]) }}">{{ $lesson->name }}</a></li>
             <li class="breadcrumb-item active">{{ $categoryInfo['name'] }}</li>
         </ol>
     </nav>
@@ -19,10 +20,10 @@
             <div class="d-flex gap-2">
                 @if($category === 'tambahan')
                     <!-- Tombol Tambah Soal untuk Soal Tambahan -->
-                    <a href="{{ route('guru.soal.ai-generator', [$serial->id]) }}" class="btn btn-success">
+                    <a href="{{ route('guru.soal.ai-generator', [$serial->id, $lesson->id]) }}" class="btn btn-success">
                         <i class='bx bx-brain me-1'></i>Generate Soal dengan AI
                     </a>
-                    <a href="{{ route('guru.soal.create-custom', [$serial->id]) }}" class="btn btn-primary">
+                    <a href="{{ route('guru.soal.create-custom', [$serial->id, $lesson->id]) }}" class="btn btn-primary">
                         <i class='bx bx-plus me-1'></i>Tambah Soal Manual
                     </a>
                 @else
@@ -98,32 +99,27 @@
                         <!-- Action Buttons -->
                         @if($category === 'tambahan')
                             <!-- Edit & Delete untuk Soal Tambahan -->
-                            <div class="dropdown">
-                                <button class="btn btn-sm btn-label-secondary" type="button" data-bs-toggle="dropdown">
-                                    <i class='bx bx-dots-vertical-rounded'></i>
-                                </button>
-                                <ul class="dropdown-menu">
+                            <x-action-dropdown>
                                     <li>
-                                        <a class="dropdown-item" href="{{ route('guru.soal.view-exercise', ['serial' => $serial->id, 'exerciseId' => $exercise->id]) }}">
-                                            <i class='bx bx-eye me-2'></i>Lihat Soal
+                                        <a class="dropdown-item" href="{{ route('guru.soal.view-exercise', ['serial' => $serial->id, 'lesson' => $lesson->id, 'exerciseId' => $exercise->id]) }}">
+                                            <i class="bx bx-show me-1"></i> Lihat Soal
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="{{ route('guru.soal.edit-custom', [$serial->id, $exercise->id]) }}">
-                                            <i class='bx bx-edit me-2'></i>Edit
+                                        <a class="dropdown-item" href="{{ route('guru.soal.edit-custom', [$serial->id, $lesson->id, $exercise->id]) }}">
+                                            <i class="bx bx-edit-alt me-1"></i> Edit
                                         </a>
                                     </li>
                                     <li>
-                                        <form action="{{ route('guru.soal.destroy-custom', [$serial->id, $exercise->id]) }}" method="POST">
+                                        <form action="{{ route('guru.soal.destroy-custom', [$serial->id, $lesson->id, $exercise->id]) }}" method="POST">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Hapus soal ini?')">
-                                                <i class='bx bx-trash me-2'></i>Hapus
+                                                <i class="bx bx-trash me-1"></i> Hapus
                                             </button>
                                         </form>
                                     </li>
-                                </ul>
-                            </div>
+                                </x-action-dropdown>
                         @else
                             <!-- Tombol Share untuk soal admin -->
                             <button type="button" class="btn btn-primary" 
@@ -158,7 +154,7 @@
                 <h5 class="modal-title">Bagikan Soal</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ route('guru.soal.share-direct', [$serial->id, $category, $exercise->id]) }}" method="POST">
+            <form action="{{ route('guru.soal.share-direct', [$serial->id, $lesson->id, $category, $exercise->id]) }}" method="POST">
                 @csrf
                 <div class="modal-body">
                     <p class="mb-3"><strong>{{ $exercise->title }}</strong></p>
@@ -202,7 +198,7 @@
 @endforeach
 
 <!-- Form untuk Bulk Share -->
-<form id="bulkShareForm" action="{{ route('guru.soal.bulk-share-direct', [$serial->id, $category]) }}" method="POST" style="display: none;">
+<form id="bulkShareForm" action="{{ route('guru.soal.bulk-share-direct', [$serial->id, $lesson->id, $category]) }}" method="POST" style="display: none;">
     @csrf
     <input type="hidden" name="exercise_ids" id="exerciseIdsInput">
 </form>

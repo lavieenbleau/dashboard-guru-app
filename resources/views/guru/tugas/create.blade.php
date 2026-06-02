@@ -5,7 +5,7 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('guru.tugas', $serial->id) }}">Tugas</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('guru.tugas.mapel', [$serial->id, $mapel->id]) }}">{{ $mapel->name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.tugas.mapel', [$serial->id, $lesson->id]) }}">{{ $lesson->name }}</a></li>
             <li class="breadcrumb-item active">Tambah Tugas</li>
         </ol>
     </nav>
@@ -17,7 +17,7 @@
                     <h5 class="mb-0"><i class='bx bx-task text-warning me-2'></i>Tambah Tugas Baru</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('guru.tugas.store', [$serial->id, $mapel->id]) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('guru.tugas.store', [$serial->id, $lesson->id]) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         
                         <div class="mb-3">
@@ -70,7 +70,7 @@
                             <button type="submit" class="btn btn-warning">
                                 <i class='bx bx-save me-1'></i>Simpan Tugas
                             </button>
-                            <a href="{{ route('guru.tugas.mapel', [$serial->id, $mapel->id]) }}" class="btn btn-secondary">
+                            <a href="{{ route('guru.tugas.mapel', [$serial->id, $lesson->id]) }}" class="btn btn-secondary">
                                 <i class='bx bx-x me-1'></i>Batal
                             </a>
                         </div>
@@ -86,7 +86,7 @@
                     <ul class="list-unstyled mb-0">
                         <li class="mb-2">
                             <strong>Mata Pelajaran:</strong><br>
-                            {{ $mapel->name }}
+                            {{ $lesson->name }}
                         </li>
                         <li class="mb-2">
                             <strong>Serial:</strong><br>

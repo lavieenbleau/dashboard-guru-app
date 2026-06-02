@@ -56,7 +56,7 @@
                                 <thead>
                                     <tr>
                                         <th style="width: 50px;">No</th>
-                                        <th>Mata Pelajaran</th>
+                                        <th>Paket Pembelajaran</th>
                                         <th>Judul Tugas</th>
                                         <th class="text-center" style="width: 100px;">Nilai</th>
                                         <th style="width: 150px;">Tanggal</th>
@@ -66,7 +66,13 @@
                                     @foreach($tasks as $index => $task)
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
-                                            <td>{{ $task->post->mapel->name ?? '-' }}</td>
+                                            <td>
+                                                @php
+                                                    $cat = is_string($task->post->category) ? json_decode($task->post->category, true) : $task->post->category;
+                                                    $lessonId = $cat['lesson_id'] ?? null;
+                                                @endphp
+                                                {{ $lessonId && isset($lessonsForTasks[$lessonId]) ? $lessonsForTasks[$lessonId] : ($task->post->mapel->name ?? '-') }}
+                                            </td>
                                             <td>{{ $task->post->title ?? '-' }}</td>
                                             <td class="text-center">
                                                 @if($task->point)
@@ -123,7 +129,7 @@
                                 <thead>
                                     <tr>
                                         <th style="width: 50px;">No</th>
-                                        <th>Mata Pelajaran</th>
+                                        <th>Paket Pembelajaran</th>
                                         <th>Kategori</th>
                                         <th>Judul Soal</th>
                                         <th class="text-center" style="width: 100px;">Nilai</th>
@@ -134,7 +140,7 @@
                                     @foreach($exercisePoints as $index => $point)
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
-                                            <td>{{ $point->exercise->lesson->mapel->name ?? '-' }}</td>
+                                            <td>{{ $point->exercise->lesson->name ?? ($point->exercise->lesson->mapel->name ?? '-') }}</td>
                                             <td>
                                                 @if($point->exercise->exerciseType)
                                                     <span class="badge bg-info">{{ $point->exercise->exerciseType->name }}</span>

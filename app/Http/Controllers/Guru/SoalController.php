@@ -9,12 +9,14 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\Serial;
 use App\Models\Mapel;
 use App\Models\Lesson;
+use App\Models\LessonItem;
 use App\Models\Theme;
 use App\Models\Subtheme;
 use App\Models\Post;
 use App\Models\Exercise;
 use App\Models\ExerciseItem;
 use App\Models\ExerciseType;
+use App\Models\ExerciseModel;
 use App\Models\Classroom;
 use App\Services\OpenAIService;
 
@@ -22,7 +24,22 @@ class SoalController extends Controller
 {
     public function index($serial)
     {
+        $serial = Serial::with('product')->findOrFail($serial);
+        $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
+        
+        $lessons = Lesson::whereIn('id', $lessonIds)
+            ->where('category', Lesson::CATEGORY_MATERI)
+            ->with('mapel')
+            ->orderBy('name')
+            ->get();
+
+        return view('guru.soal.index-lesson', compact('serial', 'lessons'));
+    }
+    
+    public function categories($serial, $lesson)
+    {
         $serial = Serial::findOrFail($serial);
+        $lesson = Lesson::findOrFail($lesson);
         
         // Define soal categories (all from admin, can be shared)
         $categories = [
@@ -32,12 +49,13 @@ class SoalController extends Controller
             ['id' => 'tambahan', 'name' => 'Soal Tambahan', 'icon' => 'bx-plus-circle', 'color' => 'success', 'type_id' => null],
         ];
 
-        return view('guru.soal.index', compact('serial', 'categories'));
+        return view('guru.soal.index', compact('serial', 'lesson', 'categories'));
     }
 
-    public function listByCategory($serial, $category)
+    public function listByCategory($serial, $lesson, $category)
     {
         $serial = Serial::findOrFail($serial);
+        $lesson = Lesson::findOrFail($lesson);
         
         // Get category info
         $categoryMap = [
@@ -54,6 +72,7 @@ class SoalController extends Controller
         if ($category === 'tambahan') {
             // Soal Tambahan: custom exercises from teacher (is_admin = 0)
             $exercises = Exercise::where('serial_id', $serial->id)
+                ->where('lesson_id', $lesson->id)
                 ->where('is_admin', 0)
                 ->with(['lesson.mapel', 'exerciseItems', 'exerciseType'])
                 ->orderBy('created_at', 'desc')
@@ -61,6 +80,7 @@ class SoalController extends Controller
         } else {
             // Admin exercises (UH, PTS, PAS) - is_admin = 1 and serial_id is null
             $query = Exercise::where('is_admin', 1)
+                ->where('lesson_id', $lesson->id)
                 ->whereNull('serial_id'); // Soal admin tidak punya serial_id
             
             if ($exerciseTypeId) {
@@ -72,78 +92,97 @@ class SoalController extends Controller
                 ->get();
         }
         
-        return view('guru.soal.list-direct', compact('serial', 'category', 'categoryInfo', 'exercises'));
+        return view('guru.soal.list-direct', compact('serial', 'lesson', 'category', 'categoryInfo', 'exercises'));
     }
 
-    public function createCustom($serial)
+    public function createCustom($serial, $lesson)
     {
         $serial = Serial::findOrFail($serial);
+        $lesson = Lesson::findOrFail($lesson);
         $category = 'tambahan'; // Fixed category for custom exercises
         
-        // Get all mapels (mata pelajaran) untuk dipilih
-        $mapels = Mapel::orderBy('name')->get();
+        // Get exercise models (jenis soal)
+        $exerciseModels = ExerciseModel::orderBy('name')->get();
         
-        // Get exercise types - only Ulangan Harian and Soal Latihan
-        $exerciseTypes = ExerciseType::whereIn('kode', ['UH', 'SL'])->get();
+        // Get ALL exercise types (not filtered)
+        $exerciseTypes = ExerciseType::orderBy('name')->get();
+        
+        // Get all lessons (paket materi) untuk dipilih
+        $lessons = Lesson::where('category', Lesson::CATEGORY_MATERI)->with('mapel')->orderBy('name')->get();
         
         // Get classrooms untuk dibagikan
         $classrooms = Classroom::where('serial_id', $serial->id)->get();
         
         $categoryInfo = ['name' => 'Soal Tambahan', 'color' => 'success'];
 
-        return view('guru.soal.create-custom', compact('serial', 'category', 'categoryInfo', 'mapels', 'exerciseTypes', 'classrooms'));
+        return view('guru.soal.create-custom', compact('serial', 'lesson', 'category', 'categoryInfo', 'exerciseModels', 'exerciseTypes', 'lessons', 'classrooms'));
     }
 
-    public function storeCustom(Request $request, $serial)
+    public function storeCustom(Request $request, $serial, $lesson)
     {
         $serial = Serial::findOrFail($serial);
+        $lesson = Lesson::findOrFail($lesson);
         $category = 'tambahan';
         
         $request->validate([
             'exercise_type_id' => 'required|exists:exercise_types,id',
-            'question_type' => 'required|in:pilihan_ganda,essai,jawaban_singkat',
-            'mapel_id' => 'required|exists:mapels,id',
+            'question_type' => 'required|exists:exercise_models,id',
+            'lesson_id' => 'required|exists:lessons,id',
+            'title' => 'required|max:255',
             'time_limit' => 'required|integer|min:1|max:480',
             'questions' => 'required|array|min:1',
-            'questions.*.title' => 'required|max:255',
             'questions.*.question' => 'required',
             'questions.*.answer' => 'nullable',
             'questions.*.options' => 'nullable|array',
             'classrooms' => 'nullable|array',
         ]);
 
-        // Find or create base lesson for this mapel
-        $lesson = Lesson::firstOrCreate([
-            'mapel_id' => $request->mapel_id,
-            'category' => Lesson::CATEGORY_SOAL,
-            'name' => 'Base Lesson',
-        ], [
-            'grade' => '1',
-            'semester' => 1,
-        ]);
+        // VALIDATE BUSINESS RULES: Check if selected model is allowed for this type
+        $exerciseType = ExerciseType::findOrFail($request->exercise_type_id);
+        $exerciseModel = ExerciseModel::findOrFail($request->question_type);
+        $allowedModels = $this->getAllowedExerciseModelIds($request->exercise_type_id);
         
-        // Loop through all questions and create exercises
+        if (!in_array($request->question_type, $allowedModels)) {
+            return back()
+                ->withInput()
+                ->with('error', "Jenis Soal \"{$exerciseModel->name}\" tidak diizinkan untuk Tipe Soal \"{$exerciseType->name}\"");
+        }
+
+        // Get selected lesson
+        $lesson = Lesson::findOrFail($request->lesson_id);
+        
+        // Determine question type from exercise_model_id
+        // Models 1-2: Pilihan Ganda, Models 3-7: Essai
+        $exerciseModelId = (int) $request->question_type;
+        $questionType = in_array($exerciseModelId, [1, 2]) ? 'pilihan_ganda' : 'essai';
+        
+        // Create single exercise header for the whole package
+        $exercise = Exercise::create([
+            'lesson_id' => $lesson->id,
+            'serial_id' => $serial->id,
+            'exercise_type_id' => $request->exercise_type_id,
+            'title' => $request->title,
+            'time_limit' => $request->time_limit,
+            'is_admin' => 0, // Custom dari guru
+        ]);
+
+        // Share to selected classrooms
+        if ($request->has('classrooms') && is_array($request->classrooms)) {
+            foreach ($request->classrooms as $classroomId) {
+                \App\Models\Post::create([
+                    'classroom_id' => $classroomId,
+                    'exercise_id' => $exercise->id,
+                    'title' => $exercise->title,
+                    'type' => 'exercise',
+                    'date' => now()->toDateString(),
+                    'deadline' => now()->addDays(7)->toDateString(),
+                ]);
+            }
+        }
+
+        // Loop through all questions and create items
         $createdCount = 0;
         foreach ($request->questions as $index => $questionData) {
-            // Create exercise header
-            $exercise = Exercise::create([
-                'lesson_id' => $lesson->id,
-                'serial_id' => $serial->id,
-                'exercise_type_id' => $request->exercise_type_id,
-                'title' => $questionData['title'],
-                'time_limit' => $request->time_limit,
-                'is_admin' => 0, // Custom dari guru
-            ]);
-
-            // Create exercise item with question details
-            // Map question_type to exercise_model_id
-            $exerciseModelId = 1; // Default: Pilihan Ganda
-            if ($request->question_type === 'essai') {
-                $exerciseModelId = 2;
-            } elseif ($request->question_type === 'jawaban_singkat') {
-                $exerciseModelId = 3;
-            }
-
             $exerciseItemData = [
                 'exercise_id' => $exercise->id,
                 'exercise_type_id' => $request->exercise_type_id,
@@ -151,22 +190,27 @@ class SoalController extends Controller
                 'exercise_choice' => 1, // Default choice
                 'exercise_number' => $index + 1,
                 'question' => $questionData['question'],
-                'answer' => ($request->question_type === 'pilihan_ganda') 
-                    ? json_encode([$questionData['answer'] ?? null])
-                    : ($questionData['answer'] ?? null),
+                'answer' => isset($questionData['answer']) 
+                    ? (str_contains($questionData['answer'], ',') 
+                        ? array_values(array_filter(array_map('trim', explode(',', $questionData['answer'])))) 
+                        : [$questionData['answer']])
+                    : null,
                 'is_user' => 1, // Created by user (guru)
             ];
 
             // Add options if multiple choice
-            if ($request->question_type === 'pilihan_ganda' && isset($questionData['options'])) {
+            if ($questionType === 'pilihan_ganda' && isset($questionData['options'])) {
                 $options = array_filter($questionData['options']);
-                $exerciseItemData['selection'] = json_encode([
-                    'A' => $options[0] ?? null,
-                    'B' => $options[1] ?? null,
-                    'C' => $options[2] ?? null,
-                    'D' => $options[3] ?? null,
-                    'E' => $options[4] ?? null,
-                ]);
+                $newOptions = [];
+                $labels = ['A', 'B', 'C', 'D', 'E'];
+                $i = 0;
+                foreach ($options as $opt) {
+                    if ($i < count($labels) && trim($opt) !== '') {
+                        $newOptions[] = ['key' => $labels[$i], 'text' => $opt];
+                    }
+                    $i++;
+                }
+                $exerciseItemData['options'] = empty($newOptions) ? null : $newOptions;
             }
 
             ExerciseItem::create($exerciseItemData);
@@ -174,34 +218,39 @@ class SoalController extends Controller
             $createdCount++;
         }
 
-        return redirect()->route('guru.soal.list-direct', [$serial->id, $category])
-            ->with('success', "Berhasil menambahkan {$createdCount} soal!");
+        return redirect()->route('guru.soal.list-direct', [$serial->id, $lesson->id, $category])
+            ->with('success', 'Soal tambahan berhasil dibuat!');
     }
 
-    public function editCustom($serial, $id)
+    public function editCustom($serial, $lesson, $id)
     {
         $serial = Serial::findOrFail($serial);
+        $lesson = Lesson::findOrFail($lesson);
         $category = 'tambahan';
         $exercise = Exercise::with('exerciseItems')->findOrFail($id);
         
         // Get all mapels
         $mapels = Mapel::all();
+        // Get all lessons (Paket Materi)
+        $lessons = Lesson::where('category', Lesson::CATEGORY_MATERI)->with('mapel')->orderBy('name')->get();
         $exerciseTypes = ExerciseType::all();
+        $exerciseModels = ExerciseModel::orderBy('name')->get();
         $classrooms = Classroom::where('serial_id', $serial->id)->get();
         
         $categoryInfo = ['name' => 'Soal Tambahan', 'color' => 'success'];
 
-        return view('guru.soal.edit-custom', compact('serial', 'category', 'categoryInfo', 'exercise', 'mapels', 'exerciseTypes', 'classrooms'));
+        return view('guru.soal.edit-custom', compact('serial', 'lesson', 'category', 'categoryInfo', 'exercise', 'exerciseModels', 'exerciseTypes', 'lessons', 'classrooms'));
     }
 
-    public function updateCustom(Request $request, $serial, $id)
+    public function updateCustom(Request $request, $serial, $lesson, $id)
     {
-        $exercise = Exercise::findOrFail($id);
         $serial = Serial::findOrFail($serial);
+        $lesson = Lesson::findOrFail($lesson);
+        $exercise = Exercise::findOrFail($id);
         $category = 'tambahan';
         
         $request->validate([
-            'mapel_id' => 'required|exists:mapels,id',
+            'lesson_id' => 'required|exists:lessons,id',
             'exercise_type_id' => 'required|exists:exercise_types,id',
             'title' => 'required|max:255',
             'time_limit' => 'required|integer|min:1|max:480',
@@ -214,19 +263,9 @@ class SoalController extends Controller
             'classrooms' => 'nullable|array',
         ]);
 
-        // Update or create lesson
-        $lesson = Lesson::firstOrCreate([
-            'mapel_id' => $request->mapel_id,
-            'category' => Lesson::CATEGORY_SOAL,
-            'name' => 'Base Lesson',
-        ], [
-            'grade' => '1',
-            'semester' => 1,
-        ]);
-
         // Update exercise header
         $exercise->update([
-            'lesson_id' => $lesson->id,
+            'lesson_id' => $request->lesson_id,
             'exercise_type_id' => $request->exercise_type_id,
             'title' => $request->title,
             'time_limit' => $request->time_limit,
@@ -248,16 +287,28 @@ class SoalController extends Controller
                 'exercise_type_id' => $request->exercise_type_id,
                 'exercise_model_id' => $exerciseModelId,
                 'question' => $itemData['question'],
-                'answer' => ($itemData['question_type'] === 'pilihan_ganda')
-                    ? json_encode([$itemData['answer'] ?? null])
-                    : ($itemData['answer'] ?? null),
+                'answer' => isset($itemData['answer']) 
+                    ? (str_contains($itemData['answer'], ',') 
+                        ? array_values(array_filter(array_map('trim', explode(',', $itemData['answer'])))) 
+                        : [$itemData['answer']])
+                    : null,
             ];
 
-            // Add selection if pilihan ganda
+            // Add options if pilihan ganda
             if ($itemData['question_type'] === 'pilihan_ganda' && isset($itemData['selection'])) {
-                $updateData['selection'] = json_encode($itemData['selection']);
+                $options = array_filter($itemData['selection']);
+                $newOptions = [];
+                $labels = ['A', 'B', 'C', 'D', 'E'];
+                $i = 0;
+                foreach ($options as $opt) {
+                    if ($i < count($labels) && trim($opt) !== '') {
+                        $newOptions[] = ['key' => $labels[$i], 'text' => $opt];
+                    }
+                    $i++;
+                }
+                $updateData['options'] = empty($newOptions) ? null : $newOptions;
             } else {
-                $updateData['selection'] = null;
+                $updateData['options'] = null;
             }
 
             $exerciseItem->update($updateData);
@@ -279,12 +330,14 @@ class SoalController extends Controller
             $exercise->sharedSerials()->sync([]);
         }
 
-        return redirect()->route('guru.soal.list-direct', [$serial->id, $category])
-            ->with('success', 'Semua soal berhasil diupdate!');
+        return redirect()->route('guru.soal.list-direct', [$serial->id, $lesson->id, $category])
+            ->with('success', 'Soal tambahan berhasil diupdate!');
     }
 
-    public function destroyCustom($serial, $id)
+    public function destroyCustom($serial, $lesson, $id)
     {
+        $serial = Serial::findOrFail($serial);
+        $lesson = Lesson::findOrFail($lesson);
         $exercise = Exercise::findOrFail($id);
         $category = 'tambahan';
         
@@ -295,8 +348,8 @@ class SoalController extends Controller
         
         $exercise->delete();
 
-        return redirect()->route('guru.soal.list-direct', [$serial, $category])
-            ->with('success', 'Soal berhasil dihapus!');
+        return redirect()->route('guru.soal.list-direct', [$serial->id, $lesson->id, 'tambahan'])
+            ->with('success', 'Soal tambahan berhasil dihapus!');
     }
 
     public function categorySelect($serial, $category)
@@ -412,33 +465,78 @@ class SoalController extends Controller
         $serial = Serial::findOrFail($serial);
         $tema = Theme::findOrFail($tema);
         
+        // Get exercise models (jenis soal)
+        $exerciseModels = ExerciseModel::orderBy('name')->get();
+        
+        // Get all exercise types (tipe soal)
+        $exerciseTypes = ExerciseType::orderBy('name')->get();
+        
         $categories = [
-            'ulangan-harian' => ['name' => 'Ulangan Harian', 'color' => 'primary'],
-            'pts' => ['name' => 'Penilaian Tengah Semester', 'color' => 'warning'],
-            'pas' => ['name' => 'Penilaian Akhir Semester', 'color' => 'danger'],
-            'tambahan' => ['name' => 'Soal Tambahan', 'color' => 'success'],
+            'ulangan-harian' => ['name' => 'Ulangan Harian', 'color' => 'primary', 'type_id' => 1],
+            'pts' => ['name' => 'Penilaian Tengah Semester', 'color' => 'warning', 'type_id' => 2],
+            'pas' => ['name' => 'Penilaian Akhir Semester', 'color' => 'danger', 'type_id' => 3],
+            'tambahan' => ['name' => 'Soal Tambahan', 'color' => 'success', 'type_id' => null],
         ];
         
-        $categoryInfo = $categories[$category] ?? ['name' => 'Soal', 'color' => 'info'];
+        $categoryInfo = $categories[$category] ?? ['name' => 'Soal', 'color' => 'info', 'type_id' => null];
 
-        return view('guru.soal.create', compact('serial', 'category', 'categoryInfo', 'tema'));
+        return view('guru.soal.create', compact('serial', 'category', 'categoryInfo', 'tema', 'exerciseModels', 'exerciseTypes'));
     }
 
     public function store(Request $request, $serial, $category, $tema)
     {
         $request->validate([
             'name' => 'required|max:255',
+            'exercise_model_id' => 'required|exists:exercise_models,id',
+            'exercise_type_id' => 'required|exists:exercise_types,id',
+            'description' => 'nullable|string',
+            'link' => 'nullable|url',
+            'semester' => 'required|in:1,2',
+            'questions' => 'nullable|array',
         ]);
 
-        Lesson::create([
+        $serial = Serial::findOrFail($serial);
+        
+        // Find or create lesson for this tema/subthema
+        $lesson = Lesson::firstOrCreate([
             'mapel_id' => null,
-            'name' => $request->name,
-            'grade' => $tema,
-            'semester' => $this->getCategoryId($category),
+            'name' => $tema,
             'category' => Lesson::CATEGORY_SOAL,
+        ], [
+            'grade' => $tema,
+            'semester' => $request->semester,
         ]);
 
-        return redirect()->route('guru.soal.list', [$serial, $category, $tema])
+        // Create exercise
+        $exercise = Exercise::create([
+            'lesson_id' => $lesson->id,
+            'serial_id' => $serial->id,
+            'exercise_type_id' => $request->exercise_type_id,
+            'title' => $request->name,
+            'description' => $request->description,
+            'time_limit' => null,
+            'is_admin' => 0,
+        ]);
+
+        // Create exercise items (individual questions) if provided
+        if (!empty($request->questions)) {
+            foreach ($request->questions as $index => $questionText) {
+                if (!empty($questionText)) {
+                    ExerciseItem::create([
+                        'exercise_id' => $exercise->id,
+                        'exercise_type_id' => $request->exercise_type_id,
+                        'exercise_model_id' => $request->exercise_model_id,
+                        'exercise_choice' => 1,
+                        'exercise_number' => $index + 1,
+                        'question' => $questionText,
+                        'answer' => null,
+                        'is_user' => 1,
+                    ]);
+                }
+            }
+        }
+
+        return redirect()->route('guru.soal.list', [$serial->id, $category, $tema])
             ->with('success', 'Soal berhasil ditambahkan!');
     }
 
@@ -561,9 +659,11 @@ class SoalController extends Controller
         return back()->with('success', "$updated soal berhasil diproses untuk serial ini!");
     }
 
-    // Share single exercise by category
-    public function shareSingleCategory(Request $request, $serial, $category, $id)
+    // Share single exercise in a category to all classes
+    public function shareSingleCategory(Request $request, $serial, $lesson, $category, $id)
     {
+        $serial = Serial::findOrFail($serial);
+        $lesson = Lesson::findOrFail($lesson);
         $exercise = Exercise::findOrFail($id);
         
         if ($exercise->is_admin != 1) {
@@ -580,8 +680,10 @@ class SoalController extends Controller
     }
 
     // Bulk share by category
-    public function bulkShareCategory(Request $request, $serial, $category)
+    public function bulkShareCategory(Request $request, $serial, $lesson, $category)
     {
+        $serialModel = Serial::findOrFail($serial);
+        $lessonModel = Lesson::findOrFail($lesson);
         $exerciseIds = json_decode($request->input('exercise_ids', '[]'), true);
         
         if (empty($exerciseIds)) {
@@ -609,59 +711,61 @@ class SoalController extends Controller
     /**
      * Show AI Question Generator form
      */
-    public function aiGenerator($serial)
+    public function aiGenerator($serial, $lesson)
     {
         $serial = Serial::findOrFail($serial);
+        $lesson = Lesson::with('mapel')->findOrFail($lesson);
         $category = 'tambahan';
         
-        // Get all mapels (mata pelajaran)
-        $mapels = Mapel::orderBy('name')->get();
+        // Get exercise models (jenis soal)
+        $exerciseModels = ExerciseModel::orderBy('name')->get();
         
-        // Get exercise types
-        $exerciseTypes = ExerciseType::whereIn('kode', ['UH', 'SL'])->get();
+        // Get ALL exercise types (not filtered)
+        $exerciseTypes = ExerciseType::orderBy('name')->get();
         
         // Get classrooms
         $classrooms = Classroom::where('serial_id', $serial->id)->get();
 
         // Get uploaded materials (custom materi) for dropdown
         $uploadedMaterials = Post::where('serial_id', $serial->id)
+            ->where('category', 'like', '%"lesson_id":' . $lesson->id . '%')
             ->where('is_task', 0)
             ->where(function ($query) {
                 $query->whereNotNull('description')
                     ->orWhereNotNull('attachment')
                     ->orWhereNotNull('link');
             })
-            ->with('mapel')
             ->latest()
             ->get();
 
-        // Get admin materials (lessons) so they can also be used as AI source
-        $adminMaterials = Lesson::where('category', Lesson::CATEGORY_MATERI)
-            ->with('mapel')
+        // Get admin materials (lesson items) for this specific lesson
+        $adminMaterials = LessonItem::where('lesson_id', $lesson->id)
             ->latest()
             ->get();
 
         $materials = $uploadedMaterials->map(function ($material) {
             $material->source_type = 'post';
             $material->source_label = 'Materi Guru';
+            $material->display_name = $material->title;
 
             return $material;
         })->merge($adminMaterials->map(function ($material) {
-            $material->source_type = 'lesson';
+            $material->source_type = 'lesson_item';
             $material->source_label = 'Materi Admin';
+            $material->display_name = $material->title;
 
             return $material;
         }))->sortByDesc('created_at')->values();
         
         $categoryInfo = ['name' => 'Generate Soal dengan AI', 'color' => 'success'];
 
-        return view('guru.soal.ai-generator', compact('serial', 'category', 'categoryInfo', 'mapels', 'exerciseTypes', 'classrooms', 'materials'));
+        return view('guru.soal.ai-generator', compact('serial', 'lesson', 'category', 'categoryInfo', 'exerciseModels', 'exerciseTypes', 'classrooms', 'materials'));
     }
 
     /**
      * Read uploaded material content for AI generation.
      */
-    public function readUploadedMaterial($serial, $materialId)
+    public function readUploadedMaterial($serial, $lesson, $materialId)
     {
         $serial = Serial::findOrFail($serial);
 
@@ -672,36 +776,33 @@ class SoalController extends Controller
             [$materialType, $materialKey] = array_pad(explode(':', (string) $materialId, 2), 2, null);
         }
 
-        if ($materialType === 'lesson') {
-            $material = Lesson::where('category', Lesson::CATEGORY_MATERI)
-                ->with('mapel')
-                ->findOrFail($materialKey);
+        if ($materialType === 'lesson_item') {
+            $material = LessonItem::where('lesson_id', $lesson)->findOrFail($materialKey);
         } else {
             $material = Post::where('serial_id', $serial->id)
+                ->where('category', 'like', '%"lesson_id":' . $lesson . '%')
                 ->where('is_task', 0)
-                ->with('mapel')
                 ->findOrFail($materialKey);
             $materialType = 'post';
         }
 
         $parts = [];
-        $parts[] = 'Judul materi: ' . ($material->title ?? $material->name);
+        $parts[] = 'Judul materi: ' . ($material->title ?? $material->name ?? '');
 
-        if ($materialType === 'lesson') {
+        if ($materialType === 'lesson_item') {
             $parts[] = 'Sumber materi: Materi Admin';
 
-            if (!empty($material->grade) || !empty($material->semester)) {
-                $grade = $material->grade ?? '-';
-                $semester = $material->semester ?? '-';
-                $parts[] = 'Kelas / Semester: ' . $grade . ' / ' . $semester;
+            if (!empty($material->embed)) {
+                $parts[] = 'Konten materi:';
+                $parts[] = trim(strip_tags($material->embed));
             }
         } else {
             $parts[] = 'Sumber materi: Materi Guru';
         }
 
-        if (!empty($material->description)) {
+        if ($materialType === 'post' && !empty($material->description)) {
             $parts[] = 'Deskripsi materi:';
-            $parts[] = trim($material->description);
+            $parts[] = trim(strip_tags($material->description));
         }
 
         if ($materialType === 'post' && !empty($material->link)) {
@@ -730,23 +831,40 @@ class SoalController extends Controller
     }
 
     /**
-     * Generate questions using OpenAI API
+     * Generate questions with AI
      */
-    public function generateWithAI(Request $request, $serial)
+    public function generateWithAI(Request $request, $serial, $lesson)
     {
         $request->validate([
             'illustration' => 'required|string|min:20',
-            'question_type' => 'required|in:pilihan_ganda,essai',
+            'exercise_model_id' => 'required|exists:exercise_models,id',
             'difficulty' => 'required|in:mudah,sedang,sulit',
             'count' => 'required|integer|min:1|max:10',
+            'exercise_type_id' => 'required|exists:exercise_types,id',
+            'time_limit' => 'required|integer|min:1|max:480',
         ]);
 
         try {
+            // Get exercise type & model
+            $exerciseType = ExerciseType::findOrFail($request->exercise_type_id);
+            $exerciseModel = ExerciseModel::findOrFail($request->exercise_model_id);
+            
+            // VALIDATE BUSINESS RULES: Check if selected model is allowed for this type
+            $allowedModels = $this->getAllowedExerciseModelIds($request->exercise_type_id);
+            if (!in_array($request->exercise_model_id, $allowedModels)) {
+                return back()
+                    ->withInput()
+                    ->with('error', "Jenis Soal \"{$exerciseModel->name}\" tidak diizinkan untuk Tipe Soal \"{$exerciseType->name}\"");
+            }
+            
+            // Map exercise model to question type for AI generation
+            $questionType = $this->mapExerciseModelToQuestionType($exerciseModel->id);
+            
             $openAIService = new OpenAIService();
             
             $questions = $openAIService->generateQuestions(
                 $request->illustration,
-                $request->question_type,
+                $questionType,
                 $request->difficulty,
                 $request->count
             );
@@ -754,14 +872,16 @@ class SoalController extends Controller
             // Store questions in session for preview
             session(['ai_generated_questions' => [
                 'questions' => $questions,
-                'question_type' => $request->question_type,
-                'mapel_id' => $request->mapel_id,
+                'exercise_model_id' => $request->exercise_model_id,
+                'exercise_model_name' => $exerciseModel->name,
+                'lesson_id' => $lesson,
                 'exercise_type_id' => $request->exercise_type_id,
+                'time_limit' => $request->time_limit,
+                'question_type' => $questionType,
                 'classrooms' => $request->classrooms,
             ]]);
 
-            return redirect()->route('guru.soal.ai-preview', $serial)
-                ->with('success', 'Berhasil menghasilkan ' . count($questions) . ' soal!');
+            return redirect()->route('guru.soal.ai-preview', ['serial' => $serial, 'lesson' => $lesson]);
 
         } catch (\Exception $e) {
             return back()
@@ -771,59 +891,72 @@ class SoalController extends Controller
     }
 
     /**
-     * Preview AI-generated questions before saving
+     * Map exercise model ID to question type for AI generation
      */
-    public function aiPreview($serial)
+    private function mapExerciseModelToQuestionType($exerciseModelId)
     {
-        $serial = Serial::findOrFail($serial);
-        
+        return match($exerciseModelId) {
+            1, 2 => 'pilihan_ganda',  // Pilihan Ganda, Pilihan Ganda Banyak
+            3, 4, 5, 6, 7 => 'essai',  // Pernyataan, Isian, Uraian, Iya Tidak, Argumen
+            default => 'pilihan_ganda',
+        };
+    }
+    /**
+     * Preview AI generated questions
+     */
+    public function aiPreview($serial, $lesson)
+    {
+        $serialModel = Serial::findOrFail($serial);
+        $lessonModel = Lesson::with('mapel')->findOrFail($lesson);
         $aiData = session('ai_generated_questions');
         
         if (!$aiData) {
-            return redirect()->route('guru.soal.ai-generator', $serial->id)
+            return redirect()->route('guru.soal.ai-generator', [$serialModel->id, $lessonModel->id])
                 ->with('error', 'Tidak ada soal yang di-generate. Silakan generate soal terlebih dahulu.');
         }
 
-        $mapels = Mapel::all();
         $exerciseTypes = ExerciseType::whereIn('kode', ['UH', 'SL'])->get();
-        $classrooms = Classroom::where('serial_id', $serial->id)->get();
+        $classrooms = Classroom::where('serial_id', $serialModel->id)->get();
         
+        $category = 'tambahan';
         $categoryInfo = ['name' => 'Preview Soal AI', 'color' => 'info'];
 
-        return view('guru.soal.ai-preview', compact('serial', 'aiData', 'mapels', 'exerciseTypes', 'classrooms', 'categoryInfo'));
+        return view('guru.soal.ai-preview', compact('serialModel', 'lessonModel', 'category', 'categoryInfo', 'aiData', 'exerciseTypes', 'classrooms'));
     }
 
     /**
-     * Save AI-generated questions to database
+     * Save AI generated questions
      */
-    public function saveAIQuestions(Request $request, $serial)
+    public function saveAIQuestions(Request $request, $serial, $lesson)
     {
-        $serial = Serial::findOrFail($serial);
+        $serialModel = Serial::findOrFail($serial);
+        $lessonModel = Lesson::findOrFail($lesson);
         
         $request->validate([
             'exercise_title' => 'required|string|max:255',
             'exercise_type_id' => 'required|exists:exercise_types,id',
-            'mapel_id' => 'required|exists:mapels,id',
+            'exercise_model_id' => 'required|exists:exercise_models,id',
             'time_limit' => 'required|integer|min:1|max:480',
             'questions' => 'required|array|min:1',
             'questions.*.title' => 'required|max:255',
             'questions.*.question' => 'required',
             'questions.*.answer' => 'nullable',
             'questions.*.options' => 'nullable|array',
-            'question_type' => 'required|in:pilihan_ganda,essai',
             'classrooms' => 'nullable|array',
         ]);
 
-        // Find or create base lesson for this mapel
-        $lesson = Lesson::firstOrCreate([
-            'mapel_id' => $request->mapel_id,
-            'category' => Lesson::CATEGORY_SOAL,
-            'name' => 'Base Lesson',
-        ], [
-            'grade' => '1',
-            'semester' => 1,
-        ]);
-        
+        // Get the exercise model
+        $exerciseModel = ExerciseModel::findOrFail($request->exercise_model_id);
+        $exerciseType = ExerciseType::findOrFail($request->exercise_type_id);
+
+        // VALIDATE BUSINESS RULES: Check if selected model is allowed for this type
+        $allowedModels = $this->getAllowedExerciseModelIds($request->exercise_type_id);
+        if (!in_array((int) $request->exercise_model_id, array_map('intval', $allowedModels), true)) {
+            return back()
+                ->withInput()
+                ->with('error', "Jenis Soal \"{$exerciseModel->name}\" tidak diizinkan untuk Tipe Soal \"{$exerciseType->name}\"");
+        }
+
         // Collect valid questions
         $validQuestions = [];
         foreach ($request->questions as $questionData) {
@@ -833,25 +966,17 @@ class SoalController extends Controller
         }
 
         if (empty($validQuestions)) {
-            return redirect()->route('guru.soal.list-direct', [$serial->id, 'tambahan'])
+            return redirect()->route('guru.soal.list-direct', [$serialModel->id, $lessonModel->id, 'tambahan'])
                 ->with('error', 'Tidak ada soal yang tersimpan!');
         }
 
         // Use transaction for consistency
         DB::beginTransaction();
         try {
-            $now = now();
-
-            // Map question_type to exercise_model_id
-            $exerciseModelId = 1; // Default: Pilihan Ganda
-            if ($request->question_type === 'essai') {
-                $exerciseModelId = 2;
-            }
-
             // Create ONE exercise for all AI-generated questions
             $exercise = Exercise::create([
-                'lesson_id' => $lesson->id,
-                'serial_id' => $serial->id,
+                'lesson_id' => $lessonModel->id,
+                'serial_id' => $serialModel->id,
                 'exercise_type_id' => $request->exercise_type_id,
                 'title' => $request->exercise_title,
                 'time_limit' => $request->time_limit,
@@ -864,26 +989,30 @@ class SoalController extends Controller
                 $itemData = [
                     'exercise_id' => $exercise->id,
                     'exercise_type_id' => $request->exercise_type_id,
-                    'exercise_model_id' => $exerciseModelId,
+                    'exercise_model_id' => $request->exercise_model_id,
                     'exercise_choice' => 1,
                     'exercise_number' => $index + 1,
                     'question' => $questionData['question'],
-                    'answer' => ($request->question_type === 'pilihan_ganda')
-                        ? json_encode([$questionData['answer'] ?? null])
-                        : ($questionData['answer'] ?? null),
+                    'answer' => isset($questionData['answer']) 
+                        ? (str_contains($questionData['answer'], ',') 
+                            ? array_values(array_filter(array_map('trim', explode(',', $questionData['answer'])))) 
+                            : [$questionData['answer']])
+                        : null,
                     'is_user' => 1,
                 ];
 
-                // Add options if multiple choice
-                if ($request->question_type === 'pilihan_ganda' && isset($questionData['options'])) {
-                    $options = array_filter($questionData['options']);
-                    $itemData['selection'] = json_encode([
-                        'A' => $options[0] ?? null,
-                        'B' => $options[1] ?? null,
-                        'C' => $options[2] ?? null,
-                        'D' => $options[3] ?? null,
-                        'E' => $options[4] ?? null,
-                    ]);
+                // Add options if multiple choice (Model 1 or 2)
+                if (in_array($exerciseModel->id, [1, 2]) && isset($questionData['options'])) {
+                    $newOptions = [];
+                    $labels = ['A', 'B', 'C', 'D', 'E'];
+                    $i = 0;
+                    foreach ($questionData['options'] as $opt) {
+                        if ($i < count($labels) && trim($opt) !== '') {
+                            $newOptions[] = ['key' => $labels[$i], 'text' => $opt];
+                        }
+                        $i++;
+                    }
+                    $itemData['options'] = empty($newOptions) ? null : $newOptions;
                 }
 
                 ExerciseItem::create($itemData);
@@ -894,8 +1023,8 @@ class SoalController extends Controller
             // Clear session data
             session()->forget('ai_generated_questions');
 
-            return redirect()->route('guru.soal.list-direct', [$serial->id, 'tambahan'])
-                ->with('success', "Berhasil menyimpan " . count($validQuestions) . " soal yang di-generate AI!");
+            return redirect()->route('guru.soal.list-direct', [$serialModel->id, $lessonModel->id, 'tambahan'])
+                ->with('success', "Berhasil menyimpan " . count($validQuestions) . " soal dengan jenis '" . $exerciseModel->name . "'!");
                 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -908,19 +1037,36 @@ class SoalController extends Controller
     /**
      * View single exercise with questions (read-only)
      */
-    public function viewExercise($serial, $exerciseId)
+    public function viewExercise($serial, $lesson, $exerciseId)
     {
         $serial = Serial::findOrFail($serial);
+        $lesson = Lesson::findOrFail($lesson);
         $exercise = Exercise::findOrFail($exerciseId);
 
         $exercise->load(['lesson.mapel', 'exerciseItems', 'exerciseType']);
 
-        return view('guru.soal.view-exercise', compact('serial', 'exercise'));
+        return view('guru.soal.view-exercise', compact('serial', 'lesson', 'exercise'));
     }
 
     /**
      * Extract plain text from supported attachment formats.
      */
+    private function getAllowedExerciseModelIds($exerciseTypeId): array
+    {
+        $exerciseType = ExerciseType::find($exerciseTypeId);
+        if (!$exerciseType) {
+            return ExerciseModel::pluck('id')->all();
+        }
+
+        // AKM: all models allowed; others: only "Pilihan Ganda".
+        if (strtoupper((string) $exerciseType->kode) === 'AKM') {
+            return ExerciseModel::pluck('id')->all();
+        }
+
+        $pilihanGandaId = ExerciseModel::whereRaw('LOWER(name) = ?', ['pilihan ganda'])->value('id');
+        return $pilihanGandaId ? [(int) $pilihanGandaId] : [];
+    }
+
     private function extractAttachmentText(?string $attachmentPath): ?string
     {
         if (empty($attachmentPath) || !Storage::disk('public')->exists($attachmentPath)) {
@@ -945,3 +1091,4 @@ class SoalController extends Controller
         return mb_substr($clean, 0, 2000);
     }
 }
+

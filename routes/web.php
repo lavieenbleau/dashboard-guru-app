@@ -71,6 +71,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/aplikasi/{serial}/laporan-harian/grade/{taskId}', [LaporanHarianController::class, 'grade'])
         ->name('guru.laporan.grade');
 
+    // Monitoring Quiz
+    Route::get('/aplikasi/{serial}/monitoring-quiz', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'index'])->name('guru.monitoring-quiz');
+    Route::get('/aplikasi/{serial}/monitoring-quiz/data', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'dataTable'])->name('guru.monitoring-quiz.data');
+    Route::get('/aplikasi/{serial}/monitoring-quiz/detail/{studentId}/{exerciseId}', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'detail'])->name('guru.monitoring-quiz.detail');
+    Route::get('/aplikasi/{serial}/monitoring-quiz/export/csv', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'exportCsv'])->name('guru.monitoring-quiz.export-csv');
+    Route::get('/aplikasi/{serial}/monitoring-quiz/export/pdf', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'exportPdf'])->name('guru.monitoring-quiz.export-pdf');
+
     // Rekap Nilai
     Route::get('/aplikasi/{serial}/rekap-nilai', [RekapNilaiController::class, 'index'])
         ->name('guru.rekapnilai');
@@ -138,29 +145,29 @@ Route::prefix('aplikasi/{serial}/materi')->group(function() {
     
     // Admin Materials
     Route::get('/admin', [MateriController::class, 'admin'])->name('guru.materi.admin');
-    Route::get('/admin/mapel/{mapel}', [MateriController::class, 'adminLessons'])->name('guru.materi.admin.lessons');
+    Route::get('/admin/lesson/{lesson}', [MateriController::class, 'adminLessons'])->name('guru.materi.admin.lessons');
     Route::post('/admin/share/{lessonItem}', [MateriController::class, 'shareAdminLesson'])->name('guru.materi.admin.share');
     
     // Custom Materials (Guru's own) - pilih mapel langsung
     Route::get('/custom', [MateriController::class, 'custom'])->name('guru.materi.custom');
     Route::post('/share/{post}', [MateriController::class, 'shareCustomMateri'])->name('guru.materi.share');
     
-    // List materi by mapel
-    Route::get('/mapel/{mapel}', [MateriController::class, 'listByMapel'])->name('guru.materi.mapel');
+    // List materi by lesson
+    Route::get('/lesson/{lesson}', [MateriController::class, 'listByLesson'])->name('guru.materi.mapel');
     
     // CRUD Materi
-    Route::get('/mapel/{mapel}/create', [MateriController::class, 'createMateri'])->name('guru.materi.create');
-    Route::post('/mapel/{mapel}', [MateriController::class, 'storeMateri'])->name('guru.materi.store');
-    Route::get('/mapel/{mapel}/{id}', [MateriController::class, 'showDetail'])->name('guru.materi.detail');
-    Route::get('/mapel/{mapel}/{id}/edit', [MateriController::class, 'editMateri'])->name('guru.materi.edit');
-    Route::put('/mapel/{mapel}/{id}', [MateriController::class, 'updateMateri'])->name('guru.materi.update');
-    Route::delete('/mapel/{mapel}/{id}', [MateriController::class, 'destroyMateri'])->name('guru.materi.destroy');
+    Route::get('/lesson/{lesson}/create', [MateriController::class, 'createMateri'])->name('guru.materi.create');
+    Route::post('/lesson/{lesson}', [MateriController::class, 'storeMateri'])->name('guru.materi.store');
+    Route::get('/lesson/{lesson}/{id}', [MateriController::class, 'showDetail'])->name('guru.materi.detail');
+    Route::get('/lesson/{lesson}/{id}/edit', [MateriController::class, 'editMateri'])->name('guru.materi.edit');
+    Route::put('/lesson/{lesson}/{id}', [MateriController::class, 'updateMateri'])->name('guru.materi.update');
+    Route::delete('/lesson/{lesson}/{id}', [MateriController::class, 'destroyMateri'])->name('guru.materi.destroy');
     
     // Comments & Discussion
-    Route::post('/mapel/{mapel}/{id}/comment', [MateriController::class, 'storeComment'])->name('guru.materi.comment.store');
-    Route::post('/mapel/{mapel}/{id}/comment/{comment}/reply', [MateriController::class, 'storeReply'])->name('guru.materi.comment.reply');
-    Route::delete('/mapel/{mapel}/{id}/comment/{comment}', [MateriController::class, 'deleteComment'])->name('guru.materi.comment.delete');
-    Route::delete('/mapel/{mapel}/{id}/reply/{reply}', [MateriController::class, 'deleteReply'])->name('guru.materi.reply.delete');
+    Route::post('/lesson/{lesson}/{id}/comment', [MateriController::class, 'storeComment'])->name('guru.materi.comment.store');
+    Route::post('/lesson/{lesson}/{id}/comment/{comment}/reply', [MateriController::class, 'storeReply'])->name('guru.materi.comment.reply');
+    Route::delete('/lesson/{lesson}/{id}/comment/{comment}', [MateriController::class, 'deleteComment'])->name('guru.materi.comment.delete');
+    Route::delete('/lesson/{lesson}/{id}/reply/{reply}', [MateriController::class, 'deleteReply'])->name('guru.materi.reply.delete');
 
 });
 
@@ -169,22 +176,22 @@ Route::prefix('aplikasi/{serial}/materi')->group(function() {
 // =========================
 Route::prefix('aplikasi/{serial}/tugas')->group(function() {
 
-    Route::get('/', [TugasController::class, 'index'])->name('guru.tugas'); 
-    Route::get('/mapel/{mapel}', [TugasController::class, 'listByMapel'])->name('guru.tugas.mapel');
+    Route::get('/', [TugasController::class, 'index'])->name('guru.tugas');
+    Route::get('/lesson/{lesson}', [TugasController::class, 'listByLesson'])->name('guru.tugas.mapel');
     
-    // CRUD Operations
-    Route::get('/mapel/{mapel}/create', [TugasController::class, 'create'])->name('guru.tugas.create');
-    Route::post('/mapel/{mapel}', [TugasController::class, 'store'])->name('guru.tugas.store');
-    Route::get('/mapel/{mapel}/{id}', [TugasController::class, 'show'])->name('guru.tugas.show');
-    Route::get('/mapel/{mapel}/{id}/edit', [TugasController::class, 'edit'])->name('guru.tugas.edit');
-    Route::put('/mapel/{mapel}/{id}', [TugasController::class, 'update'])->name('guru.tugas.update');
-    Route::delete('/mapel/{mapel}/{id}', [TugasController::class, 'destroy'])->name('guru.tugas.destroy');
-
+    // CRUD Tugas
+    Route::get('/lesson/{lesson}/create', [TugasController::class, 'create'])->name('guru.tugas.create');
+    Route::post('/lesson/{lesson}', [TugasController::class, 'store'])->name('guru.tugas.store');
+    Route::get('/lesson/{lesson}/{id}', [TugasController::class, 'show'])->name('guru.tugas.show');
+    Route::get('/lesson/{lesson}/{id}/edit', [TugasController::class, 'edit'])->name('guru.tugas.edit');
+    Route::put('/lesson/{lesson}/{id}', [TugasController::class, 'update'])->name('guru.tugas.update');
+    Route::delete('/lesson/{lesson}/{id}', [TugasController::class, 'destroy'])->name('guru.tugas.destroy');
+    
     // Comments & Discussion
-    Route::post('/mapel/{mapel}/{id}/comment', [TugasController::class, 'storeComment'])->name('guru.tugas.comment.store');
-    Route::post('/mapel/{mapel}/{id}/comment/{comment}/reply', [TugasController::class, 'storeReply'])->name('guru.tugas.comment.reply');
-    Route::delete('/mapel/{mapel}/{id}/comment/{comment}', [TugasController::class, 'deleteComment'])->name('guru.tugas.comment.delete');
-    Route::delete('/mapel/{mapel}/{id}/reply/{reply}', [TugasController::class, 'deleteReply'])->name('guru.tugas.reply.delete');
+    Route::post('/lesson/{lesson}/{id}/comment', [TugasController::class, 'storeComment'])->name('guru.tugas.comment.store');
+    Route::post('/lesson/{lesson}/{id}/comment/{comment}/reply', [TugasController::class, 'storeReply'])->name('guru.tugas.comment.reply');
+    Route::delete('/lesson/{lesson}/{id}/comment/{comment}', [TugasController::class, 'deleteComment'])->name('guru.tugas.comment.delete');
+    Route::delete('/lesson/{lesson}/{id}/reply/{reply}', [TugasController::class, 'deleteReply'])->name('guru.tugas.reply.delete');
 
 });
 
@@ -193,53 +200,38 @@ Route::prefix('aplikasi/{serial}/tugas')->group(function() {
 // =========================
 Route::prefix('aplikasi/{serial}/soal')->group(function() {
 
+    // 1. First entry: List Lessons
     Route::get('/', [SoalController::class, 'index'])->name('guru.soal'); 
     
-    // Type-based routes (most specific first)
-    Route::get('/type/{type}', [SoalController::class, 'category'])->name('guru.soal.category');
-    Route::get('/type/{type}/tipe/{exerciseTypeId}', [SoalController::class, 'listByType'])->name('guru.soal.list-by-type');
-    Route::post('/type/{type}/tipe/{exerciseTypeId}/{id}/share-single', [SoalController::class, 'shareSingle'])->name('guru.soal.share-single');
-    Route::post('/type/{type}/tipe/{exerciseTypeId}/bulk-share', [SoalController::class, 'bulkShare'])->name('guru.soal.bulk-share');
-    
-    // Grading route (specific)
-    Route::post('/grade/{taskId}', [SoalController::class, 'grade'])->name('guru.soal.grade');
-    
-    // Custom Soal Tambahan CRUD (specific routes first)
-    Route::get('/tambahan/create', [SoalController::class, 'createCustom'])->name('guru.soal.create-custom');
-    Route::post('/tambahan', [SoalController::class, 'storeCustom'])->name('guru.soal.store-custom');
-    Route::get('/tambahan/{id}/edit', [SoalController::class, 'editCustom'])->name('guru.soal.edit-custom');
-    Route::put('/tambahan/{id}', [SoalController::class, 'updateCustom'])->name('guru.soal.update-custom');
-    Route::delete('/tambahan/{id}', [SoalController::class, 'destroyCustom'])->name('guru.soal.destroy-custom');
+    // 2. Second entry: List Categories for a Lesson
+    Route::get('/lesson/{lesson}', [SoalController::class, 'categories'])->name('guru.soal.lesson');
+
+    // 3. Category exercises list for a lesson
+    Route::get('/lesson/{lesson}/kategori/{category}', [SoalController::class, 'listByCategory'])->name('guru.soal.list-direct');
+
+    // Custom Soal Tambahan CRUD for a lesson
+    Route::get('/lesson/{lesson}/tambahan/create', [SoalController::class, 'createCustom'])->name('guru.soal.create-custom');
+    Route::post('/lesson/{lesson}/tambahan', [SoalController::class, 'storeCustom'])->name('guru.soal.store-custom');
+    Route::get('/lesson/{lesson}/tambahan/{id}/edit', [SoalController::class, 'editCustom'])->name('guru.soal.edit-custom');
+    Route::put('/lesson/{lesson}/tambahan/{id}', [SoalController::class, 'updateCustom'])->name('guru.soal.update-custom');
+    Route::delete('/lesson/{lesson}/tambahan/{id}', [SoalController::class, 'destroyCustom'])->name('guru.soal.destroy-custom');
     
     // AI Question Generator Routes
-    Route::get('/ai-generator', [SoalController::class, 'aiGenerator'])->name('guru.soal.ai-generator');
-    Route::get('/ai-material/{materialId}/read', [SoalController::class, 'readUploadedMaterial'])->name('guru.soal.ai-material.read');
-    Route::post('/ai-generate', [SoalController::class, 'generateWithAI'])->name('guru.soal.ai-generate');
-    Route::get('/ai-preview', [SoalController::class, 'aiPreview'])->name('guru.soal.ai-preview');
-    Route::post('/ai-save', [SoalController::class, 'saveAIQuestions'])->name('guru.soal.ai-save');
+    Route::get('/lesson/{lesson}/ai-generator', [SoalController::class, 'aiGenerator'])->name('guru.soal.ai-generator');
+    Route::get('/lesson/{lesson}/ai-material/{materialId}/read', [SoalController::class, 'readUploadedMaterial'])->name('guru.soal.ai-material.read');
+    Route::post('/lesson/{lesson}/ai-generate', [SoalController::class, 'generateWithAI'])->name('guru.soal.ai-generate');
+    Route::get('/lesson/{lesson}/ai-preview', [SoalController::class, 'aiPreview'])->name('guru.soal.ai-preview');
+    Route::post('/lesson/{lesson}/ai-save', [SoalController::class, 'saveAIQuestions'])->name('guru.soal.ai-save');
     
     // View exercise (read-only)
-    Route::get('/view/{exerciseId}', [SoalController::class, 'viewExercise'])->name('guru.soal.view-exercise');
+    Route::get('/lesson/{lesson}/view/{exerciseId}', [SoalController::class, 'viewExercise'])->name('guru.soal.view-exercise');
     
-    // CRUD Operations (more specific routes first)
-    Route::get('/{category}/{tema}/create', [SoalController::class, 'create'])->name('guru.soal.create');
-    Route::get('/{category}/{tema}/{id}/edit', [SoalController::class, 'edit'])->name('guru.soal.edit');
-    Route::get('/{category}/{tema}/{id}', [SoalController::class, 'show'])->name('guru.soal.show');
-    Route::post('/{category}/{tema}', [SoalController::class, 'store'])->name('guru.soal.store');
-    Route::put('/{category}/{tema}/{id}', [SoalController::class, 'update'])->name('guru.soal.update');
-    Route::delete('/{category}/{tema}/{id}', [SoalController::class, 'destroy'])->name('guru.soal.destroy');
-    
-    // OLD Routes (backward compatibility)
-    Route::get('/{category}/pilih', [SoalController::class, 'categorySelect'])->name('guru.soal.category-select');
-    Route::get('/{category}/old', [SoalController::class, 'subtema'])->name('guru.soal.tema');
-    Route::get('/{category}/{tema}', [SoalController::class, 'list'])->name('guru.soal.list');
-    
-    // Share routes (specific before general category route)
-    Route::post('/{category}/{id}/share', [SoalController::class, 'shareSingleCategory'])->name('guru.soal.share-direct');
-    Route::post('/{category}/bulk-share', [SoalController::class, 'bulkShareCategory'])->name('guru.soal.bulk-share-direct');
-    
-    // Direct access to exercises (admin only) - LAST because it's most general
-    Route::get('/{category}', [SoalController::class, 'listByCategory'])->name('guru.soal.list-direct');
+    // Grading route
+    Route::post('/lesson/{lesson}/grade/{taskId}', [SoalController::class, 'grade'])->name('guru.soal.grade');
+
+    // Share routes
+    Route::post('/lesson/{lesson}/kategori/{category}/{id}/share', [SoalController::class, 'shareSingleCategory'])->name('guru.soal.share-direct');
+    Route::post('/lesson/{lesson}/kategori/{category}/bulk-share', [SoalController::class, 'bulkShareCategory'])->name('guru.soal.bulk-share-direct');
 
 });
 
@@ -336,3 +328,6 @@ Route::middleware(['auth'])->prefix('guru')->group(function () {
         });
     }
 });
+
+// Quiz Activity Client Tracking API
+Route::post('/api/quiz-activity/log', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'track'])->name('quiz-activity.track');

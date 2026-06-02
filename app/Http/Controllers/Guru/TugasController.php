@@ -19,39 +19,43 @@ class TugasController extends Controller
 {
     public function index($serial)
     {
-        $serial = Serial::findOrFail($serial);
+        $serial = Serial::with('product')->findOrFail($serial);
+        $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
         
-        // Get all mapels
-        $mapels = Mapel::all();
+        // Get lessons that belong to this guru's serial product and have category MATERI (1)
+        $lessons = Lesson::whereIn('id', $lessonIds)
+            ->where('category', Lesson::CATEGORY_MATERI)
+            ->with('mapel')
+            ->get();
 
-        return view('guru.tugas.index', compact('serial', 'mapels'));
+        return view('guru.tugas.index', compact('serial', 'lessons'));
     }
 
-    public function listByMapel($serial, $mapel)
+    public function listByLesson($serial, $lesson)
     {
         $serial = Serial::findOrFail($serial);
-        $mapel = Mapel::findOrFail($mapel);
+        $lesson = Lesson::findOrFail($lesson);
         
-        // Get all posts (tugas) for this mapel and serial
+        // Get all posts (tugas) for this lesson and serial
         $tugas = Post::where('serial_id', $serial->id)
-            ->where('mapel_id', $mapel->id)
+            ->where('category', 'like', '%"lesson_id":' . $lesson->id . '%')
             ->where('is_task', 1)
             ->latest()
             ->get();
 
-        return view('guru.tugas.list', compact('serial', 'mapel', 'tugas'));
+        return view('guru.tugas.list', compact('serial', 'lesson', 'tugas'));
     }
 
-    public function create($serial, $mapel)
+    public function create($serial, $lesson)
     {
         $serial = Serial::findOrFail($serial);
-        $mapel = Mapel::findOrFail($mapel);
+        $lesson = Lesson::findOrFail($lesson);
         $classrooms = Classroom::where('serial_id', $serial->id)->orderBy('name')->get();
 
-        return view('guru.tugas.create', compact('serial', 'mapel', 'classrooms'));
+        return view('guru.tugas.create', compact('serial', 'lesson', 'classrooms'));
     }
 
-    public function store(Request $request, $serial, $mapel)
+    public function store(Request $request, $serial, $lesson)
     {
         $request->validate([
             'title' => 'required|max:255',
@@ -64,7 +68,7 @@ class TugasController extends Controller
         ]);
         
         $serial = Serial::findOrFail($serial);
-        $mapel = Mapel::findOrFail($mapel);
+        $lesson = Lesson::findOrFail($lesson);
         
         // Handle file upload
         $attachmentPath = null;
@@ -78,43 +82,43 @@ class TugasController extends Controller
         Post::create([
             'serial_id' => $serial->id,
             'user_id' => auth()->id(),
-            'mapel_id' => $mapel->id,
+            'mapel_id' => $lesson->mapel_id,
             'title' => $request->title,
             'description' => $request->description,
             'slug' => Str::slug($request->title) . '-' . time(),
             'link' => $request->link,
             'attachment' => $attachmentPath,
             'due_date' => $request->deadline,
-            'category' => null,
+            'category' => ['lesson_id' => $lesson->id],
             'is_task' => 1,
         ]);
 
-        return redirect()->route('guru.tugas.mapel', [$serial->id, $mapel->id])
+        return redirect()->route('guru.tugas.mapel', [$serial->id, $lesson->id])
             ->with('success', 'Tugas berhasil ditambahkan!');
     }
 
-    public function show($serial, $mapel, $id)
+    public function show($serial, $lesson, $id)
     {
         $serial = Serial::findOrFail($serial);
-        $mapel = Mapel::findOrFail($mapel);
+        $lesson = Lesson::findOrFail($lesson);
         $task = Post::with(['comments.user', 'comments.student', 'comments.replies.user', 'comments.replies.student'])->findOrFail($id);
 
-        return view('guru.tugas.show', compact('serial', 'mapel', 'task'));
+        return view('guru.tugas.show', compact('serial', 'lesson', 'task'));
     }
 
-    public function edit($serial, $mapel, $id)
+    public function edit($serial, $lesson, $id)
     {
         $serial = Serial::findOrFail($serial);
-        $mapel = Mapel::findOrFail($mapel);
+        $lesson = Lesson::findOrFail($lesson);
         $task = Post::findOrFail($id);
         $classrooms = Classroom::where('serial_id', $serial->id)->orderBy('name')->get();
         
         $sharedClasses = $classrooms->pluck('id')->toArray();
 
-        return view('guru.tugas.edit', compact('serial', 'mapel', 'task', 'classrooms', 'sharedClasses'));
+        return view('guru.tugas.edit', compact('serial', 'lesson', 'task', 'classrooms', 'sharedClasses'));
     }
 
-    public function update(Request $request, $serial, $mapel, $id)
+    public function update(Request $request, $serial, $lesson, $id)
     {
         $request->validate([
             'title' => 'required|max:255',
@@ -128,7 +132,7 @@ class TugasController extends Controller
         ]);
 
         $serial = Serial::findOrFail($serial);
-        $mapel = Mapel::findOrFail($mapel);
+        $lesson = Lesson::findOrFail($lesson);
         $task = Post::findOrFail($id);
         
         // Handle attachment
@@ -160,14 +164,14 @@ class TugasController extends Controller
             'attachment' => $attachmentPath,
         ]);
 
-        return redirect()->route('guru.tugas.mapel', [$serial->id, $mapel->id])
+        return redirect()->route('guru.tugas.mapel', [$serial->id, $lesson->id])
             ->with('success', 'Tugas berhasil diupdate!');
     }
 
-    public function destroy($serial, $mapel, $id)
+    public function destroy($serial, $lesson, $id)
     {
         $serial = Serial::findOrFail($serial);
-        $mapel = Mapel::findOrFail($mapel);
+        $lesson = Lesson::findOrFail($lesson);
         $task = Post::where('is_task', 1)->findOrFail($id);
         
         // Delete attachment file if exists
@@ -175,14 +179,14 @@ class TugasController extends Controller
             \Storage::disk('public')->delete($task->attachment);
         }
         
-        $task->delete();
+        $task->forceDelete();
 
-        return redirect()->route('guru.tugas.mapel', [$serial->id, $mapel->id])
+        return redirect()->route('guru.tugas.mapel', [$serial->id, $lesson->id])
             ->with('success', 'Tugas berhasil dihapus!');
     }
 
     // Store comment
-    public function storeComment(Request $request, $serial, $mapel, $id)
+    public function storeComment(Request $request, $serial, $lesson, $id)
     {
         $request->validate([
             'message' => 'required|string|max:1000',
@@ -203,7 +207,7 @@ class TugasController extends Controller
     }
 
     // Store reply to comment
-    public function storeReply(Request $request, $serial, $mapel, $id, $commentId)
+    public function storeReply(Request $request, $serial, $lesson, $id, $commentId)
     {
         $request->validate([
             'message' => 'required|string|max:1000',
@@ -223,7 +227,7 @@ class TugasController extends Controller
     }
 
     // Delete comment
-    public function deleteComment($serial, $mapel, $id, $commentId)
+    public function deleteComment($serial, $lesson, $id, $commentId)
     {
         $comment = PostComment::where('id', $commentId)
             ->where('user_id', auth()->id())
@@ -239,7 +243,7 @@ class TugasController extends Controller
     }
 
     // Delete reply
-    public function deleteReply($serial, $mapel, $id, $replyId)
+    public function deleteReply($serial, $lesson, $id, $replyId)
     {
         $reply = PostChildComment::where('id', $replyId)
             ->where('user_id', auth()->id())

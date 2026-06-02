@@ -7,7 +7,7 @@
         <div class="card-body d-flex justify-content-between align-items-center">
             <div>
                 <h4 class="mb-1">Materi Tambahan</h4>
-                <p class="text-muted mb-0">Pilih mata pelajaran untuk mengelola materi</p>
+                <p class="text-muted mb-0">Pilih paket pembelajaran untuk mengelola materi</p>
             </div>
             <div class="d-flex gap-2">
                 <a href="{{ route('guru.materi', $serial->id) }}" class="btn btn-outline-secondary">
@@ -25,11 +25,11 @@
     </div>
     @endif
 
-    <!-- Mapel Cards -->
+    <!-- Lesson Cards -->
     <div class="row g-3">
-        @forelse ($mapels as $mapel)
+        @forelse ($lessons as $lesson)
         <div class="col-md-6 col-lg-4">
-            <a href="{{ route('guru.materi.mapel', [$serial->id, $mapel->id]) }}" class="text-decoration-none">
+            <a href="{{ route('guru.materi.mapel', [$serial->id, $lesson->id]) }}" class="text-decoration-none">
                 <div class="card h-100 shadow-sm hover-shadow-lg transition">
                     <div class="card-body">
                         <div class="d-flex align-items-center mb-3">
@@ -38,9 +38,9 @@
                                     <i class='bx bx-book-add'></i>
                                 </span>
                             </div>
-                            <h5 class="mb-0">{{ $mapel->name }}</h5>
+                            <h5 class="mb-0">{{ $lesson->name }}</h5>
                         </div>
-                        <p class="text-muted small mb-0">Kelola materi tambahan</p>
+                        <p class="text-muted small mb-0">Mata Pelajaran: <strong>{{ $lesson->mapel->name ?? '-' }}</strong></p>
                     </div>
                 </div>
             </a>
@@ -49,7 +49,7 @@
         <div class="col-12">
             <div class="alert alert-info">
                 <i class='bx bx-info-circle me-2'></i>
-                Belum ada mata pelajaran tersedia.
+                Belum ada paket pembelajaran tersedia.
             </div>
         </div>
         @endforelse

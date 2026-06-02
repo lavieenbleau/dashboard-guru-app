@@ -3,7 +3,7 @@
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     <h4 class="fw-bold py-3 mb-4">
-        <span class="text-muted fw-light">Tugas /</span> Pilih Paket Pembelajaran
+        <span class="text-muted fw-light">Bank Soal /</span> Pilih Paket Pembelajaran
     </h4>
 
     @if(session('success'))
@@ -20,8 +20,8 @@
                     <div class="card-body">
                         <div class="d-flex align-items-center mb-3">
                             <div class="avatar flex-shrink-0 me-3">
-                                <span class="avatar-initial rounded bg-label-warning">
-                                    <i class='bx bx-task fs-4'></i>
+                                <span class="avatar-initial rounded bg-label-info">
+                                    <i class='bx bx-book-open fs-4'></i>
                                 </span>
                             </div>
                             <div>
@@ -29,8 +29,8 @@
                                 <small class="text-muted">Mapel: {{ $lesson->mapel->name ?? '-' }}</small>
                             </div>
                         </div>
-                        <a href="{{ route('guru.tugas.mapel', [$serial->id, $lesson->id]) }}" class="btn btn-warning btn-sm w-100">
-                            <i class='bx bx-right-arrow-alt me-1'></i>Lihat Tugas
+                        <a href="{{ route('guru.soal.lesson', [$serial->id, $lesson->id]) }}" class="btn btn-info btn-sm w-100">
+                            <i class='bx bx-right-arrow-alt me-1'></i>Lihat Kategori Soal
                         </a>
                     </div>
                 </div>

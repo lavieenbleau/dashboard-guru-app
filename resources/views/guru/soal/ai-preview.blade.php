@@ -5,9 +5,10 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('guru.soal', $serial->id) }}">Bank Soal</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('guru.soal.list-direct', [$serial->id, 'tambahan']) }}">Soal Tambahan</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('guru.soal.ai-generator', $serial->id) }}">Generate AI</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.soal', $serialModel->id) }}">Bank Soal</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.soal.lesson', [$serialModel->id, $lessonModel->id]) }}">{{ $lessonModel->name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.soal.list-direct', [$serialModel->id, $lessonModel->id, 'tambahan']) }}">Soal Tambahan</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.soal.ai-generator', [$serialModel->id, $lessonModel->id]) }}">Generate AI</a></li>
             <li class="breadcrumb-item active">Preview & Edit</li>
         </ol>
     </nav>
@@ -46,18 +47,19 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class='bx bx-edit me-2'></i>Preview & Edit Soal</h5>
-                    <a href="{{ route('guru.soal.ai-generator', $serial->id) }}" class="btn btn-sm btn-label-primary">
+                    <a href="{{ route('guru.soal.ai-generator', [$serialModel->id, $lessonModel->id]) }}" class="btn btn-sm btn-label-primary">
                         <i class='bx bx-brain me-1'></i>Generate Lagi
                     </a>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('guru.soal.ai-save', $serial->id) }}" method="POST" id="saveQuestionsForm">
+                    <form action="{{ route('guru.soal.ai-save', [$serialModel->id, $lessonModel->id]) }}" method="POST" id="saveQuestionsForm">
                         @csrf
 
                         <!-- Hidden Fields -->
-                        <input type="hidden" name="question_type" value="{{ $aiData['question_type'] }}">
-                        <input type="hidden" name="mapel_id" value="{{ $aiData['mapel_id'] ?? '' }}">
+                        <input type="hidden" name="exercise_model_id" value="{{ $aiData['exercise_model_id'] ?? '' }}">
+                        <input type="hidden" name="lesson_id" value="{{ $lessonModel->id }}">
                         <input type="hidden" name="exercise_type_id" value="{{ $aiData['exercise_type_id'] ?? '' }}">
+                        <input type="hidden" name="time_limit" value="{{ $aiData['time_limit'] ?? '' }}">
                         @if(isset($aiData['classrooms']))
                             @foreach($aiData['classrooms'] as $classroomId)
                                 <input type="hidden" name="classrooms[]" value="{{ $classroomId }}">
@@ -75,27 +77,10 @@
                                             <input type="text" class="form-control" id="exercise_title" name="exercise_title" placeholder="Contoh: Latihan Soal Bab 5" required>
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label for="mapel_id_edit" class="form-label">Mata Pelajaran <span class="text-danger">*</span></label>
-                                            <select class="form-select" id="mapel_id_edit" name="mapel_id" required>
-                                                <option value="">-- Pilih Mapel --</option>
-                                                @foreach($mapels as $mapel)
-                                                    <option value="{{ $mapel->id }}" {{ ($aiData['mapel_id'] ?? '') == $mapel->id ? 'selected' : '' }}>
-                                                        {{ $mapel->name }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
+                                            <label class="form-label">Paket Pembelajaran</label>
+                                            <input type="text" class="form-control" value="{{ $lessonModel->name }} ({{ $lessonModel->mapel->name ?? '-' }})" disabled>
                                         </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="exercise_type_id_edit" class="form-label">Tipe Soal <span class="text-danger">*</span></label>
-                                            <select class="form-select" id="exercise_type_id_edit" name="exercise_type_id" required>
-                                                <option value="">-- Pilih Tipe --</option>
-                                                @foreach($exerciseTypes as $type)
-                                                    <option value="{{ $type->id }}" {{ ($aiData['exercise_type_id'] ?? '') == $type->id ? 'selected' : '' }}>
-                                                        {{ $type->name }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
+
                                         <div class="col-md-6 mb-3">
                                             <label for="time_limit_edit" class="form-label">Waktu Pengerjaan (Menit) <span class="text-danger">*</span></label>
                                             <input 
@@ -105,6 +90,7 @@
                                                 name="time_limit" 
                                                 min="1" 
                                                 max="480" 
+                                                value="{{ $aiData['time_limit'] ?? '' }}"
                                                 placeholder="Contoh: 45"
                                                 required>
                                             <small class="text-muted">Masukkan durasi pengerjaan soal dalam menit (1-480 menit / 1 menit hingga 8 jam)</small>
@@ -121,11 +107,7 @@
                                             <div class="d-flex justify-content-between align-items-center mb-3">
                                                 <div class="d-flex align-items-center">
                                                     <span class="badge bg-primary me-2">Soal #{{ $index + 1 }}</span>
-                                                    @if($aiData['question_type'] === 'pilihan_ganda')
-                                                        <span class="badge bg-info">Pilihan Ganda</span>
-                                                    @else
-                                                        <span class="badge bg-warning">Essay</span>
-                                                    @endif
+                                                    <span class="badge bg-info">{{ $aiData['exercise_model_name'] ?? 'Jenis Soal' }}</span>
                                                 </div>
                                                 <button type="button" class="btn btn-sm btn-danger remove-question-btn">
                                                     <i class='bx bx-trash'></i> Hapus
@@ -144,8 +126,8 @@
                                                 <textarea class="form-control" name="questions[{{ $index }}][question]" rows="4" required>{{ $question['question'] ?? '' }}</textarea>
                                             </div>
 
-                                            @if($aiData['question_type'] === 'pilihan_ganda' && isset($question['options']))
-                                                <!-- Pilihan Ganda Options -->
+                                            @if(in_array($aiData['exercise_model_id'], [1, 2]) && isset($question['options']))
+                                                <!-- Pilihan Ganda Options (Model ID 1: Pilihan Ganda, Model ID 2: Pilihan Ganda Banyak) -->
                                                 <div class="mb-3">
                                                     <label class="form-label fw-bold">Pilihan Jawaban</label>
                                                     <div class="options-container">
@@ -162,9 +144,9 @@
                                             <!-- Kunci Jawaban -->
                                             <div class="mb-3">
                                                 <label class="form-label fw-bold">Kunci Jawaban</label>
-                                                <textarea class="form-control" name="questions[{{ $index }}][answer]" rows="2">{{ $question['correct_answer'] ?? '' }}</textarea>
+                                                <textarea class="form-control" name="questions[{{ $index }}][answer]" rows="2">{{ is_array($question['correct_answer'] ?? null) ? implode(', ', $question['correct_answer']) : ($question['correct_answer'] ?? '') }}</textarea>
                                                 <small class="text-muted">
-                                                    @if($aiData['question_type'] === 'pilihan_ganda')
+                                                    @if(in_array($aiData['exercise_model_id'], [1, 2]))
                                                         Tulis huruf jawaban yang benar (A/B/C/D)
                                                     @else
                                                         Tulis poin-poin kunci jawaban untuk panduan penilaian
@@ -200,7 +182,7 @@
                                         <div class="mb-3">
                                             <small class="text-muted d-block">Jenis Soal</small>
                                             <p class="mb-0">
-                                                @if($aiData['question_type'] === 'pilihan_ganda')
+                                                @if((isset($aiData['question_type']) && $aiData['question_type'] === 'pilihan_ganda') || (isset($aiData['exercise_model_id']) && in_array($aiData['exercise_model_id'], [1, 2])))
                                                     <span class="badge bg-info">Pilihan Ganda</span>
                                                 @else
                                                     <span class="badge bg-warning">Essay</span>
@@ -224,10 +206,10 @@
                                             <button type="submit" class="btn btn-primary">
                                                 <i class='bx bx-save me-1'></i>Simpan ke Bank Soal
                                             </button>
-                                            <a href="{{ route('guru.soal.ai-generator', $serial->id) }}" class="btn btn-label-secondary">
+                                            <a href="{{ route('guru.soal.ai-generator', [$serialModel->id, $lessonModel->id]) }}" class="btn btn-label-secondary">
                                                 <i class='bx bx-brain me-1'></i>Buat Soal Baru
                                             </a>
-                                            <a href="{{ route('guru.soal.list-direct', [$serial->id, 'tambahan']) }}" class="btn btn-label-secondary">
+                                            <a href="{{ route('guru.soal.list-direct', [$serialModel->id, $lessonModel->id, 'tambahan']) }}" class="btn btn-label-secondary">
                                                 <i class='bx bx-x me-1'></i>Batal
                                             </a>
                                         </div>
@@ -296,6 +278,13 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Anda harus memilih minimal 1 soal untuk disimpan!');
             noQuestionsAlert.style.display = 'block';
             window.scrollTo(0, 0);
+        } else {
+            // Prevent double submission
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Menyimpan...';
+            }
         }
     });
 });

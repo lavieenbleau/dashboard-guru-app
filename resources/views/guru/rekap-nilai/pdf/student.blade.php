@@ -112,7 +112,7 @@
                 <thead>
                     <tr>
                         <th style="width: 30px;">No</th>
-                        <th>Mata Pelajaran</th>
+                        <th>Paket Pembelajaran</th>
                         <th>Judul Tugas</th>
                         <th style="width: 60px;">Nilai</th>
                         <th style="width: 100px;">Tanggal</th>
@@ -122,7 +122,13 @@
                     @foreach($tasks as $index => $task)
                         <tr>
                             <td class="center">{{ $index + 1 }}</td>
-                            <td>{{ $task->post->mapel->name ?? '-' }}</td>
+                            <td>
+                                @php
+                                    $cat = is_string($task->post->category) ? json_decode($task->post->category, true) : $task->post->category;
+                                    $lessonId = $cat['lesson_id'] ?? null;
+                                @endphp
+                                {{ $lessonId && isset($lessonsForTasks[$lessonId]) ? $lessonsForTasks[$lessonId] : ($task->post->mapel->name ?? '-') }}
+                            </td>
                             <td>{{ $task->post->title ?? '-' }}</td>
                             <td class="center">
                                 @if($task->point)
@@ -165,7 +171,7 @@
                 <thead>
                     <tr>
                         <th style="width: 30px;">No</th>
-                        <th>Mata Pelajaran</th>
+                        <th>Paket Pembelajaran</th>
                         <th style="width: 80px;">Kategori</th>
                         <th>Judul Soal</th>
                         <th style="width: 60px;">Nilai</th>
@@ -176,7 +182,7 @@
                     @foreach($exercisePoints as $index => $point)
                         <tr>
                             <td class="center">{{ $index + 1 }}</td>
-                            <td>{{ $point->exercise->lesson->mapel->name ?? '-' }}</td>
+                            <td>{{ $point->exercise->lesson->name ?? ($point->exercise->lesson->mapel->name ?? '-') }}</td>
                             <td class="center">
                                 @if($point->exercise->exerciseType)
                                     {{ $point->exercise->exerciseType->name }}

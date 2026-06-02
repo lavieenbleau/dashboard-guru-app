@@ -21,35 +21,54 @@ class PengaturanController extends Controller
     
     public function updateProfile(Request $request, $serial)
     {
+        \Illuminate\Support\Facades\Log::info('Update Profile Request', $request->all());
+        \Illuminate\Support\Facades\Log::info('Has File?', ['avatar' => $request->hasFile('avatar')]);
+
         $request->validate([
-            'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users,username,' . Auth::id(),
+            'name' => 'sometimes|required|string|max:255',
+            'username' => 'sometimes|required|string|max:255|unique:users,username,' . Auth::id(),
             'email' => 'nullable|email|max:255|unique:users,email,' . Auth::id(),
             'phone' => 'nullable|string|max:20',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
         
         $user = Auth::user();
-        $user->name = $request->name;
-        $user->username = $request->username;
         
-        if ($request->email) {
+        if ($request->input('delete_avatar') === '1') {
+            if ($user->img && Storage::disk('public')->exists('avatars/' . $user->img)) {
+                Storage::disk('public')->delete('avatars/' . $user->img);
+            }
+            $user->img = null;
+            $user->save();
+            
+            return redirect()->route('guru.pengaturan', $serial)
+                ->with('success', 'Foto profil berhasil dihapus!');
+        }
+
+        if ($request->has('name')) {
+            $user->name = $request->name;
+        }
+        if ($request->has('username')) {
+            $user->username = $request->username;
+        }
+        
+        if ($request->has('email')) {
             $user->email = $request->email;
         }
         
-        if ($request->phone) {
+        if ($request->has('phone')) {
             $user->phone = $request->phone;
         }
         
         if ($request->hasFile('avatar')) {
             // Delete old avatar if exists
-            if ($user->avatar && Storage::exists('public/avatars/' . $user->avatar)) {
-                Storage::delete('public/avatars/' . $user->avatar);
+            if ($user->img && Storage::disk('public')->exists('avatars/' . $user->img)) {
+                Storage::disk('public')->delete('avatars/' . $user->img);
             }
             
             $avatarName = time() . '_' . $user->id . '.' . $request->avatar->extension();
-            $request->avatar->storeAs('public/avatars', $avatarName);
-            $user->avatar = $avatarName;
+            $request->avatar->storeAs('avatars', $avatarName, 'public');
+            $user->img = $avatarName;
         }
         
         $user->save();

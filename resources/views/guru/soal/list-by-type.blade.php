@@ -109,11 +109,7 @@
                         </form>
                         @else
                         <!-- Edit/Delete untuk Soal Custom Guru -->
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-icon" type="button" data-bs-toggle="dropdown">
-                                <i class='bx bx-dots-vertical-rounded'></i>
-                            </button>
-                            <ul class="dropdown-menu">
+                        <x-action-dropdown>
                                 <li>
                                     <a class="dropdown-item" href="#">
                                         <i class='bx bx-edit me-2'></i>Edit
@@ -128,8 +124,7 @@
                                         </button>
                                     </form>
                                 </li>
-                            </ul>
-                        </div>
+                            </x-action-dropdown>
                         @endif
                     </div>
                 </div>

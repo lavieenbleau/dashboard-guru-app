@@ -6,7 +6,8 @@
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('guru.soal', $serial->id) }}">Bank Soal</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('guru.soal.list-direct', [$serial->id, 'tambahan']) }}">Soal Tambahan</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.soal.lesson', [$serial->id, $lesson->id]) }}">{{ $lesson->name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.soal.list-direct', [$serial->id, $lesson->id, 'tambahan']) }}">Soal Tambahan</a></li>
             <li class="breadcrumb-item active">Generate Soal dengan AI</li>
         </ol>
     </nav>
@@ -56,7 +57,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('guru.soal.ai-generate', $serial->id) }}" method="POST" id="aiGeneratorForm">
+                    <form action="{{ route('guru.soal.ai-generate', [$serial->id, $lesson->id]) }}" method="POST" id="aiGeneratorForm">
                         @csrf
 
                         <div class="row">
@@ -71,15 +72,15 @@
                                             <option value="">-- Pilih Materi (Opsional) --</option>
                                             <optgroup label="Materi Guru">
                                                 @foreach($materials->where('source_type', 'post') as $material)
-                                                    <option value="post:{{ $material->id }}" data-mapel-id="{{ $material->mapel_id }}" {{ old('uploaded_material_id') == 'post:' . $material->id ? 'selected' : '' }}>
-                                                        {{ $material->title }} @if($material->mapel) - {{ $material->mapel->name }} @endif
+                                                    <option value="post:{{ $material->id }}" {{ old('uploaded_material_id') == 'post:' . $material->id ? 'selected' : '' }}>
+                                                        {{ $material->display_name }}
                                                     </option>
                                                 @endforeach
                                             </optgroup>
                                             <optgroup label="Materi Admin">
-                                                @foreach($materials->where('source_type', 'lesson') as $material)
-                                                    <option value="lesson:{{ $material->id }}" data-mapel-id="{{ $material->mapel_id }}" {{ old('uploaded_material_id') == 'lesson:' . $material->id ? 'selected' : '' }}>
-                                                        {{ $material->name }} @if($material->mapel) - {{ $material->mapel->name }} @endif
+                                                @foreach($materials->where('source_type', 'lesson_item') as $material)
+                                                    <option value="lesson_item:{{ $material->id }}" {{ old('uploaded_material_id') == 'lesson_item:' . $material->id ? 'selected' : '' }}>
+                                                        {{ $material->display_name }}
                                                     </option>
                                                 @endforeach
                                             </optgroup>
@@ -117,18 +118,21 @@
                                 <div class="row">
                                     <!-- Jenis Soal -->
                                     <div class="col-md-6 mb-4">
-                                        <label for="question_type" class="form-label fw-bold">
+                                        <label for="exercise_model_id" class="form-label fw-bold">
                                             <i class='bx bx-list-check me-1'></i>Jenis Soal <span class="text-danger">*</span>
                                         </label>
-                                        <select class="form-select @error('question_type') is-invalid @enderror" id="question_type" name="question_type" required>
+                                        <select class="form-select @error('exercise_model_id') is-invalid @enderror" id="exercise_model_id" name="exercise_model_id" required>
                                             <option value="">-- Pilih Jenis Soal --</option>
-                                            <option value="pilihan_ganda" {{ old('question_type') == 'pilihan_ganda' ? 'selected' : '' }}>Pilihan Ganda</option>
-                                            <option value="essai" {{ old('question_type') == 'essai' ? 'selected' : '' }}>Essay</option>
+                                            @foreach($exerciseModels as $model)
+                                                <option value="{{ $model->id }}" {{ old('exercise_model_id') == $model->id ? 'selected' : '' }}>
+                                                    {{ $model->name }}
+                                                </option>
+                                            @endforeach
                                         </select>
-                                        @error('question_type')
+                                        @error('exercise_model_id')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
-                                        <small class="text-muted">Pilihan Ganda: 4 opsi jawaban | Essay: soal terbuka</small>
+                                        <small class="text-muted">Pilih dari berbagai jenis soal yang tersedia</small>
                                     </div>
 
                                     <!-- Tingkat Kesulitan -->
@@ -170,22 +174,14 @@
                                         <small class="text-muted">Maksimal 10 soal per generate. Rekomendasi: 3-5 soal</small>
                                     </div>
 
-                                    <!-- Mata Pelajaran -->
+                                    <!-- Paket Pembelajaran -->
                                     <div class="col-md-6 mb-4">
-                                        <label for="mapel_id" class="form-label fw-bold">
-                                            <i class='bx bx-book me-1'></i>Mata Pelajaran <span class="text-danger">*</span>
+                                        <label class="form-label fw-bold">
+                                            <i class='bx bx-book me-1'></i>Paket Pembelajaran
                                         </label>
-                                        <select class="form-select @error('mapel_id') is-invalid @enderror" id="mapel_id" name="mapel_id" required>
-                                            <option value="">-- Pilih Mapel --</option>
-                                            @foreach($mapels as $mapel)
-                                                <option value="{{ $mapel->id }}" {{ old('mapel_id') == $mapel->id ? 'selected' : '' }}>
-                                                    {{ $mapel->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        @error('mapel_id')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
+                                        <input type="text" class="form-control" value="{{ $lesson->name }} ({{ $lesson->mapel->name ?? '-' }})" disabled>
+                                        <input type="hidden" name="lesson_id" value="{{ $lesson->id }}">
+                                        <small class="text-muted">Soal akan disimpan di paket pembelajaran ini</small>
                                     </div>
                                 </div>
 
@@ -198,7 +194,7 @@
                                         <select class="form-select @error('exercise_type_id') is-invalid @enderror" id="exercise_type_id" name="exercise_type_id" required>
                                             <option value="">-- Pilih Tipe Soal --</option>
                                             @foreach($exerciseTypes as $type)
-                                                <option value="{{ $type->id }}" {{ old('exercise_type_id') == $type->id ? 'selected' : '' }}>
+                                                <option value="{{ $type->id }}" data-kode="{{ $type->kode }}" {{ old('exercise_type_id') == $type->id ? 'selected' : '' }}>
                                                     {{ $type->name }}
                                                 </option>
                                             @endforeach
@@ -287,7 +283,7 @@
                             <button type="submit" class="btn btn-primary" id="generateBtn">
                                 <i class='bx bx-brain me-1'></i>Generate Soal dengan AI
                             </button>
-                            <a href="{{ route('guru.soal.list-direct', [$serial->id, 'tambahan']) }}" class="btn btn-label-secondary">
+                            <a href="{{ route('guru.soal.list-direct', [$serial->id, $lesson->id, 'tambahan']) }}" class="btn btn-label-secondary">
                                 <i class='bx bx-x me-1'></i>Batal
                             </a>
                         </div>
@@ -318,9 +314,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const materialSelect = document.getElementById('uploaded_material_id');
     const readMaterialBtn = document.getElementById('readMaterialBtn');
     const illustrationField = document.getElementById('illustration');
-    const mapelField = document.getElementById('mapel_id');
     const materialReadStatus = document.getElementById('materialReadStatus');
-    const readMaterialUrlTemplate = "{{ route('guru.soal.ai-material.read', ['serial' => $serial->id, 'materialId' => '__MATERIAL_ID__']) }}";
+    const readMaterialUrlTemplate = "{{ route('guru.soal.ai-material.read', ['serial' => $serial->id, 'lesson' => $lesson->id, 'materialId' => '__MATERIAL_ID__']) }}";
+    
+    // Apply reusable exercise model rule for AI generator form
+    window.applyExerciseModelRule({
+        typeSelectId: 'exercise_type_id',
+        modelSelectId: 'exercise_model_id',
+    });
 
     const setMaterialStatus = (message, isError = false) => {
         materialReadStatus.textContent = message;
@@ -349,9 +350,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             illustrationField.value = data.illustration || '';
 
-            if (data.mapel_id && !mapelField.value) {
-                mapelField.value = String(data.mapel_id);
-            }
+            // mapel_id auto-fill removed - lesson context is already set
 
             setMaterialStatus('Materi berhasil dimuat ke kolom deskripsi.');
         } catch (error) {
@@ -394,4 +393,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+@include('guru.soal.partials.model-rule-script')
 @endsection

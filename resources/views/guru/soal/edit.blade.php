@@ -1,5 +1,13 @@
 @extends('layouts.sneat')
 
+@section('styles')
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+<style>
+    .note-editor .note-editing-area { min-height: 150px; }
+    .note-editor .note-dropzone { opacity: 0 !important; }
+</style>
+@endsection
+
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     <nav aria-label="breadcrumb">
@@ -75,9 +83,11 @@
                                     @foreach($existingQuestions as $index => $question)
                                         <div class="question-item mb-2">
                                             <div class="input-group">
-                                                <span class="input-group-text">{{ $index + 1 }}.</span>
-                                                <textarea name="questions[]" rows="2" class="form-control" placeholder="Tulis soal...">{{ $question }}</textarea>
-                                                <button type="button" class="btn btn-outline-danger remove-question" {{ count($existingQuestions) == 1 ? 'style=display:none;' : '' }}>
+                                                <span class="input-group-text align-items-start">{{ $index + 1 }}.</span>
+                                                <div class="flex-grow-1">
+                                                    <textarea name="questions[]" class="form-control summernote" placeholder="Tulis soal...">{!! $question !!}</textarea>
+                                                </div>
+                                                <button type="button" class="btn btn-outline-danger remove-question align-self-start" {{ count($existingQuestions) == 1 ? 'style=display:none;' : '' }}>
                                                     <i class='bx bx-trash'></i>
                                                 </button>
                                             </div>
@@ -86,9 +96,11 @@
                                 @else
                                     <div class="question-item mb-2">
                                         <div class="input-group">
-                                            <span class="input-group-text">1.</span>
-                                            <textarea name="questions[]" rows="2" class="form-control" placeholder="Tulis soal..."></textarea>
-                                            <button type="button" class="btn btn-outline-danger remove-question" style="display: none;">
+                                            <span class="input-group-text align-items-start">1.</span>
+                                            <div class="flex-grow-1">
+                                                <textarea name="questions[]" class="form-control summernote" placeholder="Tulis soal..."></textarea>
+                                            </div>
+                                            <button type="button" class="btn btn-outline-danger remove-question align-self-start" style="display: none;">
                                                 <i class='bx bx-trash'></i>
                                             </button>
                                         </div>
@@ -134,7 +146,11 @@
         </div>
     </div>
 </div>
+@endsection
 
+@section('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 <script>
 let questionCount = {{ count($existingQuestions ?? [1]) }};
 
@@ -145,14 +161,30 @@ document.getElementById('addQuestion').addEventListener('click', function() {
     newQuestion.className = 'question-item mb-2';
     newQuestion.innerHTML = `
         <div class="input-group">
-            <span class="input-group-text">${questionCount}.</span>
-            <textarea name="questions[]" rows="2" class="form-control" placeholder="Tulis soal..."></textarea>
-            <button type="button" class="btn btn-outline-danger remove-question">
+            <span class="input-group-text align-items-start">${questionCount}.</span>
+            <div class="flex-grow-1">
+                <textarea name="questions[]" class="form-control summernote" placeholder="Tulis soal..."></textarea>
+            </div>
+            <button type="button" class="btn btn-outline-danger remove-question align-self-start">
                 <i class='bx bx-trash'></i>
             </button>
         </div>
     `;
     container.appendChild(newQuestion);
+    
+    // Initialize Summernote on the new textarea
+    const newTextarea = newQuestion.querySelector('.summernote');
+    $(newTextarea).summernote({
+        height: 150,
+        toolbar: [
+            ['style', ['style']],
+            ['font', ['bold', 'italic', 'underline', 'clear']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['insert', ['picture', 'link']],
+            ['view', ['fullscreen', 'codeview']]
+        ]
+    });
+    
     updateRemoveButtons();
 });
 
@@ -182,5 +214,20 @@ function updateRemoveButtons() {
         removeButtons.forEach(btn => btn.style.display = 'block');
     }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof $ !== 'undefined' && $.fn.summernote) {
+        $('.summernote').summernote({
+            height: 150,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['insert', ['picture', 'link']],
+                ['view', ['fullscreen', 'codeview']]
+            ]
+        });
+    }
+});
 </script>
 @endsection

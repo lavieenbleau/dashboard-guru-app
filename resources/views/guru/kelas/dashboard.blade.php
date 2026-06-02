@@ -92,11 +92,7 @@
                                     <td><code>{{ $student->username }}</code></td>
                                     <td>{{ $student->email ?? '-' }}</td>
                                     <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
-                                                <i class='bx bx-dots-vertical-rounded'></i>
-                                            </button>
-                                            <ul class="dropdown-menu">
+                                        <x-action-dropdown>
                                                 <li>
                                                     <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modalEditSiswa{{ $student->id }}">
                                                         <i class='bx bx-edit me-1'></i> Edit
@@ -117,8 +113,7 @@
                                                         </button>
                                                     </form>
                                                 </li>
-                                            </ul>
-                                        </div>
+                                            </x-action-dropdown>
                                     </td>
                                 </tr>
                                 

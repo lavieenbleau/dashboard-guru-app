@@ -54,11 +54,7 @@
                                 <span class="badge bg-label-primary">{{ $meeting->classroom->name ?? 'Semua Kelas' }}</span>
                                 <span class="badge bg-label-{{ $meeting->platform == 'zoom' ? 'info' : 'secondary' }}">{{ ucfirst($meeting->platform) }}</span>
                             </div>
-                            <div class="dropdown">
-                                <button class="btn btn-sm btn-icon" type="button" data-bs-toggle="dropdown">
-                                    <i class='bx bx-dots-vertical-rounded'></i>
-                                </button>
-                                <ul class="dropdown-menu">
+                            <x-action-dropdown>
                                     <li>
                                         <a class="dropdown-item" href="{{ route('guru.onlineclass.edit', [$serial->id, $meeting->id]) }}">
                                             <i class='bx bx-edit me-1'></i>Edit
@@ -73,8 +69,7 @@
                                             </button>
                                         </form>
                                     </li>
-                                </ul>
-                            </div>
+                                </x-action-dropdown>
                         </div>
                         <div class="mb-2">
                             <small class="text-muted">

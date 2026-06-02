@@ -7,7 +7,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('guru.materi', $serial->id) }}">Materi</a></li>
             <li class="breadcrumb-item"><a href="{{ route('guru.materi.custom', $serial->id) }}">Materi Tambahan</a></li>
-            <li class="breadcrumb-item active">{{ $mapel->name }}</li>
+            <li class="breadcrumb-item active">{{ $lesson->name }}</li>
         </ol>
     </nav>
 
@@ -15,11 +15,11 @@
     <div class="card mb-4">
         <div class="card-body d-flex justify-content-between align-items-center">
             <div>
-                <h4 class="mb-1">Materi Tambahan - {{ $mapel->name }}</h4>
-                <p class="text-muted mb-0">Kelola materi untuk mata pelajaran {{ $mapel->name }}</p>
+                <h4 class="mb-1">Materi Tambahan - {{ $lesson->name }}</h4>
+                <p class="text-muted mb-0">Kelola materi untuk mata pelajaran {{ $lesson->name }}</p>
             </div>
             <div class="d-flex gap-2">
-                <a href="{{ route('guru.materi.create', [$serial->id, $mapel->id]) }}" class="btn btn-primary">
+                <a href="{{ route('guru.materi.create', [$serial->id, $lesson->id]) }}" class="btn btn-primary">
                     <i class='bx bx-plus me-1'></i>Tambah Materi
                 </a>
                 <a href="{{ route('guru.materi.custom', $serial->id) }}" class="btn btn-outline-secondary">
@@ -80,13 +80,9 @@
                         </div>
 
                         <!-- Edit/Delete Actions -->
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-icon" type="button" data-bs-toggle="dropdown">
-                                <i class='bx bx-dots-vertical-rounded'></i>
-                            </button>
-                            <ul class="dropdown-menu">
+                        <x-action-dropdown>
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('guru.materi.detail', [$serial->id, $mapel->id, $materi->id]) }}">
+                                    <a class="dropdown-item" href="{{ route('guru.materi.detail', [$serial->id, $lesson->id, $materi->id]) }}">
                                         <i class='bx bx-show me-2'></i>Lihat Detail
                                     </a>
                                 </li>
@@ -98,12 +94,12 @@
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('guru.materi.edit', [$serial->id, $mapel->id, $materi->id]) }}">
+                                    <a class="dropdown-item" href="{{ route('guru.materi.edit', [$serial->id, $lesson->id, $materi->id]) }}">
                                         <i class='bx bx-edit me-2'></i>Edit
                                     </a>
                                 </li>
                                 <li>
-                                    <form action="{{ route('guru.materi.destroy', [$serial->id, $mapel->id, $materi->id]) }}" method="POST" onsubmit="return confirm('Hapus materi ini?')">
+                                    <form action="{{ route('guru.materi.destroy', [$serial->id, $lesson->id, $materi->id]) }}" method="POST" onsubmit="return confirm('Hapus materi ini?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="dropdown-item text-danger">
@@ -111,15 +107,14 @@
                                         </button>
                                     </form>
                                 </li>
-                            </ul>
-                        </div>
+                            </x-action-dropdown>
                     </div>
 
                     <!-- Content Details -->
                     @if($materi->link || $materi->attachment || $materi->embed)
                     <div class="mt-3 pt-3 border-top">
                         <div class="d-flex flex-wrap gap-2">
-                            <a href="{{ route('guru.materi.detail', [$serial->id, $mapel->id, $materi->id]) }}" class="btn btn-sm btn-primary">
+                            <a href="{{ route('guru.materi.detail', [$serial->id, $lesson->id, $materi->id]) }}" class="btn btn-sm btn-primary">
                                 <i class='bx bx-show'></i> Lihat Detail
                             </a>
                             
@@ -138,7 +133,7 @@
                     </div>
                     @else
                     <div class="mt-3 pt-3 border-top">
-                        <a href="{{ route('guru.materi.detail', [$serial->id, $mapel->id, $materi->id]) }}" class="btn btn-sm btn-outline-primary">
+                        <a href="{{ route('guru.materi.detail', [$serial->id, $lesson->id, $materi->id]) }}" class="btn btn-sm btn-outline-primary">
                             <i class='bx bx-show'></i> Lihat Detail
                         </a>
                     </div>
@@ -152,8 +147,8 @@
                 <div class="card-body text-center py-5">
                     <i class='bx bx-book-open' style="font-size: 48px; opacity: 0.3;"></i>
                     <h5 class="mt-3">Belum Ada Materi</h5>
-                    <p class="text-muted mb-3">Tambahkan materi pertama untuk mata pelajaran {{ $mapel->name }}</p>
-                    <a href="{{ route('guru.materi.create', [$serial->id, $mapel->id]) }}" class="btn btn-primary">
+                    <p class="text-muted mb-3">Tambahkan materi pertama untuk mata pelajaran {{ $lesson->name }}</p>
+                    <a href="{{ route('guru.materi.create', [$serial->id, $lesson->id]) }}" class="btn btn-primary">
                         <i class='bx bx-plus me-1'></i>Tambah Materi
                     </a>
                 </div>

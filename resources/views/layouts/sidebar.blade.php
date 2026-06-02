@@ -50,7 +50,7 @@
         <li
             class="menu-item {{ (request()->is('aplikasi/'.$serialId) && request()->path() == 'aplikasi/'.$serialId) || request()->routeIs('guru.dashboard') ? 'active' : '' }}">
             <a href="{{ $dashboardUrl }}" class="menu-link">
-                <span class="menu-icon"><i class='bx bx-home'></i></span>
+                <span class="menu-icon"><i data-lucide="layout-dashboard"></i></span>
                 <div>Dashboard</div>
             </a>
         </li>
@@ -58,7 +58,7 @@
         <!-- Materi -->
         <li class="menu-item {{ request()->routeIs('guru.materi*') ? 'active' : '' }}">
             <a href="{{ $serialId ? route('guru.materi', $serialId) : route('pilih.aplikasi') }}" class="menu-link">
-                <span class="menu-icon"><i class='bx bx-book-open'></i></span>
+                <span class="menu-icon"><i data-lucide="library"></i></span>
                 <div>Materi</div>
             </a>
         </li>
@@ -66,7 +66,7 @@
         <!-- Soal -->
         <li class="menu-item {{ request()->routeIs('guru.soal*') ? 'active' : '' }}">
             <a href="{{ $serialId ? route('guru.soal', $serialId) : route('pilih.aplikasi') }}" class="menu-link">
-                <span class="menu-icon"><i class='bx bx-file-blank'></i></span>
+                <span class="menu-icon"><i data-lucide="file-text"></i></span>
                 <div>Soal</div>
             </a>
         </li>
@@ -74,7 +74,7 @@
         <!-- Tugas -->
         <li class="menu-item {{ request()->routeIs('guru.tugas*') ? 'active' : '' }}">
             <a href="{{ $serialId ? route('guru.tugas', $serialId) : route('pilih.aplikasi') }}" class="menu-link">
-                <span class="menu-icon"><i class='bx bx-edit'></i></span>
+                <span class="menu-icon"><i data-lucide="edit-3"></i></span>
                 <div>Tugas</div>
             </a>
         </li>
@@ -84,7 +84,7 @@
             class="menu-item {{ request()->routeIs('guru.laporanharian*') || request()->routeIs('guru.laporan*') ? 'active' : '' }}">
             <a href="{{ $serialId ? route('guru.laporanharian', $serialId) : route('pilih.aplikasi') }}"
                 class="menu-link">
-                <span class="menu-icon"><i class='bx bx-file'></i></span>
+                <span class="menu-icon"><i data-lucide="activity"></i></span>
                 <div>Laporan Harian</div>
             </a>
         </li>
@@ -92,7 +92,7 @@
         <!-- Rekap Nilai -->
         <li class="menu-item {{ request()->is('aplikasi/'.$serialId.'/rekap-nilai*') ? 'active' : '' }}">
             <a href="{{ $serialId ? route('guru.rekapnilai', $serialId) : route('pilih.aplikasi') }}" class="menu-link">
-                <span class="menu-icon"><i class='bx bx-list-check'></i></span>
+                <span class="menu-icon"><i data-lucide="check-square"></i></span>
                 <div>Rekap Nilai</div>
             </a>
         </li>
@@ -100,7 +100,7 @@
         <!-- Kelas Online (Jitsi Meet) -->
         <li class="menu-item {{ request()->is('aplikasi/'.$serialId.'/meeting*') ? 'active' : '' }}">
             <a href="{{ $serialId ? route('guru.meeting', $serialId) : route('pilih.aplikasi') }}" class="menu-link">
-                <span class="menu-icon"><i class='bx bx-video'></i></span>
+                <span class="menu-icon"><i data-lucide="video"></i></span>
                 <div>Kelas Online</div>
             </a>
         </li>
@@ -109,7 +109,7 @@
         <li class="menu-item {{ request()->is('aplikasi/'.$serialId.'/kelas*') ? 'active' : '' }}">
             <a href="{{ $serialId ? route('guru.kelas.pilih', $serialId) : route('pilih.aplikasi') }}"
                 class="menu-link">
-                <span class="menu-icon"><i class='bx bx-group'></i></span>
+                <span class="menu-icon"><i data-lucide="users"></i></span>
                 <div>Kelas</div>
             </a>
         </li>
@@ -126,7 +126,7 @@
         @endphp
         <li class="menu-item {{ request()->is('aplikasi/*/pengaturan*') ? 'active' : '' }}">
             <a href="{{ route('guru.pengaturan', $pengaturanSerial ?? 1) }}" class="menu-link">
-                <span class="menu-icon"><i class='bx bx-cog'></i></span>
+                <span class="menu-icon"><i data-lucide="settings"></i></span>
                 <div class="menu-text">Pengaturan</div>
             </a>
         </li>
@@ -138,14 +138,14 @@
         <div class="d-flex flex-column gap-2">
             @if(!$isPilihAplikasi)
             <a href="{{ route('guru.aplikasi') }}" class="btn btn-sm btn-outline-primary w-100">
-                <i class='bx bx-grid-alt me-1'></i>
+                <i data-lucide="grid" class="me-2" style="width:16px;"></i>
                 <span class="menu-text">Pilih Aplikasi</span>
             </a>
             @endif
             <form method="POST" action="{{ route('logout') }}" class="w-100">
                 @csrf
                 <button type="submit" class="btn btn-sm btn-outline-danger w-100">
-                    <i class='bx bx-log-out me-1'></i>
+                    <i data-lucide="log-out" class="me-2" style="width:16px;"></i>
                     <span class="menu-text">Logout</span>
                 </button>
             </form>
@@ -201,26 +201,12 @@
     margin: 0;
 }
 
-/* Active menu item styling */
-.menu-item.active {
-    background-color: rgba(105, 108, 255, 0.08);
-    border-left: 3px solid #696cff;
-}
-
-.menu-item.active .menu-link {
-    color: #696cff !important;
-    font-weight: 600;
-}
-
-.menu-item.active .menu-icon i {
-    color: #696cff !important;
-}
-
+/* Active menu item styling is handled in sneat.blade.php */
 .menu-item .menu-link {
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .menu-item:hover:not(.active) {
-    background-color: rgba(0, 0, 0, 0.03);
+    background-color: rgba(255, 255, 255, 0.5);
 }
 </style>

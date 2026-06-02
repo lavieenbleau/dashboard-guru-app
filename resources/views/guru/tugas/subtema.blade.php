@@ -51,11 +51,7 @@
                                             </small>
                                         </div>
                                     </div>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
-                                            <i class='bx bx-dots-vertical-rounded'></i>
-                                        </button>
-                                        <ul class="dropdown-menu">
+                                    <x-action-dropdown>
                                             <li>
                                                 <a class="dropdown-item" href="{{ route('guru.tugas.show', [$serial->id, $tema->id, $subtheme->id, $lesson->id]) }}">
                                                     <i class='bx bx-show me-1'></i> Lihat
@@ -75,8 +71,7 @@
                                                     </button>
                                                 </form>
                                             </li>
-                                        </ul>
-                                    </div>
+                                        </x-action-dropdown>
                                 </div>
                             </div>
                         @endforeach

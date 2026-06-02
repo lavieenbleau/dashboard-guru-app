@@ -1,12 +1,21 @@
 @extends('layouts.sneat')
 
+@section('styles')
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+<style>
+    .note-editor .note-editing-area { min-height: 150px; }
+    .note-editor .note-dropzone { opacity: 0 !important; }
+</style>
+@endsection
+
 @section('content')
 <div class="container-xxl py-4">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('guru.soal', $serial->id) }}">Bank Soal</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('guru.soal.list-direct', [$serial->id, $category]) }}">{{ $categoryInfo['name'] }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.soal.lesson', [$serial->id, $lesson->id]) }}">{{ $lesson->name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.soal.list-direct', [$serial->id, $lesson->id, $category]) }}">{{ $categoryInfo['name'] }}</a></li>
             <li class="breadcrumb-item active">Edit Soal</li>
         </ol>
     </nav>
@@ -18,24 +27,15 @@
                     <h5 class="mb-0">Edit {{ $categoryInfo['name'] }}</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('guru.soal.update-custom', [$serial->id, $exercise->id]) }}" method="POST">
+                    <form action="{{ route('guru.soal.update-custom', [$serial->id, $lesson->id, $exercise->id]) }}" method="POST">
                         @csrf
                         @method('PUT')
 
-                        <!-- Pilih Mapel -->
+                        <!-- Pilih Paket Materi -->
                         <div class="mb-3">
-                            <label for="mapel_id" class="form-label">Pilih Mapel <span class="text-danger">*</span></label>
-                            <select class="form-select @error('mapel_id') is-invalid @enderror" id="mapel_id" name="mapel_id" required>
-                                <option value="">-- Pilih Mapel --</option>
-                                @foreach($mapels as $mapel)
-                                    <option value="{{ $mapel->id }}" {{ (old('mapel_id', $exercise->lesson->mapel_id ?? '') == $mapel->id) ? 'selected' : '' }}>
-                                        {{ $mapel->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('mapel_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <label class="form-label">Paket Materi</label>
+                            <input type="text" class="form-control" value="{{ $lesson->name }} (Mapel: {{ $lesson->mapel->name ?? '-' }})" disabled>
+                            <input type="hidden" name="lesson_id" value="{{ $lesson->id }}">
                         </div>
 
                         <!-- Tipe Soal -->
@@ -103,53 +103,62 @@
 
                                             <!-- Jenis Soal -->
                                             <div class="mb-3">
-                                                <label class="form-label">Jenis Soal <span class="text-danger">*</span></label>
-                                                <select class="form-select question-type-select" name="items[{{ $index }}][question_type]" required>
-                                                    <option value="">-- Pilih Jenis --</option>
-                                                    <option value="pilihan_ganda" {{ old("items.{$index}.question_type", $item->exercise_model_id == 1 ? 'pilihan_ganda' : '') == 'pilihan_ganda' ? 'selected' : '' }}>Pilihan Ganda</option>
-                                                    <option value="essai" {{ old("items.{$index}.question_type", $item->exercise_model_id == 2 ? 'essai' : '') == 'essai' ? 'selected' : '' }}>Essai</option>
-                                                    <option value="jawaban_singkat" {{ old("items.{$index}.question_type", $item->exercise_model_id == 3 ? 'jawaban_singkat' : '') == 'jawaban_singkat' ? 'selected' : '' }}>Jawaban Singkat</option>
-                                                </select>
+                                                <span class="badge bg-label-primary px-3 py-2" style="font-size: 0.9rem;">
+                                                    {{ $item->exercise_model_id == 1 ? 'Pilihan Ganda' : ($item->exercise_model_id == 2 ? 'Essai' : 'Jawaban Singkat') }}
+                                                </span>
+                                                <input type="hidden" name="items[{{ $index }}][question_type]" value="{{ $item->exercise_model_id == 1 ? 'pilihan_ganda' : ($item->exercise_model_id == 2 ? 'essai' : 'jawaban_singkat') }}">
                                             </div>
 
                                             <!-- Pertanyaan -->
                                             <div class="mb-3">
                                                 <label class="form-label">Pertanyaan <span class="text-danger">*</span></label>
-                                                <textarea class="form-control" name="items[{{ $index }}][question]" rows="4" required>{{ old("items.{$index}.question", strip_tags($item->question ?? '')) }}</textarea>
+                                                <textarea class="form-control summernote" name="items[{{ $index }}][question]" required>{!! old("items.{$index}.question", $item->question ?? '') !!}</textarea>
                                             </div>
 
                                             <!-- Pilihan Jawaban (untuk Pilihan Ganda) -->
                                             @php
-                                                $selection = is_array($item->selection) ? $item->selection : json_decode($item->selection, true);
+                                                $options = is_array($item->options) ? $item->options : json_decode($item->options, true);
                                                 $showOptions = ($item->exercise_model_id == 1);
+                                                $optionsDict = [];
+                                                if (is_array($options)) {
+                                                    foreach ($options as $opt) {
+                                                        if (isset($opt['key']) && isset($opt['text'])) {
+                                                            $optionsDict[$opt['key']] = $opt['text'];
+                                                        }
+                                                    }
+                                                }
                                             @endphp
                                             
                                             <div class="options-section mb-3" style="{{ $showOptions ? '' : 'display:none' }}">
                                                 <label class="form-label">Pilihan Jawaban</label>
-                                                @if(is_array($selection) && isset($selection['A']))
-                                                    @foreach(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D', 'E' => 'E'] as $key => $label)
-                                                        <div class="input-group mb-2">
-                                                            <span class="input-group-text">{{ $label }}</span>
-                                                            <input type="text" class="form-control" name="items[{{ $index }}][selection][{{ $key }}]" 
-                                                                   value="{{ old("items.{$index}.selection.{$key}", $selection[$key] ?? '') }}" 
-                                                                   placeholder="Opsi {{ $label }}">
-                                                        </div>
-                                                    @endforeach
-                                                @else
-                                                    @foreach(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D', 'E' => 'E'] as $key => $label)
-                                                        <div class="input-group mb-2">
-                                                            <span class="input-group-text">{{ $label }}</span>
-                                                            <input type="text" class="form-control" name="items[{{ $index }}][selection][{{ $key }}]" placeholder="Opsi {{ $label }}">
-                                                        </div>
-                                                    @endforeach
-                                                @endif
+                                                <div class="options-container">
+                                                    @if(is_array($optionsDict) && !empty($optionsDict))
+                                                        @foreach(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D', 'E' => 'E'] as $key => $label)
+                                                            <div class="mb-3 border p-2 rounded">
+                                                                <label class="form-label mb-1 fw-bold">Pilihan {{ $label }}</label>
+                                                                <textarea class="form-control summernote" name="items[{{ $index }}][selection][{{ $key }}]" 
+                                                                       placeholder="Opsi {{ $label }}">{!! old("items.{$index}.selection.{$key}", $optionsDict[$key] ?? '') !!}</textarea>
+                                                            </div>
+                                                        @endforeach
+                                                    @else
+                                                        @foreach(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D', 'E' => 'E'] as $key => $label)
+                                                            <div class="mb-3 border p-2 rounded">
+                                                                <label class="form-label mb-1 fw-bold">Pilihan {{ $label }}</label>
+                                                                <textarea class="form-control summernote" name="items[{{ $index }}][selection][{{ $key }}]" placeholder="Opsi {{ $label }}"></textarea>
+                                                            </div>
+                                                        @endforeach
+                                                    @endif
+                                                </div>
                                             </div>
 
                                             <!-- Kunci Jawaban -->
                                             <div class="mb-3">
                                                 <label class="form-label">Kunci Jawaban</label>
+                                                @php
+                                                    $answerVal = is_array($item->answer) ? implode(',', $item->answer) : (is_string($item->answer) ? implode(',', json_decode($item->answer, true) ?? []) : '');
+                                                @endphp
                                                 <input type="text" class="form-control" name="items[{{ $index }}][answer]" 
-                                                       value="{{ old("items.{$index}.answer", $item->answer ?? '') }}" 
+                                                       value="{{ old("items.{$index}.answer", $answerVal) }}" 
                                                        placeholder="Untuk pilihan ganda: A/B/C/D/E. Untuk essay: jawaban yang benar">
                                                 <small class="text-muted">Untuk pilihan ganda: A/B/C/D/E | Untuk essay/singkat: jawaban yang benar</small>
                                             </div>
@@ -165,7 +174,7 @@
                             <button type="submit" class="btn btn-primary btn-lg">
                                 <i class='bx bx-save me-2'></i>Update Semua
                             </button>
-                            <a href="{{ route('guru.soal.list-direct', [$serial->id, $category]) }}" class="btn btn-label-secondary btn-lg">
+                            <a href="{{ route('guru.soal.list-direct', [$serial->id, $lesson->id, $category]) }}" class="btn btn-label-secondary btn-lg">
                                 <i class='bx bx-x me-2'></i>Batal
                             </a>
                         </div>
@@ -181,7 +190,7 @@
                     <h6 class="mb-0"><i class='bx bx-share-alt me-2'></i>Bagikan ke Kelas</h6>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('guru.soal.update-custom', [$serial->id, $exercise->id]) }}" method="POST" id="shareForm">
+                    <form action="{{ route('guru.soal.update-custom', [$serial->id, $lesson->id, $exercise->id]) }}" method="POST" id="shareForm">
                         @csrf
                         @method('PUT')
                         <input type="hidden" name="mapel_id" value="{{ $exercise->lesson->mapel_id }}">
@@ -192,7 +201,10 @@
                             <input type="hidden" name="items[{{ $index }}][id]" value="{{ $item->id }}">
                             <input type="hidden" name="items[{{ $index }}][question_type]" value="{{ $item->exercise_model_id == 1 ? 'pilihan_ganda' : ($item->exercise_model_id == 2 ? 'essai' : 'jawaban_singkat') }}">
                             <input type="hidden" name="items[{{ $index }}][question]" value="{{ strip_tags($item->question) }}">
-                            <input type="hidden" name="items[{{ $index }}][answer]" value="{{ $item->answer }}">
+                            @php
+                                $ansForHidden = is_array($item->answer) ? implode(',', $item->answer) : $item->answer;
+                            @endphp
+                            <input type="hidden" name="items[{{ $index }}][answer]" value="{{ is_string($ansForHidden) ? $ansForHidden : json_encode($ansForHidden) }}">
                         @endforeach
 
                         <div class="form-check mb-3">
@@ -253,7 +265,7 @@
     </div>
 
     <!-- Hidden form for main submission -->
-    <form action="{{ route('guru.soal.update-custom', [$serial->id, $exercise->id]) }}" method="POST" id="mainForm" style="display:none;">
+    <form action="{{ route('guru.soal.update-custom', [$serial->id, $lesson->id, $exercise->id]) }}" method="POST" id="mainForm" style="display:none;">
         @csrf
         @method('PUT')
         <input type="hidden" name="mapel_id" value="{{ $exercise->lesson->mapel_id }}">
@@ -262,8 +274,11 @@
         <input type="hidden" name="time_limit" value="{{ $exercise->time_limit }}">
     </form>
 </div>
+@endsection
 
-@push('scripts')
+@section('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const selectAllCheckbox = document.getElementById('selectAllClassrooms');
@@ -307,7 +322,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const initialSomeChecked = Array.from(classroomCheckboxes).some(cb => cb.checked);
     selectAllCheckbox.checked = initialAllChecked;
     selectAllCheckbox.indeterminate = initialSomeChecked && !initialAllChecked;
+
+    // Initialize Summernote editors
+    if (typeof $ !== 'undefined' && $.fn.summernote) {
+        $('.summernote').summernote({
+            height: 150,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['insert', ['picture', 'link']],
+                ['view', ['fullscreen', 'codeview']]
+            ]
+        });
+    }
 });
 </script>
-@endpush
 @endsection
