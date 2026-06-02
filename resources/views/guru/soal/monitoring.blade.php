@@ -187,6 +187,8 @@
 
 <script>
 $(document).ready(function() {
+    $.fn.dataTable.ext.errMode = 'none'; // Mencegah alert default DataTables
+
     let table = $('#monitoringTable').DataTable({
         processing: true,
         serverSide: false, // Using client-side pagination with ajax data to allow 10s reload without resetting page easily, but we can do serverSide true if needed
