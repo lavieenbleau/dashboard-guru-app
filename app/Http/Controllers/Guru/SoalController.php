@@ -696,6 +696,7 @@ class SoalController extends Controller
             DB::table('share_exercises')->insert([
                 'exercise_id' => $exercise->id,
                 'classroom_id' => $classroomId,
+                'serial_id' => $serial->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -737,6 +738,7 @@ class SoalController extends Controller
                     DB::table('share_exercises')->insert([
                         'exercise_id' => $exercise->id,
                         'classroom_id' => $classroomId,
+                        'serial_id' => $serialModel->id,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
