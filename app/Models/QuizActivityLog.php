@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class QuizActivityLog extends Model
 {
+    protected $connection = 'log_db';
+    
     protected $table = 'quiz_activity_logs';
 
     public $timestamps = false;

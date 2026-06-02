@@ -87,6 +87,14 @@
         </div>
     </div>
 
+    @if(isset($dbError) && $dbError)
+    <div class="alert alert-danger alert-dismissible mb-4" role="alert">
+        <h6 class="alert-heading mb-1"><i class="bx bx-error-circle"></i> Koneksi Database Log Bermasalah</h6>
+        <span>{{ $dbError }}</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
+
     <!-- Filters and Data Table -->
     <div class="card">
         <div class="card-header border-bottom d-flex justify-content-between align-items-center">
@@ -124,14 +132,11 @@
                 <table class="table table-bordered table-hover" id="monitoringTable">
                     <thead>
                         <tr>
-                            <th>Nama Siswa</th>
-                            <th>Nama Kuis</th>
-                            <th>Status Terakhir</th>
+                            <th>Peserta & Kuis</th>
+                            <th>Status Siswa</th>
+                            <th>Ringkasan Perilaku</th>
                             <th>Aktivitas Terakhir</th>
-                            <th>Jml Pindah Tab</th>
-                            <th>Jml Masuk Kembali</th>
                             <th>Mencurigakan</th>
-                            <th>Status Pengumpulan</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -193,25 +198,38 @@ $(document).ready(function() {
             }
         },
         columns: [
-            { data: 'student_name' },
-            { data: 'exercise_name' },
+            { 
+                data: null,
+                render: function(data, type, row) {
+                    return `<strong>${row.student_name}</strong><br><small class="text-muted">${row.exercise_name}</small>`;
+                }
+            },
             { 
                 data: 'status',
                 render: function(data, type, row) {
                     let badge = 'bg-secondary';
-                    let label = data;
-                    if (data === 'START') { badge = 'bg-primary'; label = 'Mulai'; }
-                    if (data === 'APP_RESUME') { badge = 'bg-primary'; label = 'Kembali Aktif'; }
-                    if (data === 'APP_BACKGROUND') { badge = 'bg-warning'; label = 'Pindah Tab'; }
-                    if (data === 'SUBMIT') { badge = 'bg-success'; label = 'Selesai'; }
-                    if (data === 'RECONNECTED') { badge = 'bg-info'; label = 'Masuk Kembali'; }
-                    if (data === 'BACK_BUTTON_BLOCKED') { badge = 'bg-danger'; label = 'Blokir Back'; }
-                    return `<span class="badge ${badge}">${label}</span>`;
+                    if (data === 'Sedang Mengerjakan') { badge = 'bg-primary'; }
+                    if (data === 'Di Luar Aplikasi') { badge = 'bg-warning'; }
+                    if (data === 'Selesai') { badge = 'bg-success'; }
+                    return `<span class="badge ${badge} mb-1">${data}</span><br>
+                            <small class="text-muted">Pengumpulan: <span class="badge ${row.submit_status === 'Selesai' ? 'bg-success' : 'bg-secondary'}">${row.submit_status}</span></small>`;
                 }
             },
-            { data: 'aktivitas_terakhir' },
-            { data: 'jml_background' },
-            { data: 'jml_reconnected' },
+            { 
+                data: null,
+                render: function(data, type, row) {
+                    return `<small>Keluar Aplikasi: <strong>${row.jml_background} Kali</strong></small><br>
+                            <small>Masuk Kembali: <strong>${row.jml_reconnected} Kali</strong></small><br>
+                            <small>Total Durasi Keluar: <strong class="text-danger">${row.total_away}</strong></small>`;
+                }
+            },
+            { 
+                data: null,
+                render: function(data, type, row) {
+                    return `<small><strong>${row.last_event}</strong></small><br>
+                            <small class="text-muted"><i class="bx bx-time"></i> ${row.aktivitas_terakhir}</small>`;
+                }
+            },
             { 
                 data: 'suspicious',
                 render: function(data, type, row) {
@@ -220,16 +238,9 @@ $(document).ready(function() {
                 }
             },
             { 
-                data: 'submit_status',
-                render: function(data, type, row) {
-                    let badge = data === 'Selesai' ? 'bg-success' : 'bg-warning';
-                    return `<span class="badge ${badge}">${data}</span>`;
-                }
-            },
-            { 
                 data: null,
                 render: function(data, type, row) {
-                    return `<button class="btn btn-sm btn-info btn-detail" data-student="${row.student_id}" data-exercise="${row.exercise_id}"><i class="bx bx-time"></i> Detail</button>`;
+                    return `<button class="btn btn-sm btn-info btn-detail" data-student="${row.student_id}" data-exercise="${row.exercise_id}"><i class="bx bx-list-ul"></i> Lihat Detail</button>`;
                 }
             }
         ]
