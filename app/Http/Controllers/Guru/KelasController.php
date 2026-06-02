@@ -76,8 +76,13 @@ class KelasController extends Controller
         $students = \App\Models\Student::where('classroom_id', $classroom->id)
             ->orderBy('name', 'asc')
             ->get();
+        
+        $studentCount = $students->count();
+        $maxStudents = Classroom::MAX_STUDENTS;
+        $isFull = $studentCount >= $maxStudents;
+        $isOverCapacity = $studentCount > $maxStudents;
 
-        return view('guru.kelas.dashboard', compact('serial', 'classroom', 'students'));
+        return view('guru.kelas.dashboard', compact('serial', 'classroom', 'students', 'studentCount', 'maxStudents', 'isFull', 'isOverCapacity'));
     }
     
     // Store new student
@@ -92,6 +97,12 @@ class KelasController extends Controller
         
         $serial = Serial::findOrFail($serial);
         $classroom = Classroom::findOrFail($classroom);
+        
+        // Check capacity
+        if ($classroom->isFull()) {
+            return redirect()->route('guru.kelas.dashboard', [$serial->id, $classroom->id])
+                ->with('error', 'Kelas sudah mencapai kapasitas maksimum ' . Classroom::MAX_STUDENTS . ' siswa.');
+        }
         
         // Generate username from NIS or name
         $username = $request->nis ?? strtolower(str_replace(' ', '', $request->name));
@@ -179,6 +190,15 @@ class KelasController extends Controller
         $serial = Serial::findOrFail($serial);
         $classroom = Classroom::findOrFail($classroom);
         
+        // Check if classroom is already full before import
+        $currentCount = $classroom->students()->count();
+        $remaining = Classroom::MAX_STUDENTS - $currentCount;
+        
+        if ($remaining <= 0) {
+            return redirect()->route('guru.kelas.dashboard', [$serial->id, $classroom->id])
+                ->with('error', 'Kelas sudah mencapai kapasitas maksimum ' . Classroom::MAX_STUDENTS . ' siswa. Tidak dapat mengimpor siswa baru.');
+        }
+        
         $file = $request->file('csv_file');
         $path = $file->getRealPath();
         
@@ -194,6 +214,7 @@ class KelasController extends Controller
         }, $header);
         
         $imported = 0;
+        $skippedCapacity = 0;
         $errors = [];
         $defaultPassword = '12345678';
         
@@ -201,6 +222,12 @@ class KelasController extends Controller
             // Skip empty rows
             if (empty(array_filter($row))) {
                 continue;
+            }
+            
+            // Check capacity before each insert
+            if ($imported >= $remaining) {
+                $skippedCapacity = count($csv) - $index;
+                break;
             }
             
             // Combine header with row values
@@ -255,6 +282,9 @@ class KelasController extends Controller
         }
         
         $message = "{$imported} siswa berhasil diimpor.";
+        if ($skippedCapacity > 0) {
+            $message .= " {$skippedCapacity} siswa tidak diimpor karena kelas sudah mencapai kapasitas maksimum " . Classroom::MAX_STUDENTS . " siswa.";
+        }
         if (!empty($errors)) {
             $message .= " Namun ada " . count($errors) . " baris yang gagal diimpor.";
         }

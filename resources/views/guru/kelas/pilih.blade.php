@@ -40,8 +40,15 @@
                         </div>
                         
                         <div class="mb-3">
-                            <span class="badge bg-label-primary">
-                                <i class='bx bx-user me-1'></i>{{ $classroom->students_count }} Siswa
+                            @php
+                                $maxStudents = \App\Models\Classroom::MAX_STUDENTS;
+                                $count = $classroom->students_count;
+                                $isFull = $count >= $maxStudents;
+                                $isOver = $count > $maxStudents;
+                            @endphp
+                            <span class="badge {{ $isOver ? 'bg-label-danger' : ($isFull ? 'bg-label-warning' : 'bg-label-primary') }}">
+                                <i class='bx bx-user me-1'></i>{{ $count }} / {{ $maxStudents }} Siswa
+                                @if($isOver) (Melebihi Kapasitas) @elseif($isFull) (Penuh) @endif
                             </span>
                         </div>
                         

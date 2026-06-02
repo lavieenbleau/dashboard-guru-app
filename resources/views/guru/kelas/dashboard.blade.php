@@ -15,19 +15,26 @@
         <div>
             <h4 class="fw-bold mb-1">
                 <i class='bx bx-door-open text-info me-2'></i>{{ $classroom->name }}
+                @if($isOverCapacity)
+                    <span class="badge bg-danger ms-2" style="font-size: 0.6em; vertical-align: middle;">Melebihi Kapasitas</span>
+                @elseif($isFull)
+                    <span class="badge bg-warning ms-2" style="font-size: 0.6em; vertical-align: middle;">Penuh</span>
+                @endif
             </h4>
             <p class="text-muted mb-0">
                 @if($classroom->grade)
                     Tingkat {{ $classroom->grade }} • 
                 @endif
-                {{ $students->count() }} Siswa
+                <span class="{{ $isOverCapacity ? 'text-danger fw-semibold' : ($isFull ? 'text-warning fw-semibold' : '') }}">
+                    {{ $studentCount }} / {{ $maxStudents }} Siswa
+                </span>
             </p>
         </div>
         <div>
-            <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#modalImportSiswa">
+            <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#modalImportSiswa" {{ $isFull ? 'disabled' : '' }}>
                 <i class='bx bx-upload me-1'></i>Import CSV
             </button>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahSiswa">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahSiswa" {{ $isFull ? 'disabled' : '' }}>
                 <i class='bx bx-user-plus me-1'></i>Tambah Siswa
             </button>
         </div>
@@ -37,6 +44,26 @@
         <div class="alert alert-success alert-dismissible" role="alert">
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible" role="alert">
+            <i class='bx bx-error-circle me-1'></i>{{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if($isOverCapacity)
+        <div class="alert alert-danger" role="alert">
+            <i class='bx bx-error-circle me-1'></i>
+            <strong>Perhatian:</strong> Kelas ini memiliki {{ $studentCount }} siswa, melebihi batas maksimum {{ $maxStudents }} siswa.
+            Penambahan siswa baru tidak diperbolehkan sampai jumlah siswa kembali ke batas normal.
+        </div>
+    @elseif($isFull)
+        <div class="alert alert-warning" role="alert">
+            <i class='bx bx-info-circle me-1'></i>
+            Kelas sudah mencapai kapasitas maksimum {{ $maxStudents }} siswa.
         </div>
     @endif
 
@@ -326,6 +353,7 @@
                             <li>Password default untuk semua siswa: <code>12345678</code></li>
                             <li>Username akan dibuat otomatis dari NIS (jika ada) atau nama siswa</li>
                             <li>Siswa dengan username/NIS yang sudah ada akan dilewati</li>
+                            <li>Kapasitas tersisa: <strong>{{ $maxStudents - $studentCount }}</strong> siswa (maks {{ $maxStudents }} per kelas)</li>
                         </ul>
                     </div>
                 </div>
