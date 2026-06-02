@@ -41,13 +41,31 @@ class SoalController extends Controller
         $serial = Serial::findOrFail($serial);
         $lesson = Lesson::findOrFail($lesson);
         
-        // Define soal categories (all from admin, can be shared)
-        $categories = [
-            ['id' => 'ulangan-harian', 'name' => 'Ulangan Harian', 'icon' => 'bx-edit', 'color' => 'primary', 'type_id' => 1],
-            ['id' => 'pts', 'name' => 'Penilaian Tengah Semester', 'icon' => 'bx-file', 'color' => 'warning', 'type_id' => 2],
-            ['id' => 'pas', 'name' => 'Penilaian Akhir Semester', 'icon' => 'bx-book', 'color' => 'danger', 'type_id' => 3],
-            ['id' => 'tambahan', 'name' => 'Soal Tambahan', 'icon' => 'bx-plus-circle', 'color' => 'success', 'type_id' => null],
-        ];
+        $categories = collect();
+        $exerciseTypes = ExerciseType::orderBy('id')->get();
+        
+        // Dynamic icons & colors based on type ID
+        $icons = ['bx-edit', 'bx-file', 'bx-book', 'bx-check-shield', 'bx-award', 'bx-bar-chart-alt-2'];
+        $colors = ['primary', 'warning', 'danger', 'info', 'secondary', 'dark'];
+        
+        foreach ($exerciseTypes as $index => $type) {
+            $categories->push([
+                'id' => $type->id,
+                'name' => $type->name,
+                'icon' => $icons[$index % count($icons)],
+                'color' => $colors[$index % count($colors)],
+                'type_id' => $type->id,
+            ]);
+        }
+        
+        // Append Soal Tambahan explicitly as requested
+        $categories->push([
+            'id' => 'tambahan', 
+            'name' => 'Soal Tambahan', 
+            'icon' => 'bx-plus-circle', 
+            'color' => 'success', 
+            'type_id' => null
+        ]);
 
         return view('guru.soal.index', compact('serial', 'lesson', 'categories'));
     }
@@ -57,19 +75,11 @@ class SoalController extends Controller
         $serial = Serial::findOrFail($serial);
         $lesson = Lesson::findOrFail($lesson);
         
-        // Get category info
-        $categoryMap = [
-            'ulangan-harian' => ['name' => 'Ulangan Harian', 'color' => 'primary', 'type_id' => 1],
-            'pts' => ['name' => 'Penilaian Tengah Semester', 'color' => 'warning', 'type_id' => 2],
-            'pas' => ['name' => 'Penilaian Akhir Semester', 'color' => 'danger', 'type_id' => 3],
-            'tambahan' => ['name' => 'Soal Tambahan', 'color' => 'success', 'type_id' => null],
-        ];
-        
-        $categoryInfo = $categoryMap[$category] ?? ['name' => 'Soal', 'color' => 'info', 'type_id' => null];
-        $exerciseTypeId = $categoryInfo['type_id'];
-        
-        // Get exercises based on category
+        // Handle Soal Tambahan explicitly
         if ($category === 'tambahan') {
+            $categoryInfo = ['name' => 'Soal Tambahan', 'color' => 'success', 'type_id' => null];
+            $exerciseTypeId = null;
+            
             // Soal Tambahan: custom exercises from teacher (is_admin = 0)
             $exercises = Exercise::where('serial_id', $serial->id)
                 ->where('lesson_id', $lesson->id)
@@ -78,6 +88,21 @@ class SoalController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
         } else {
+            // It's a dynamic Exercise Type ID
+            $exerciseType = ExerciseType::findOrFail($category);
+            
+            // Dynamic color determination based on ID (to match index view)
+            $colors = ['primary', 'warning', 'danger', 'info', 'secondary', 'dark'];
+            $color = $colors[($exerciseType->id - 1) % count($colors)] ?? 'primary';
+            
+            $categoryInfo = [
+                'name' => $exerciseType->name,
+                'color' => $color,
+                'type_id' => $exerciseType->id
+            ];
+            
+            $exerciseTypeId = $exerciseType->id;
+            
             // Admin exercises (UH, PTS, PAS) - is_admin = 1 and serial_id is null
             $query = Exercise::where('is_admin', 1)
                 ->where('lesson_id', $lesson->id)

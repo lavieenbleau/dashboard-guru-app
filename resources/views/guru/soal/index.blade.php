@@ -19,7 +19,7 @@
     @endif
 
     <div class="row">
-        @foreach($categories as $category)
+        @forelse($categories as $category)
             <div class="col-md-6 col-lg-3 mb-3">
                 <div class="card h-100 hover-card border-{{ $category['color'] }}">
                     <div class="card-body text-center">
@@ -35,7 +35,15 @@
                     </div>
                 </div>
             </div>
-        @endforeach
+        @empty
+            <div class="col-12">
+                <div class="alert alert-info text-center py-5">
+                    <i class='bx bx-info-circle fs-1 mb-3'></i>
+                    <h5>Belum ada Tipe Soal</h5>
+                    <p class="mb-0">Administrator belum menambahkan master tipe soal. Silakan hubungi Administrator.</p>
+                </div>
+            </div>
+        @endforelse
     </div>
 </div>
 
