@@ -136,7 +136,7 @@
                             <th>Status Siswa</th>
                             <th>Ringkasan Perilaku</th>
                             <th>Aktivitas Terakhir</th>
-                            <th>Mencurigakan</th>
+                            <th>Tingkat Risiko</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -212,17 +212,21 @@ $(document).ready(function() {
                     let badge = 'bg-secondary';
                     if (data === 'Sedang Mengerjakan') { badge = 'bg-primary'; }
                     if (data === 'Di Luar Aplikasi') { badge = 'bg-warning'; }
-                    if (data === 'Selesai') { badge = 'bg-success'; }
+                    if (data.includes('Selesai')) { badge = 'bg-success'; }
                     return `<span class="badge ${badge} mb-1">${data}</span><br>
-                            <small class="text-muted">Pengumpulan: <span class="badge ${row.submit_status === 'Selesai' ? 'bg-success' : 'bg-secondary'}">${row.submit_status}</span></small>`;
+                            <small class="text-muted">Pengumpulan: <span class="badge ${row.submit_status.includes('Selesai') ? 'bg-success' : 'bg-secondary'}">${row.submit_status}</span></small>`;
                 }
             },
             { 
                 data: null,
                 render: function(data, type, row) {
-                    return `<small>Keluar Aplikasi: <strong>${row.jml_background} Kali</strong></small><br>
-                            <small>Masuk Kembali: <strong>${row.jml_reconnected} Kali</strong></small><br>
-                            <small>Total Durasi Keluar: <strong class="text-danger">${row.total_away}</strong></small>`;
+                    return `<div class="d-flex flex-column gap-1">
+                                <small>Keluar Aplikasi: <strong class="${row.jml_background > 0 ? 'text-warning' : ''}">${row.jml_background}x</strong></small>
+                                <small>Kembali ke Aplikasi: <strong class="text-success">${row.jml_resume}x</strong></small>
+                                <small>Gangguan Koneksi: <strong>${row.jml_reconnected}x</strong></small>
+                                <small>Klik Tombol Back: <strong class="${row.jml_blocked > 0 ? 'text-danger' : ''}">${row.jml_blocked}x</strong></small>
+                                <small>Durasi Keluar: <strong class="text-danger">${row.total_away}</strong></small>
+                            </div>`;
                 }
             },
             { 
@@ -233,10 +237,10 @@ $(document).ready(function() {
                 }
             },
             { 
-                data: 'suspicious',
+                data: 'risk_level',
                 render: function(data, type, row) {
-                    let badge = data === 'Ya' ? 'bg-danger' : 'bg-success';
-                    return `<span class="badge ${badge}">${data}</span>`;
+                    let icon = data === 'Berisiko Tinggi' ? 'bx-error-circle' : (data === 'Perlu Perhatian' ? 'bx-error' : 'bx-check-circle');
+                    return `<span class="badge bg-${row.risk_color}"><i class="bx ${icon}"></i> ${data}</span>`;
                 }
             },
             { 
