@@ -22,12 +22,11 @@ class QuizMonitoringController extends Controller
         
         // Retrieve filters
         $exercises = Exercise::where('serial_id', $serialModel->id)->get();
+        $exerciseIds = $exercises->pluck('id');
         
         try {
             // Summary calculations
-            $query = QuizActivityLog::whereHas('exercise', function($q) use ($serialModel) {
-                $q->where('serial_id', $serialModel->id);
-            });
+            $query = QuizActivityLog::whereIn('exercise_id', $exerciseIds);
 
             // Current status for each student-exercise combo
             $latestEvents = DB::connection('log_db')->table('quiz_activity_logs as q1')
@@ -37,6 +36,7 @@ class QuizMonitoringController extends Controller
                          ->on('q1.exercise_id', '=', 'q2.exercise_id')
                          ->on('q1.created_at', '=', 'q2.max_time');
                 })
+                ->whereIn('q1.exercise_id', $exerciseIds)
                 ->get();
             
             $activeCount = $latestEvents->where('event_type', '!=', 'SUBMIT')->count();
@@ -73,6 +73,7 @@ class QuizMonitoringController extends Controller
     public function dataTable(Request $request, $serial)
     {
         $serialModel = Serial::findOrFail($serial);
+        $exerciseIds = Exercise::where('serial_id', $serialModel->id)->pluck('id');
 
         try {
             // Build base query to get latest status per student and exercise
@@ -86,9 +87,7 @@ class QuizMonitoringController extends Controller
                          ->on('quiz_activity_logs.exercise_id', '=', 'latest_logs.exercise_id')
                          ->on('quiz_activity_logs.created_at', '=', 'latest_logs.max_time');
                 })
-                ->whereHas('exercise', function($q) use ($serialModel) {
-                    $q->where('serial_id', $serialModel->id);
-                });
+                ->whereIn('quiz_activity_logs.exercise_id', $exerciseIds);
 
             // Apply filters
             if ($request->exercise_id) {
@@ -107,8 +106,8 @@ class QuizMonitoringController extends Controller
                 $exercise = $log->exercise;
 
                 // Fetch all logs for this student and exercise
-                $allLogs = QuizActivityLog::where('student_id', $student->id)
-                    ->where('exercise_id', $exercise->id)
+                $allLogs = QuizActivityLog::where('student_id', $log->student_id)
+                    ->where('exercise_id', $log->exercise_id)
                     ->orderBy('created_at', 'asc')
                     ->get();
                 
@@ -157,8 +156,8 @@ class QuizMonitoringController extends Controller
                     'jml_reconnected' => $reconCount,
                     'suspicious' => $hasSuspicious ? 'Ya' : 'Tidak',
                     'submit_status' => $hasSubmit ? 'Selesai' : 'Belum',
-                    'student_id' => $student->id,
-                    'exercise_id' => $exercise->id,
+                    'student_id' => $log->student_id,
+                    'exercise_id' => $log->exercise_id,
                 ];
             }
 
@@ -251,12 +250,11 @@ class QuizMonitoringController extends Controller
     public function exportCsv(Request $request, $serial)
     {
         $serialModel = Serial::findOrFail($serial);
+        $exerciseIds = Exercise::where('serial_id', $serialModel->id)->pluck('id');
         
         try {
             $query = QuizActivityLog::with(['student', 'exercise'])
-                ->whereHas('exercise', function($q) use ($serialModel) {
-                    $q->where('serial_id', $serialModel->id);
-                });
+                ->whereIn('exercise_id', $exerciseIds);
 
             if ($request->exercise_id) {
                 $query->where('exercise_id', $request->exercise_id);
@@ -311,12 +309,11 @@ class QuizMonitoringController extends Controller
     public function exportPdf(Request $request, $serial)
     {
         $serialModel = Serial::findOrFail($serial);
+        $exerciseIds = Exercise::where('serial_id', $serialModel->id)->pluck('id');
         
         try {
             $query = QuizActivityLog::with(['student', 'exercise'])
-                ->whereHas('exercise', function($q) use ($serialModel) {
-                    $q->where('serial_id', $serialModel->id);
-                });
+                ->whereIn('exercise_id', $exerciseIds);
 
             if ($request->exercise_id) {
                 $query->where('exercise_id', $request->exercise_id);
