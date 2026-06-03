@@ -111,7 +111,7 @@
                                             <!-- Opsi & Jawaban berdasarkan Model -->
                                             @php
                                                 $modelId = $item->exercise_model_id;
-                                                $options = is_array($item->options) ? $item->options : json_decode($item->options, true) ?? [];
+                                                $options = is_array($item->selection) ? $item->selection : json_decode($item->selection, true) ?? [];
                                                 $answers = is_array($item->answer) ? $item->answer : json_decode($item->answer, true) ?? [];
                                             @endphp
 

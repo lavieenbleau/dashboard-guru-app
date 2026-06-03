@@ -252,7 +252,7 @@ class SoalController extends Controller
                 'exercise_choice' => empty($options) ? 0 : 1, // 1 jika ada opsi
                 'exercise_number' => $index + 1,
                 'question' => $questionData['question'],
-                'options' => $selectionJson, // Menggunakan JSON Array murni
+                'selection' => $selectionJson, // Menggunakan JSON Array murni
                 'answer' => $answerJson, // Menggunakan JSON Array murni
                 'is_user' => 1, // Created by user (guru)
             ];
@@ -362,7 +362,7 @@ class SoalController extends Controller
                 'exercise_type_id' => $request->exercise_type_id,
                 'exercise_model_id' => $exerciseModelId,
                 'question' => $itemData['question'],
-                'options' => $selectionJson,
+                'selection' => $selectionJson,
                 'answer' => $answerJson,
                 'exercise_choice' => empty($options) ? 0 : 1,
             ];
@@ -1116,7 +1116,7 @@ class SoalController extends Controller
                     'exercise_choice' => empty($options) ? 0 : 1,
                     'exercise_number' => $index + 1,
                     'question' => $questionData['question'],
-                    'options' => $selectionJson,
+                    'selection' => $selectionJson,
                     'answer' => $answerJson,
                     'is_user' => 1,
                 ];
