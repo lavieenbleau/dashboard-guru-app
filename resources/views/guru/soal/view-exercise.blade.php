@@ -101,11 +101,30 @@
                                 <strong><i class='bx bx-check-circle me-1'></i>Kunci Jawaban:</strong>
                                 @php
                                     $ans = $item->answer ?? 'Tidak ada';
+                                    
+                                    // Robust decoding
+                                    if (is_string($ans)) {
+                                        $decoded = json_decode($ans, true);
+                                        if (json_last_error() === JSON_ERROR_NONE) {
+                                            $ans = $decoded;
+                                        }
+                                    }
+                                    // Second pass in case of double-encoding
+                                    if (is_string($ans)) {
+                                        $decoded = json_decode($ans, true);
+                                        if (json_last_error() === JSON_ERROR_NONE) {
+                                            $ans = $decoded;
+                                        }
+                                    }
+                                    
                                     if (is_array($ans)) {
                                         $ans = implode(', ', $ans);
                                     }
+                                    
+                                    // Hilangkan tag HTML
+                                    $ans = strip_tags((string)$ans);
                                 @endphp
-                                <div class="mb-0 mt-2">{!! $ans !!}</div>
+                                <div class="mb-0 mt-2">{{ $ans }}</div>
                             </div>
                         </div>
                     @empty
