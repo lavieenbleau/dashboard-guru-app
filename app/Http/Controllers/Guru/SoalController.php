@@ -300,7 +300,7 @@ class SoalController extends Controller
             'time_limit' => 'required|integer|min:1|max:480',
             'items' => 'required|array|min:1',
             'items.*.id' => 'required|exists:exercise_items,id',
-            'items.*.question_type' => 'required|in:pilihan_ganda,essai,jawaban_singkat',
+            'items.*.question_type' => 'required|in:pilihan_ganda,essai,jawaban_singkat,1,2,3,4,5',
             'items.*.question' => 'required',
             'items.*.answer' => 'nullable',
             'items.*.selection' => 'nullable|array',

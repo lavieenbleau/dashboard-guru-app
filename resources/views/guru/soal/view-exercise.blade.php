@@ -85,7 +85,11 @@
                                                 $letters = ['A', 'B', 'C', 'D', 'E'];
                                             @endphp
                                             @foreach($letters as $index => $letter)
-                                                @if(isset($options[$letter]) && $options[$letter])
+                                                @if(isset($options[$index]) && $options[$index])
+                                                    <div class="option-item p-2 mb-2 border rounded bg-light">
+                                                        <strong>{{ $letter }}.</strong> {!! $options[$index] !!}
+                                                    </div>
+                                                @elseif(isset($options[$letter]) && $options[$letter])
                                                     <div class="option-item p-2 mb-2 border rounded bg-light">
                                                         <strong>{{ $letter }}.</strong> {!! $options[$letter] !!}
                                                     </div>
