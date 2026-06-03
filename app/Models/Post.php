@@ -37,9 +37,9 @@ class Post extends Model
         return $this->belongsTo(Serial::class, 'serial_id');
     }
     
-    public function classrooms()
+    public function classroom()
     {
-        return $this->belongsToMany(Classroom::class, 'post_classrooms', 'post_id', 'classroom_id');
+        return $this->belongsTo(Classroom::class, 'classroom_id');
     }
 
     public function user()

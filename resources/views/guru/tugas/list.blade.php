@@ -44,12 +44,12 @@
                                     
                                     <div class="mt-2 mb-1">
                                         <strong class="text-dark d-block">Kelas:</strong>
-                                        @if(count($task->classrooms) > 0)
+                                        @if(count($task->shared_classrooms ?? []) > 0)
                                             @php
-                                                $classNames = $task->classrooms->pluck('name')->implode(', ');
+                                                $classNames = collect($task->shared_classrooms ?? [])->pluck('name')->implode(', ');
                                             @endphp
-                                            <span class="badge bg-label-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $classNames }}">
-                                                Dibagikan ke {{ count($task->classrooms) }} Kelas
+                                            <span class="badge bg-label-success" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $classNames }}">
+                                                Dibagikan ke {{ count($task->shared_classrooms ?? []) }} Kelas
                                             </span>
                                         @else
                                             <span class="badge bg-label-danger">Belum Ditentukan</span>
@@ -79,7 +79,7 @@
                                 </li>
                                 <li>
                                     <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modalShare{{ $task->id }}">
-                                        <i class='bx bx-share-alt me-1'></i> {{ count($task->classrooms) > 0 ? 'Kelola Distribusi' : 'Kelola Distribusi' }}
+                                        <i class='bx bx-share-alt me-1'></i> {{ count($task->shared_classrooms ?? []) > 0 ? 'Kelola Distribusi' : 'Kelola Distribusi' }}
                                     </button>
                                 </li>
 
@@ -118,7 +118,7 @@
                                     <label class="form-label">Pilih Kelas <span class="text-danger">*</span></label>
                                     <div class="list-group" style="max-height: 200px; overflow-y: auto;">
                                         @php
-                                            $taskClassroomIds = $task->classrooms->pluck('id')->toArray();
+                                            $taskClassroomIds = collect($task->shared_classrooms ?? [])->pluck('id')->toArray();
                                         @endphp
                                         @forelse($classrooms as $cls)
                                             <label class="list-group-item">
