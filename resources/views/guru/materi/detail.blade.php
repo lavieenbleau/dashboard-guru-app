@@ -91,7 +91,7 @@
             </div>
             
             <div class="d-flex gap-2">
-                <a href="{{ route('guru.materi.mapel', [$serial->id, $lesson->id]) }}" class="btn btn-outline-secondary btn-sm">
+                <a href="{{ route('guru.materi.lesson', [$serial->id, $lesson->id]) }}" class="btn btn-outline-secondary btn-sm">
                     <i class='bx bx-arrow-back me-1'></i> Kembali
                 </a>
             </div>

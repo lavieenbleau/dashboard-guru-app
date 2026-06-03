@@ -7,7 +7,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('guru.materi', $serial->id) }}">Materi</a></li>
             <li class="breadcrumb-item"><a href="{{ route('guru.materi.custom', $serial->id) }}">Materi Tambahan</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('guru.materi.mapel', [$serial->id, $lesson->id]) }}">{{ $lesson->name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.materi.lesson', [$serial->id, $lesson->id]) }}">{{ $lesson->name }}</a></li>
             <li class="breadcrumb-item active">Tambah Materi</li>
         </ol>
     </nav>
@@ -18,7 +18,7 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Tambah Materi Baru - {{ $lesson->name }}</h5>
-                    <a href="{{ route('guru.materi.mapel', [$serial->id, $lesson->id]) }}" class="btn btn-sm btn-outline-secondary">
+                    <a href="{{ route('guru.materi.lesson', [$serial->id, $lesson->id]) }}" class="btn btn-sm btn-outline-secondary">
                         <i class='bx bx-arrow-back'></i> Kembali
                     </a>
                 </div>
@@ -77,7 +77,7 @@
 
                         <!-- Action Buttons -->
                         <div class="d-flex justify-content-end gap-2 mt-4">
-                            <a href="{{ route('guru.materi.mapel', [$serial->id, $lesson->id]) }}" class="btn btn-outline-secondary">
+                            <a href="{{ route('guru.materi.lesson', [$serial->id, $lesson->id]) }}" class="btn btn-outline-secondary">
                                 <i class='bx bx-x'></i> Batal
                             </a>
                             <button type="submit" class="btn btn-primary">

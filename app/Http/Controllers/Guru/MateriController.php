@@ -226,7 +226,7 @@ class MateriController extends Controller
             'is_task' => 0,
         ]);
         
-        return redirect()->route('guru.materi.mapel', [$serial->id, $lesson->id])
+        return redirect()->route('guru.materi.lesson', [$serial->id, $lesson->id])
             ->with('success', 'Materi berhasil ditambahkan!');
     }
 
@@ -269,7 +269,7 @@ class MateriController extends Controller
             'embed' => $request->embed,
         ]);
         
-        return redirect()->route('guru.materi.mapel', [$serial, $lesson])
+        return redirect()->route('guru.materi.lesson', [$serial, $lesson])
             ->with('success', 'Materi berhasil diupdate!');
     }
 
@@ -362,7 +362,7 @@ class MateriController extends Controller
         
         $materi->forceDelete();
         
-        return redirect()->route('guru.materi.mapel', [$serial, $lesson])
+        return redirect()->route('guru.materi.lesson', [$serial, $lesson])
             ->with('success', 'Materi berhasil dihapus!');
     }
     
