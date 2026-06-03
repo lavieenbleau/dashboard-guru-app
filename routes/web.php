@@ -38,6 +38,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/pilih-aplikasi', [AplikasiController::class, 'index'])
         ->name('pilih.aplikasi');
+    Route::post('/aplikasi/activate-serial', [AplikasiController::class, 'activateSerial'])
+        ->name('guru.aplikasi.activate');
 
     /* ------------------------------------------------------
      * 2. DASHBOARD APLIKASI
@@ -72,18 +74,24 @@ Route::middleware(['auth'])->group(function () {
         ->name('guru.laporan.grade');
 
     // Monitoring Quiz
-    Route::get('/aplikasi/{serial}/monitoring-quiz', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'index'])->name('guru.monitoring-quiz');
-    Route::get('/aplikasi/{serial}/monitoring-quiz/data', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'dataTable'])->name('guru.monitoring-quiz.data');
-    Route::get('/aplikasi/{serial}/monitoring-quiz/detail/{studentId}/{exerciseId}', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'detail'])->name('guru.monitoring-quiz.detail');
-    Route::get('/aplikasi/{serial}/monitoring-quiz/export/csv', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'exportCsv'])->name('guru.monitoring-quiz.export-csv');
-    Route::get('/aplikasi/{serial}/monitoring-quiz/export/pdf', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'exportPdf'])->name('guru.monitoring-quiz.export-pdf');
+    // Monitoring Quiz Baru
+    Route::get('/monitoring-quiz', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'indexClasses'])->name('guru.monitoring-quiz');
+    Route::get('/monitoring-quiz/{kelas_name}', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'indexProducts'])->name('guru.monitoring-quiz.products');
+    Route::get('/monitoring-quiz/{kelas_name}/{serial_id}', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'monitoringStudent'])->name('guru.monitoring-quiz.students');
+    Route::get('/monitoring-quiz/{kelas_name}/{serial_id}/data', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'dataTable'])->name('guru.monitoring-quiz.data');
+    Route::get('/monitoring-quiz/{kelas_name}/{serial_id}/detail/{student_id}/{exercise_id}', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'detail'])->name('guru.monitoring-quiz.detail');
+    Route::post('/monitoring-quiz/{kelas_name}/{serial_id}/reminder', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'sendReminder'])->name('guru.monitoring-quiz.reminder');
+    Route::get('/monitoring-quiz/{kelas_name}/{serial_id}/export/csv', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'exportCsv'])->name('guru.monitoring-quiz.export-csv');
+    Route::get('/monitoring-quiz/{kelas_name}/{serial_id}/export/pdf', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'exportPdf'])->name('guru.monitoring-quiz.export-pdf');
 
     // Rekap Nilai
     Route::get('/aplikasi/{serial}/rekap-nilai', [RekapNilaiController::class, 'index'])
         ->name('guru.rekapnilai');
     Route::get('/aplikasi/{serial}/rekap-nilai/kelas/{classroom}', [RekapNilaiController::class, 'showClass'])
         ->name('guru.rekapnilai.kelas');
-    Route::get('/aplikasi/{serial}/rekap-nilai/kelas/{classroom}/download-pdf', [RekapNilaiController::class, 'downloadClassPdf'])
+    Route::get('/aplikasi/{serial}/rekap-nilai/kelas/{classroom}/lesson/{lesson_id}', [RekapNilaiController::class, 'showLesson'])
+        ->name('guru.rekapnilai.lesson');
+    Route::get('/aplikasi/{serial}/rekap-nilai/kelas/{classroom}/lesson/{lesson_id}/download-pdf', [RekapNilaiController::class, 'downloadClassPdf'])
         ->name('guru.rekapnilai.kelas.pdf');
     Route::get('/aplikasi/{serial}/rekap-nilai/kelas/{classroom}/siswa/{student}', [RekapNilaiController::class, 'showStudent'])
         ->name('guru.rekapnilai.siswa');
@@ -145,15 +153,17 @@ Route::prefix('aplikasi/{serial}/materi')->group(function() {
     
     // Admin Materials
     Route::get('/admin', [MateriController::class, 'admin'])->name('guru.materi.admin');
+    Route::get('/admin/mapel/{mapel_id}', [MateriController::class, 'adminMapel'])->name('guru.materi.admin.mapel');
     Route::get('/admin/lesson/{lesson}', [MateriController::class, 'adminLessons'])->name('guru.materi.admin.lessons');
     Route::post('/admin/share/{lessonItem}', [MateriController::class, 'shareAdminLesson'])->name('guru.materi.admin.share');
     
     // Custom Materials (Guru's own) - pilih mapel langsung
     Route::get('/custom', [MateriController::class, 'custom'])->name('guru.materi.custom');
+    Route::get('/custom/mapel/{mapel_id}', [MateriController::class, 'customMapel'])->name('guru.materi.custom.mapel');
     Route::post('/share/{post}', [MateriController::class, 'shareCustomMateri'])->name('guru.materi.share');
     
     // List materi by lesson
-    Route::get('/lesson/{lesson}', [MateriController::class, 'listByLesson'])->name('guru.materi.mapel');
+    Route::get('/lesson/{lesson}', [MateriController::class, 'listByLesson'])->name('guru.materi.lesson');
     
     // CRUD Materi
     Route::get('/lesson/{lesson}/create', [MateriController::class, 'createMateri'])->name('guru.materi.create');
@@ -177,7 +187,8 @@ Route::prefix('aplikasi/{serial}/materi')->group(function() {
 Route::prefix('aplikasi/{serial}/tugas')->group(function() {
 
     Route::get('/', [TugasController::class, 'index'])->name('guru.tugas');
-    Route::get('/lesson/{lesson}', [TugasController::class, 'listByLesson'])->name('guru.tugas.mapel');
+    Route::get('/mapel/{mapel_id}', [TugasController::class, 'mapel'])->name('guru.tugas.mapel');
+    Route::get('/lesson/{lesson}', [TugasController::class, 'listByLesson'])->name('guru.tugas.lesson');
     
     // CRUD Tugas
     Route::get('/lesson/{lesson}/create', [TugasController::class, 'create'])->name('guru.tugas.create');
@@ -185,8 +196,8 @@ Route::prefix('aplikasi/{serial}/tugas')->group(function() {
     Route::get('/lesson/{lesson}/{id}', [TugasController::class, 'show'])->name('guru.tugas.show');
     Route::get('/lesson/{lesson}/{id}/edit', [TugasController::class, 'edit'])->name('guru.tugas.edit');
     Route::put('/lesson/{lesson}/{id}', [TugasController::class, 'update'])->name('guru.tugas.update');
+    Route::put('/lesson/{lesson}/{id}/classroom', [TugasController::class, 'updateClassroom'])->name('guru.tugas.update-classroom');
     Route::delete('/lesson/{lesson}/{id}', [TugasController::class, 'destroy'])->name('guru.tugas.destroy');
-    Route::post('/lesson/{lesson}/{id}/share', [TugasController::class, 'share'])->name('guru.tugas.share');
     
     // Comments & Discussion
     Route::post('/lesson/{lesson}/{id}/comment', [TugasController::class, 'storeComment'])->name('guru.tugas.comment.store');
@@ -201,8 +212,11 @@ Route::prefix('aplikasi/{serial}/tugas')->group(function() {
 // =========================
 Route::prefix('aplikasi/{serial}/soal')->group(function() {
 
-    // 1. First entry: List Lessons
+    // 1. First entry: List Mapel
     Route::get('/', [SoalController::class, 'index'])->name('guru.soal'); 
+    
+    // 2. Second entry: List Lessons for Mapel
+    Route::get('/mapel/{mapel_id}', [SoalController::class, 'mapel'])->name('guru.soal.mapel');
     
     // 2. Second entry: List Categories for a Lesson
     Route::get('/lesson/{lesson}', [SoalController::class, 'categories'])->name('guru.soal.lesson');

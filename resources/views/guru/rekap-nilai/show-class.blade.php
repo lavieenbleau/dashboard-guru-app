@@ -15,7 +15,7 @@
                         <p class="text-muted mb-0">Ringkasan nilai per mata pelajaran</p>
                     </div>
                     <div>
-                        <a href="{{ route('guru.rekapnilai.kelas.pdf', ['serial' => $serial->id, 'classroom' => $classroom->id]) }}" 
+                        <a href="{{ route('guru.rekapnilai.kelas.pdf', ['serial' => $serial->id, 'classroom' => $classroom->id, 'lesson_id' => $lessons->first()->id]) }}" 
                            class="btn btn-success me-2">
                             <i class="bx bxs-file-pdf me-1"></i>
                             Download PDF

@@ -94,7 +94,7 @@
                         <div class="mb-3">
                             <label class="form-label">Kategori kelas</label>
                             @php
-                                $category = json_decode($post->category, true);
+                                $category = is_string($post->category) ? json_decode($post->category, true) : ($post->category ?? []);
                                 $kategoriKelas = $category['kategori_kelas'] ?? '';
                             @endphp
                             <input type="text" name="kategori_kelas" class="form-control @error('kategori_kelas') is-invalid @enderror" value="{{ old('kategori_kelas', $kategoriKelas) }}" placeholder="Contoh: Kelas 4">

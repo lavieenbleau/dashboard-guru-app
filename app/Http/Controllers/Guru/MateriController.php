@@ -32,13 +32,31 @@ class MateriController extends Controller
         $serial = Serial::with('product')->findOrFail($serial);
         $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
         
-        // Get lessons that belong to this guru's serial product and have category MATERI (1)
+        $mapels = Mapel::whereHas('lessons', function($query) use ($lessonIds) {
+            $query->whereIn('id', $lessonIds)
+                  ->where('category', Lesson::CATEGORY_MATERI);
+        })->withCount(['lessons' => function($query) use ($lessonIds) {
+            $query->whereIn('id', $lessonIds)
+                  ->where('category', Lesson::CATEGORY_MATERI);
+        }])->orderBy('name')->get();
+
+        return view('guru.materi.admin-mapel', compact('serial', 'mapels'));
+    }
+    
+    public function adminMapel($serial, $mapel_id)
+    {
+        $serial = Serial::with('product')->findOrFail($serial);
+        $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
+        $mapel = Mapel::findOrFail($mapel_id);
+        
         $lessons = Lesson::whereIn('id', $lessonIds)
+            ->where('mapel_id', $mapel_id)
             ->where('category', Lesson::CATEGORY_MATERI)
             ->with('mapel')
+            ->orderBy('name')
             ->get();
 
-        return view('guru.materi.admin', compact('serial', 'lessons'));
+        return view('guru.materi.admin', compact('serial', 'mapel', 'lessons'));
     }
 
     // Show admin lesson items
@@ -106,7 +124,7 @@ class MateriController extends Controller
         $serial = Serial::findOrFail($serial);
         $post = Post::findOrFail($postId);
         
-        $category = json_decode($post->category, true) ?? [];
+        $category = is_string($post->category) ? json_decode($post->category, true) : ($post->category ?? []);
         $category['is_shared'] = true;
         
         $post->category = $category;
@@ -124,13 +142,31 @@ class MateriController extends Controller
         $serial = Serial::with('product')->findOrFail($serial);
         $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
         
-        // Get lessons that belong to this guru's serial product and have category MATERI (1)
+        $mapels = Mapel::whereHas('lessons', function($query) use ($lessonIds) {
+            $query->whereIn('id', $lessonIds)
+                  ->where('category', Lesson::CATEGORY_MATERI);
+        })->withCount(['lessons' => function($query) use ($lessonIds) {
+            $query->whereIn('id', $lessonIds)
+                  ->where('category', Lesson::CATEGORY_MATERI);
+        }])->orderBy('name')->get();
+
+        return view('guru.materi.custom-mapel', compact('serial', 'mapels'));
+    }
+    
+    public function customMapel($serial, $mapel_id)
+    {
+        $serial = Serial::with('product')->findOrFail($serial);
+        $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
+        $mapel = Mapel::findOrFail($mapel_id);
+        
         $lessons = Lesson::whereIn('id', $lessonIds)
+            ->where('mapel_id', $mapel_id)
             ->where('category', Lesson::CATEGORY_MATERI)
             ->with('mapel')
+            ->orderBy('name')
             ->get();
 
-        return view('guru.materi.custom', compact('serial', 'lessons'));
+        return view('guru.materi.custom', compact('serial', 'mapel', 'lessons'));
     }
 
     // List materi by lesson
@@ -293,9 +329,7 @@ class MateriController extends Controller
     // Delete comment
     public function deleteComment($serial, $lesson, $id, $commentId)
     {
-        $comment = PostComment::where('id', $commentId)
-            ->where('user_id', auth()->id())
-            ->firstOrFail();
+        $comment = PostComment::where('id', $commentId)->firstOrFail();
         
         // Delete all replies first
         $comment->replies()->delete();
@@ -309,9 +343,7 @@ class MateriController extends Controller
     // Delete reply
     public function deleteReply($serial, $lesson, $id, $replyId)
     {
-        $reply = PostChildComment::where('id', $replyId)
-            ->where('user_id', auth()->id())
-            ->firstOrFail();
+        $reply = PostChildComment::where('id', $replyId)->firstOrFail();
         
         $reply->delete();
 
@@ -428,7 +460,7 @@ class MateriController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get()
                 ->filter(function($post) use ($tema, $subtema) {
-                    $category = json_decode($post->category, true);
+                    $category = is_string($post->category) ? json_decode($post->category, true) : ($post->category ?? []);
                     $isMatch = isset($category['theme_id']) && 
                            isset($category['subtheme_id']) &&
                            $category['theme_id'] == $tema->id && 
@@ -567,7 +599,7 @@ class MateriController extends Controller
                 $attachmentPath = $request->file('attachment')->store('materi', 'public');
             }
 
-            $category = json_decode($post->category, true);
+            $category = is_string($post->category) ? json_decode($post->category, true) : ($post->category ?? []);
 
             $post->update([
                 'title' => $request->title,
@@ -608,7 +640,7 @@ class MateriController extends Controller
         $post = Post::findOrFail($id);
         
         // Verify it's an admin material
-        $category = json_decode($post->category, true);
+        $category = is_string($post->category) ? json_decode($post->category, true) : ($post->category ?? []);
         if (!isset($category['is_admin']) || $category['is_admin'] !== true) {
             return back()->with('error', 'Hanya materi admin yang bisa di-share!');
         }
@@ -659,7 +691,7 @@ class MateriController extends Controller
             $post = Post::findOrFail($id);
             
             // Verify it's an admin material
-            $category = json_decode($post->category, true);
+            $category = is_string($post->category) ? json_decode($post->category, true) : ($post->category ?? []);
             if (!isset($category['is_admin']) || $category['is_admin'] !== true) {
                 return back()->with('error', 'Hanya materi admin yang bisa di-share!');
             }
@@ -702,7 +734,7 @@ class MateriController extends Controller
                 $post = Post::find($postId);
                 
                 if ($post) {
-                    $category = json_decode($post->category, true);
+                    $category = is_string($post->category) ? json_decode($post->category, true) : ($post->category ?? []);
                     if (isset($category['is_admin']) && $category['is_admin'] === true) {
                         $updated++;
                     }

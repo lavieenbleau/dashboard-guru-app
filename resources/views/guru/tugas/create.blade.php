@@ -21,6 +21,25 @@
                         @csrf
                         
                         <div class="mb-3">
+                            <label class="form-label">Pilih Kelas <span class="text-danger">*</span></label>
+                            <div class="list-group @error('classroom_ids') is-invalid border-danger @enderror" style="max-height: 200px; overflow-y: auto;">
+                                @forelse($classrooms as $classroom)
+                                    <label class="list-group-item">
+                                        <input class="form-check-input me-1" type="checkbox" name="classroom_ids[]" value="{{ $classroom->id }}" {{ (is_array(old('classroom_ids')) && in_array($classroom->id, old('classroom_ids'))) ? 'checked' : '' }}>
+                                        {{ $classroom->name }}
+                                    </label>
+                                @empty
+                                    <div class="alert alert-warning mb-0">
+                                        <i class='bx bx-info-circle'></i> Belum ada kelas. Silakan buat kelas terlebih dahulu.
+                                    </div>
+                                @endforelse
+                            </div>
+                            @error('classroom_ids')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        
+                        <div class="mb-3">
                             <label class="form-label">Judul Tugas <span class="text-danger">*</span></label>
                             <input type="text" name="title" class="form-control @error('title') is-invalid @enderror" 
                                    value="{{ old('title') }}" required>

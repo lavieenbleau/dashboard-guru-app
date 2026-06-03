@@ -8,6 +8,7 @@ use App\Models\Serial;
 use App\Models\Classroom;
 use App\Models\Student;
 use App\Models\Mapel;
+use App\Models\Lesson;
 use App\Models\Post;
 use App\Models\Task;
 use App\Models\Exercise;
@@ -37,11 +38,28 @@ class RekapNilaiController extends Controller
 
         // Get all lessons (Paket Pembelajaran) for this serial product
         $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
+        $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
         $lessons = Lesson::whereIn('id', $lessonIds)
             ->where('category', Lesson::CATEGORY_MATERI)
             ->with('mapel')
             ->orderBy('name')
             ->get();
+
+        return view('guru.rekap-nilai.lessons', compact('serial', 'classroom', 'lessons'));
+    }
+
+    public function showLesson($serial, $classroomId, $lessonId)
+    {
+        $serial = Serial::with('product')->findOrFail($serial);
+        $classroom = Classroom::findOrFail($classroomId);
+        $selectedLesson = Lesson::findOrFail($lessonId);
+        
+        // Get all students in this classroom
+        $students = Student::where('classroom_id', $classroom->id)
+            ->orderBy('name')
+            ->get();
+
+        $lessons = collect([$selectedLesson]);
 
         // Group posts (tugas) by lesson
         $allTasks = [];
@@ -49,6 +67,12 @@ class RekapNilaiController extends Controller
             $posts = Post::where('serial_id', $serial->id)
                 ->where('category', 'like', '%"lesson_id":' . $lesson->id . '%')
                 ->where('is_task', 1)
+                ->where(function($q) use ($classroom) {
+                    $q->doesntHave('classrooms')
+                      ->orWhereHas('classrooms', function($query) use ($classroom) {
+                          $query->where('classrooms.id', $classroom->id);
+                      });
+                })
                 ->orderBy('created_at')
                 ->get();
             
@@ -136,7 +160,7 @@ class RekapNilaiController extends Controller
                     }
                 }
 
-                // Get individual exercise scores by type
+                // Get individual exercise scores
                 if (isset($allExercises[$lesson->id])) {
                     foreach ($allExercises[$lesson->id] as $type => $exList) {
                         foreach ($exList as $exInfo) {
@@ -147,41 +171,67 @@ class RekapNilaiController extends Controller
                             $lessonExercises[$type][] = [
                                 'number' => $exInfo['number'],
                                 'title' => $exInfo['title'],
-                                'point' => $exPoint ? $exPoint->exercise_point : null,
+                                'point' => $exPoint ? $exPoint->point : null,
                             ];
                         }
                     }
                 }
 
+                // Calculate averages
+                $taskSum = 0; $taskCount = 0;
+                foreach ($lessonTasks as $t) {
+                    if ($t['point'] !== null) { $taskSum += $t['point']; $taskCount++; }
+                }
+                $taskAvg = $taskCount > 0 ? round($taskSum / $taskCount, 1) : 0;
+
+                $exSum = 0; $exCount = 0;
+                foreach ($lessonExercises as $type => $list) {
+                    foreach ($list as $e) {
+                        if ($e['point'] !== null) { $exSum += $e['point']; $exCount++; }
+                    }
+                }
+                $exAvg = $exCount > 0 ? round($exSum / $exCount, 1) : 0;
+
+                $totalAvg = ($taskAvg + $exAvg) / 2;
+
                 $studentData['lessons'][$lesson->id] = [
                     'tasks' => $lessonTasks,
                     'exercises' => $lessonExercises,
+                    'task_avg' => $taskAvg,
+                    'ex_avg' => $exAvg,
+                    'total_avg' => $totalAvg
                 ];
             }
-
             $rekapData[] = $studentData;
         }
 
-        return view('guru.rekap-nilai.show-class', compact('serial', 'classroom', 'students', 'lessons', 'rekapData', 'allTasks', 'allExercises'));
+        // Calculate class averages per lesson
+        $averages = [];
+        foreach ($lessons as $lesson) {
+            $sum = 0; $count = 0;
+            foreach ($rekapData as $data) {
+                if (isset($data['lessons'][$lesson->id]['total_avg']) && $data['lessons'][$lesson->id]['total_avg'] > 0) {
+                    $sum += $data['lessons'][$lesson->id]['total_avg'];
+                    $count++;
+                }
+            }
+            $averages[$lesson->id] = $count > 0 ? round($sum / $count, 1) : 0;
+        }
+
+        return view('guru.rekap-nilai.show-class', compact('serial', 'classroom', 'students', 'lessons', 'allTasks', 'allExercises', 'rekapData', 'averages'));
     }
 
-    public function downloadClassPdf($serial, $classroomId)
+    public function downloadClassPdf($serial, $classroomId, $lessonId)
     {
-        $serial = Serial::with('product')->findOrFail($serial);
+        $serial = Serial::findOrFail($serial);
         $classroom = Classroom::findOrFail($classroomId);
+        $selectedLesson = Lesson::findOrFail($lessonId);
         
-        // Get all students in this classroom
         $students = Student::where('classroom_id', $classroom->id)
             ->orderBy('name')
             ->get();
-
-        // Get all lessons (Paket Pembelajaran) for this serial product
-        $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
-        $lessons = Lesson::whereIn('id', $lessonIds)
-            ->where('category', Lesson::CATEGORY_MATERI)
-            ->with('mapel')
-            ->orderBy('name')
-            ->get();
+            
+        $lessons = collect([$selectedLesson]);
 
         // Group posts (tugas) by lesson
         $allTasks = [];
@@ -189,6 +239,12 @@ class RekapNilaiController extends Controller
             $posts = Post::where('serial_id', $serial->id)
                 ->where('category', 'like', '%"lesson_id":' . $lesson->id . '%')
                 ->where('is_task', 1)
+                ->where(function($q) use ($classroom) {
+                    $q->doesntHave('classrooms')
+                      ->orWhereHas('classrooms', function($query) use ($classroom) {
+                          $query->where('classrooms.id', $classroom->id);
+                      });
+                })
                 ->orderBy('created_at')
                 ->get();
             
@@ -302,10 +358,10 @@ class RekapNilaiController extends Controller
             $rekapData[] = $studentData;
         }
 
-        $pdf = Pdf::loadView('guru.rekap-nilai.pdf.class', compact('serial', 'classroom', 'students', 'lessons', 'rekapData', 'allTasks', 'allExercises'));
-        $pdf->setPaper('a4', 'landscape');
-        
-        return $pdf->download('Rekap-Nilai-' . str_replace(' ', '-', $classroom->name) . '.pdf');
+        $pdf = Pdf::loadView('guru.rekap-nilai.pdf.class', compact('serial', 'classroom', 'students', 'lessons', 'allTasks', 'allExercises', 'rekapData', 'averages'))
+            ->setPaper('a4', 'landscape');
+            
+        return $pdf->download('rekap_nilai_'.$classroom->name.'_'.\Str::slug($selectedLesson->name).'.pdf');
     }
 
     public function showStudent($serial, $classroomId, $studentId)

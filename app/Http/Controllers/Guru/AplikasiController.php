@@ -22,6 +22,52 @@ class AplikasiController extends Controller
         return view('guru.aplikasi.index', compact('serials'));
     }
 
+    public function activateSerial(\Illuminate\Http\Request $request)
+    {
+        $request->validate([
+            'serial_code' => 'required|string|max:255',
+        ], [
+            'serial_code.required' => 'Kode serial wajib diisi.',
+        ]);
+
+        $serialCode = trim($request->serial_code);
+        
+        $serial = Serial::where('serial', $serialCode)->first();
+
+        // 1. Validasi Serial Tidak Ditemukan
+        if (!$serial) {
+            return back()->with('error', 'Kode serial tidak ditemukan.');
+        }
+
+        // 2. Validasi Duplikasi (Sudah dipakai oleh user ini)
+        if ($serial->user_id == auth()->id()) {
+            return back()->with('error', 'Serial sudah terhubung ke akun Anda.');
+        }
+
+        // 3. Validasi Kuota (Sudah dipakai oleh user lain)
+        if (!is_null($serial->user_id)) {
+            return back()->with('error', 'Kuota serial telah habis digunakan.');
+        }
+
+        // 4. Validasi Kedaluwarsa
+        if ($serial->expired_at && \Carbon\Carbon::parse($serial->expired_at)->isPast()) {
+            return back()->with('error', 'Kode serial telah kedaluwarsa.');
+        }
+
+        // Proses Aktivasi
+        $serial->user_id = auth()->id();
+        $serial->save();
+
+        // Pencatatan Log
+        \App\Models\SerialLog::create([
+            'serial_id' => $serial->id,
+            'active' => $serial->active,
+            'status' => 'ACTIVATED BY USER ' . auth()->id(),
+        ]);
+
+        return back()->with('success', 'Aplikasi berhasil ditambahkan ke akun Anda.');
+    }
+
     public function dashboard($serial)
     {
         $serial = Serial::with('product')->findOrFail($serial);

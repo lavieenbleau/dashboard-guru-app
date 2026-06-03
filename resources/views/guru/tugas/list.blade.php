@@ -42,22 +42,26 @@
                                         <h6 class="mb-0">{{ $task->title }}</h6>
                                     </a>
                                     
-                                    <div class="mt-1 mb-1">
-                                        @php
-                                            $categoryData = json_decode($task->category, true) ?? [];
-                                            $isShared = isset($categoryData['is_shared']) && $categoryData['is_shared'] === true;
-                                        @endphp
-                                        @if($isShared)
-                                            <span class="badge bg-label-success"><i class='bx bx-check-circle me-1'></i>Dibagikan ke Semua Kelas</span>
+                                    <div class="mt-2 mb-1">
+                                        <strong class="text-dark d-block">Kelas:</strong>
+                                        @if(count($task->classrooms) > 0)
+                                            @php
+                                                $classNames = $task->classrooms->pluck('name')->implode(', ');
+                                            @endphp
+                                            <span class="badge bg-label-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $classNames }}">
+                                                Dibagikan ke {{ count($task->classrooms) }} Kelas
+                                            </span>
                                         @else
-                                            <span class="badge bg-label-secondary"><i class='bx bx-info-circle me-1'></i>Belum Dibagikan</span>
+                                            <span class="badge bg-label-danger">Belum Ditentukan</span>
                                         @endif
                                     </div>
                                     
-                                    <small class="text-muted">
-                                        {{ $task->created_at->format('d M Y') }}
+                                    <small class="text-muted d-block mt-2">
+                                        <strong class="text-dark">Deadline:</strong><br>
                                         @if($task->deadline)
-                                            • <i class='bx bx-time-five'></i> Deadline: {{ \Carbon\Carbon::parse($task->deadline)->format('d M Y H:i') }}
+                                            <i class='bx bx-time-five'></i> {{ \Carbon\Carbon::parse($task->deadline)->format('d M Y H:i') }}
+                                        @else
+                                            Tidak ada deadline
                                         @endif
                                     </small>
                                 </div>
@@ -74,13 +78,11 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <form action="{{ route('guru.tugas.share', [$serial->id, $lesson->id, $task->id]) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button type="submit" class="dropdown-item">
-                                            <i class='bx bx-share-alt me-1'></i> Bagikan
-                                        </button>
-                                    </form>
+                                    <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modalShare{{ $task->id }}">
+                                        <i class='bx bx-share-alt me-1'></i> {{ count($task->classrooms) > 0 ? 'Kelola Distribusi' : 'Kelola Distribusi' }}
+                                    </button>
                                 </li>
+
                                 <li>
                                     <form action="{{ route('guru.tugas.destroy', [$serial->id, $lesson->id, $task->id]) }}" method="POST" onsubmit="return confirm('Hapus tugas ini?')">
                                         @csrf
@@ -92,6 +94,50 @@
                                 </li>
                             </x-action-dropdown>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Ubah Kelas -->
+            <div class="modal fade" id="modalShare{{ $task->id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <form action="{{ route('guru.tugas.update-classroom', [$serial->id, $lesson->id, $task->id]) }}" method="POST">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-header">
+                                <h5 class="modal-title">Kelola Distribusi</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label d-block text-muted small">Tugas</label>
+                                    <h6>{{ $task->title }}</h6>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Pilih Kelas <span class="text-danger">*</span></label>
+                                    <div class="list-group" style="max-height: 200px; overflow-y: auto;">
+                                        @php
+                                            $taskClassroomIds = $task->classrooms->pluck('id')->toArray();
+                                        @endphp
+                                        @forelse($classrooms as $cls)
+                                            <label class="list-group-item">
+                                                <input class="form-check-input me-1" type="checkbox" name="classroom_ids[]" value="{{ $cls->id }}" {{ in_array($cls->id, $taskClassroomIds) ? 'checked' : '' }}>
+                                                {{ $cls->name }}
+                                            </label>
+                                        @empty
+                                            <div class="alert alert-warning mb-0">
+                                                <i class='bx bx-info-circle'></i> Belum ada kelas. Silakan buat kelas terlebih dahulu.
+                                            </div>
+                                        @endforelse
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-primary">Simpan</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

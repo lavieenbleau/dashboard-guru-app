@@ -6,8 +6,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{{ route('guru.materi', $serial->id) }}">Materi</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('guru.materi.custom', $serial->id) }}">Materi Tambahan</a></li>
-            <li class="breadcrumb-item active">{{ $mapel->name }}</li>
+            <li class="breadcrumb-item active">Materi Tambahan</li>
         </ol>
     </nav>
 
@@ -15,11 +14,11 @@
     <div class="card mb-4">
         <div class="card-body d-flex justify-content-between align-items-center">
             <div>
-                <h4 class="mb-1">Materi Tambahan ({{ $mapel->name }})</h4>
-                <p class="text-muted mb-0">Pilih paket pembelajaran untuk mengelola materi</p>
+                <h4 class="mb-1">Pilih Mata Pelajaran</h4>
+                <p class="text-muted mb-0">Pilih mata pelajaran untuk mengelola materi tambahan</p>
             </div>
             <div class="d-flex gap-2">
-                <a href="{{ route('guru.materi.custom', $serial->id) }}" class="btn btn-outline-secondary">
+                <a href="{{ route('guru.materi', $serial->id) }}" class="btn btn-outline-secondary">
                     <i class='bx bx-arrow-back me-1'></i> Kembali
                 </a>
             </div>
@@ -34,22 +33,22 @@
     </div>
     @endif
 
-    <!-- Lesson Cards -->
+    <!-- Mapel Cards -->
     <div class="row g-3">
-        @forelse ($lessons as $lesson)
+        @forelse ($mapels as $mapel)
         <div class="col-md-6 col-lg-4">
-            <a href="{{ route('guru.materi.lesson', [$serial->id, $lesson->id]) }}" class="text-decoration-none">
+            <a href="{{ route('guru.materi.custom.mapel', [$serial->id, $mapel->id]) }}" class="text-decoration-none">
                 <div class="card h-100 shadow-sm hover-shadow-lg transition">
                     <div class="card-body">
                         <div class="d-flex align-items-center mb-3">
                             <div class="avatar avatar-md me-3">
                                 <span class="avatar-initial rounded bg-label-success">
-                                    <i class='bx bx-book-add'></i>
+                                    <i class='bx bx-folder-open'></i>
                                 </span>
                             </div>
-                            <h5 class="mb-0">{{ $lesson->name }}</h5>
+                            <h5 class="mb-0">{{ $mapel->name }}</h5>
                         </div>
-                        <p class="text-muted small mb-0">Mata Pelajaran: <strong>{{ $mapel->name }}</strong></p>
+                        <p class="text-muted small mb-0">Jumlah Modul: <strong>{{ $mapel->lessons_count }}</strong></p>
                     </div>
                 </div>
             </a>
@@ -58,7 +57,7 @@
         <div class="col-12">
             <div class="alert alert-info">
                 <i class='bx bx-info-circle me-2'></i>
-                Belum ada paket pembelajaran tersedia.
+                Belum ada mata pelajaran untuk produk ini.
             </div>
         </div>
         @endforelse

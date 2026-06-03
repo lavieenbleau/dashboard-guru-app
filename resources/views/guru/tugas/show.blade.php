@@ -46,6 +46,18 @@
                             <strong class="d-block text-muted small">Serial</strong>
                             {{ $serial->product->name }}
                         </li>
+                        <li class="mb-3">
+                            <strong class="d-block text-muted small">Kelas Tujuan</strong>
+                            @if(count($task->classrooms) > 0)
+                                <div class="d-flex flex-wrap gap-1">
+                                    @foreach($task->classrooms as $cls)
+                                        <span class="badge bg-label-primary">{{ $cls->name }}</span>
+                                    @endforeach
+                                </div>
+                            @else
+                                <span class="badge bg-label-danger">Belum Ditentukan</span>
+                            @endif
+                        </li>
                         @if($task->deadline)
                         <li class="mb-3">
                             <strong class="d-block text-muted small">Deadline Pengumpulan</strong>
@@ -145,25 +157,7 @@
                 </div>
             </div>
 
-            <!-- Shared to Classes -->
-            @if($task->shared_to_classes && count($task->shared_to_classes) > 0)
-                @php
-                    $sharedClasses = \App\Models\Classroom::whereIn('id', $task->shared_to_classes)->get();
-                @endphp
-                
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">Dibagikan ke Kelas</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-flex flex-wrap gap-2">
-                            @foreach($sharedClasses as $classroom)
-                                <span class="badge bg-label-primary">{{ $classroom->name }}</span>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-            @endif
+
         </div>
     </div>
 
@@ -230,7 +224,6 @@
                                             </small>
                                         </div>
                                         
-                                        @if($comment->user_id == auth()->id())
                                         <x-action-dropdown>
                                                 <li>
                                                     <form action="{{ route('guru.tugas.comment.delete', [$serial->id, $lesson->id, $task->id, $comment->id]) }}" 
@@ -244,7 +237,6 @@
                                                     </form>
                                                 </li>
                                             </x-action-dropdown>
-                                        @endif
                                     </div>
                                     <p class="mb-0">{{ $comment->message }}</p>
                                 </div>
@@ -310,7 +302,6 @@
                                                         </small>
                                                     </div>
                                                     
-                                                    @if($reply->user_id == auth()->id())
                                                     <x-action-dropdown>
                                                             <li>
                                                                 <form action="{{ route('guru.tugas.reply.delete', [$serial->id, $lesson->id, $task->id, $reply->id]) }}" 
@@ -324,7 +315,6 @@
                                                                 </form>
                                                             </li>
                                                         </x-action-dropdown>
-                                                    @endif
                                                 </div>
                                                 <p class="mb-0 small">{{ $reply->message }}</p>
                                             </div>

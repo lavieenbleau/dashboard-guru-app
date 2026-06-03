@@ -1,26 +1,46 @@
 @extends('layouts.sneat')
-@section('title', 'Monitoring Kuis')
+@section('title', 'Monitoring Kuis Siswa')
 @section('content')
 
-<div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Soal /</span> Monitoring Kuis</h4>
+<div class="container-xxl py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('guru.monitoring-quiz') }}">Monitoring Kuis</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.monitoring-quiz.products', $kelasName) }}">{{ $kelasName }}</a></li>
+            <li class="breadcrumb-item active">{{ $productName }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="mb-1"><i class='bx bx-desktop text-primary me-2'></i>Monitoring Aktivitas Siswa</h3>
+            <p class="text-muted mb-0">Memantau aktivitas <strong>{{ $kelasName }}</strong> pada aplikasi <strong>{{ $productName }}</strong>.</p>
+        </div>
+        <div>
+            <button class="btn btn-warning" id="btnBulkReminder" onclick="sendReminderBulk()">
+                <i class='bx bx-bell me-1'></i>Ingatkan Semua yang Belum Mengerjakan
+            </button>
+        </div>
+    </div>
 
     <!-- Summary Cards -->
     <div class="row mb-4">
-        <div class="col-sm-6 col-lg-4 mb-4">
-            <div class="card card-border-shadow-primary h-100">
+        <div class="col-sm-6 col-lg-3 mb-4">
+            <div class="card card-border-shadow-info h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-2 pb-1">
                         <div class="avatar me-2">
-                            <span class="avatar-initial rounded bg-label-primary"><i class="bx bx-user-check"></i></span>
+                            <span class="avatar-initial rounded bg-label-info"><i class="bx bx-group"></i></span>
                         </div>
-                        <h4 class="ms-1 mb-0">{{ $activeCount }}</h4>
+                        <h4 class="ms-1 mb-0">{{ $classroom->students->count() }}</h4>
                     </div>
-                    <p class="mb-1">Peserta Aktif</p>
+                    <p class="mb-1">Total Siswa</p>
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 col-lg-4 mb-4">
+        <div class="col-sm-6 col-lg-3 mb-4">
             <div class="card card-border-shadow-success h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-2 pb-1">
@@ -29,59 +49,33 @@
                         </div>
                         <h4 class="ms-1 mb-0">{{ $finishedCount }}</h4>
                     </div>
-                    <p class="mb-1">Total Submit</p>
+                    <p class="mb-1">Selesai</p>
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 col-lg-4 mb-4">
-            <div class="card card-border-shadow-warning h-100">
+        <div class="col-sm-6 col-lg-3 mb-4">
+            <div class="card card-border-shadow-primary h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-2 pb-1">
                         <div class="avatar me-2">
-                            <span class="avatar-initial rounded bg-label-warning"><i class="bx bx-exit"></i></span>
+                            <span class="avatar-initial rounded bg-label-primary"><i class="bx bx-time-five"></i></span>
                         </div>
-                        <h4 class="ms-1 mb-0">{{ $totalAppBackground }}</h4>
+                        <h4 class="ms-1 mb-0">{{ $activeCount }}</h4>
                     </div>
-                    <p class="mb-1">Pindah Tab / Keluar</p>
+                    <p class="mb-1">Sedang Mengerjakan</p>
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 col-lg-4 mb-4">
-            <div class="card card-border-shadow-info h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-2 pb-1">
-                        <div class="avatar me-2">
-                            <span class="avatar-initial rounded bg-label-info"><i class="bx bx-log-in-circle"></i></span>
-                        </div>
-                        <h4 class="ms-1 mb-0">{{ $totalReconnected }}</h4>
-                    </div>
-                    <p class="mb-1">Masuk Kembali</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-lg-4 mb-4">
-            <div class="card card-border-shadow-danger h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-2 pb-1">
-                        <div class="avatar me-2">
-                            <span class="avatar-initial rounded bg-label-danger"><i class="bx bx-error"></i></span>
-                        </div>
-                        <h4 class="ms-1 mb-0">{{ $totalSuspicious }}</h4>
-                    </div>
-                    <p class="mb-1">Tanda Mencurigakan</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-lg-4 mb-4">
+        <div class="col-sm-6 col-lg-3 mb-4">
             <div class="card card-border-shadow-secondary h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-2 pb-1">
                         <div class="avatar me-2">
-                            <span class="avatar-initial rounded bg-label-secondary"><i class="bx bx-block"></i></span>
+                            <span class="avatar-initial rounded bg-label-secondary"><i class="bx bx-minus-circle"></i></span>
                         </div>
-                        <h4 class="ms-1 mb-0">{{ $totalBlocked }}</h4>
+                        <h4 class="ms-1 mb-0">{{ $notStartedCount }}</h4>
                     </div>
-                    <p class="mb-1">Klik Tombol Back</p>
+                    <p class="mb-1">Belum Mengerjakan</p>
                 </div>
             </div>
         </div>
@@ -95,15 +89,18 @@
     </div>
     @endif
 
+    <!-- Alert Container for Reminders -->
+    <div id="alertContainer"></div>
+
     <!-- Filters and Data Table -->
     <div class="card">
         <div class="card-header border-bottom d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0">Daftar Aktivitas Peserta</h5>
             <div class="d-flex gap-2">
-                <a href="{{ route('guru.monitoring-quiz.export-csv', $serialModel->id) }}" id="btnExportCsv" class="btn btn-success btn-sm">
+                <a href="{{ route('guru.monitoring-quiz.export-csv', [$kelasName, $serialModel->id]) }}{!! $lessonIdParam !!}" id="btnExportCsv" class="btn btn-success btn-sm">
                     <i class="bx bx-file me-1"></i> Export CSV
                 </a>
-                <a href="{{ route('guru.monitoring-quiz.export-pdf', $serialModel->id) }}" id="btnExportPdf" class="btn btn-danger btn-sm">
+                <a href="{{ route('guru.monitoring-quiz.export-pdf', [$kelasName, $serialModel->id]) }}{!! $lessonIdParam !!}" id="btnExportPdf" class="btn btn-danger btn-sm">
                     <i class="bx bxs-file-pdf me-1"></i> Export PDF
                 </a>
             </div>
@@ -120,8 +117,13 @@
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Filter Tanggal</label>
-                    <input type="date" id="filter_date" class="form-control">
+                    <label class="form-label">Status</label>
+                    <select id="filter_status" class="form-select">
+                        <option value="">Semua Status</option>
+                        <option value="Selesai">Selesai</option>
+                        <option value="Sedang Mengerjakan">Sedang Mengerjakan</option>
+                        <option value="Belum Mengerjakan">Belum Mengerjakan</option>
+                    </select>
                 </div>
                 <div class="col-md-4 d-flex align-items-end">
                     <button id="btnFilter" class="btn btn-primary w-100">Terapkan Filter</button>
@@ -186,17 +188,28 @@
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
-$(document).ready(function() {
-    $.fn.dataTable.ext.errMode = 'none'; // Mencegah alert default DataTables
+let dataTableInstance;
 
-    let table = $('#monitoringTable').DataTable({
+$(document).ready(function() {
+    $.fn.dataTable.ext.errMode = 'none';
+
+    dataTableInstance = $('#monitoringTable').DataTable({
         processing: true,
-        serverSide: false, // Using client-side pagination with ajax data to allow 10s reload without resetting page easily, but we can do serverSide true if needed
+        serverSide: false,
         ajax: {
-            url: "{{ route('guru.monitoring-quiz.data', $serialModel->id) }}",
+            url: "{{ route('guru.monitoring-quiz.data', [$kelasName, $serialModel->id]) }}{!! $lessonIdParam !!}",
             data: function (d) {
                 d.exercise_id = $('#filter_exercise').val();
-                d.date = $('#filter_date').val();
+            },
+            dataSrc: function (json) {
+                // Client side filtering for Status
+                let statusFilter = $('#filter_status').val();
+                if (statusFilter) {
+                    return json.data.filter(function(item) {
+                        return item.status_type === statusFilter;
+                    });
+                }
+                return json.data;
             }
         },
         columns: [
@@ -210,16 +223,22 @@ $(document).ready(function() {
                 data: 'status',
                 render: function(data, type, row) {
                     let badge = 'bg-secondary';
-                    if (data === 'Sedang Mengerjakan') { badge = 'bg-primary'; }
-                    if (data === 'Di Luar Aplikasi') { badge = 'bg-warning'; }
-                    if (data.includes('Selesai')) { badge = 'bg-success'; }
-                    return `<span class="badge ${badge} mb-1">${data}</span><br>
-                            <small class="text-muted">Pengumpulan: <span class="badge ${row.submit_status.includes('Selesai') ? 'bg-success' : 'bg-secondary'}">${row.submit_status}</span></small>`;
+                    if (row.status_type === 'Sedang Mengerjakan') { badge = 'bg-primary'; }
+                    if (row.status_type === 'Selesai') { badge = 'bg-success'; }
+                    
+                    let submitBadge = row.submit_status.includes('Selesai') ? 'bg-success' : 'bg-secondary';
+                    let html = `<span class="badge ${badge} mb-1">${data}</span>`;
+                    
+                    if (row.status_type !== 'Belum Mengerjakan') {
+                        html += `<br><small class="text-muted">Pengumpulan: <span class="badge ${submitBadge}">${row.submit_status}</span></small>`;
+                    }
+                    return html;
                 }
             },
             { 
                 data: null,
                 render: function(data, type, row) {
+                    if (row.status_type === 'Belum Mengerjakan') return '-';
                     return `<div class="d-flex flex-column gap-1">
                                 <small>Keluar Aplikasi: <strong class="${row.jml_background > 0 ? 'text-warning' : ''}">${row.jml_background}x</strong></small>
                                 <small>Kembali ke Aplikasi: <strong class="text-success">${row.jml_resume}x</strong></small>
@@ -232,6 +251,7 @@ $(document).ready(function() {
             { 
                 data: null,
                 render: function(data, type, row) {
+                    if (row.status_type === 'Belum Mengerjakan') return '-';
                     return `<small><strong>${row.last_event}</strong></small><br>
                             <small class="text-muted"><i class="bx bx-time"></i> ${row.aktivitas_terakhir}</small>`;
                 }
@@ -239,6 +259,7 @@ $(document).ready(function() {
             { 
                 data: 'risk_level',
                 render: function(data, type, row) {
+                    if (row.status_type === 'Belum Mengerjakan') return '-';
                     let icon = data === 'Berisiko Tinggi' ? 'bx-error-circle' : (data === 'Perlu Perhatian' ? 'bx-error' : 'bx-check-circle');
                     return `<span class="badge bg-${row.risk_color}"><i class="bx ${icon}"></i> ${data}</span>`;
                 }
@@ -246,26 +267,42 @@ $(document).ready(function() {
             { 
                 data: null,
                 render: function(data, type, row) {
-                    return `<button class="btn btn-sm btn-info btn-detail" data-student="${row.student_id}" data-exercise="${row.exercise_id}"><i class="bx bx-list-ul"></i> Lihat Detail</button>`;
+                    let btns = `<button class="btn btn-sm btn-info btn-detail mb-1 w-100" data-student="${row.student_id}" data-exercise="${row.exercise_id}"><i class="bx bx-list-ul"></i> Lihat Detail</button>`;
+                    
+                    if (row.status_type === 'Belum Mengerjakan') {
+                        let isReminded = sessionStorage.getItem(`reminded_${row.student_id}_${row.exercise_id}`);
+                        if (isReminded) {
+                            btns += `<button class="btn btn-sm btn-secondary w-100" disabled><i class="bx bx-check"></i> Sudah Diingatkan</button>`;
+                        } else {
+                            btns += `<button class="btn btn-sm btn-warning btn-reminder w-100" data-student="${row.student_id}" data-student-name="${row.student_name}" data-exercise="${row.exercise_id}"><i class="bx bx-bell"></i> Kirim Reminder</button>`;
+                        }
+                    }
+                    
+                    return `<div class="d-flex flex-column">${btns}</div>`;
                 }
             }
         ]
     });
 
     $('#btnFilter').click(function() {
-        table.ajax.reload();
+        dataTableInstance.ajax.reload();
         
-        // Update export links
         let exId = $('#filter_exercise').val();
-        let csvUrl = "{{ route('guru.monitoring-quiz.export-csv', $serialModel->id) }}?exercise_id=" + exId;
-        let pdfUrl = "{{ route('guru.monitoring-quiz.export-pdf', $serialModel->id) }}?exercise_id=" + exId;
+        let csvUrl = "{{ route('guru.monitoring-quiz.export-csv', [$kelasName, $serialModel->id]) }}{!! $lessonIdParam !!}";
+        let pdfUrl = "{{ route('guru.monitoring-quiz.export-pdf', [$kelasName, $serialModel->id]) }}{!! $lessonIdParam !!}";
+        
+        if (exId) {
+            let joinChar = csvUrl.includes('?') ? '&' : '?';
+            csvUrl += joinChar + "exercise_id=" + exId;
+            pdfUrl += joinChar + "exercise_id=" + exId;
+        }
+        
         $('#btnExportCsv').attr('href', csvUrl);
         $('#btnExportPdf').attr('href', pdfUrl);
     });
 
-    // Polling every 10 seconds
     setInterval(function() {
-        table.ajax.reload(null, false); // false = keep current paging
+        dataTableInstance.ajax.reload(null, false);
     }, 10000);
 
     // Detail Modal
@@ -277,7 +314,7 @@ $(document).ready(function() {
         $('#modalTimeline').modal('show');
 
         $.ajax({
-            url: `/aplikasi/{{ $serialModel->id }}/monitoring-quiz/detail/${studentId}/${exerciseId}`,
+            url: `/monitoring-quiz/{{ $kelasName }}/{{ $serialModel->id }}/detail/${studentId}/${exerciseId}`,
             method: 'GET',
             success: function(res) {
                 $('#timelineContent').html(res.html);
@@ -287,6 +324,81 @@ $(document).ready(function() {
             }
         });
     });
+
+    // Individual Reminder
+    $('#monitoringTable').on('click', '.btn-reminder', function() {
+        let studentId = $(this).data('student');
+        let exerciseId = $(this).data('exercise');
+        let studentName = $(this).data('student-name');
+        let btn = $(this);
+        
+        btn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Mengirim...').prop('disabled', true);
+        
+        $.ajax({
+            url: "{{ route('guru.monitoring-quiz.reminder', [$kelasName, $serialModel->id]) }}{!! $lessonIdParam !!}",
+            method: 'POST',
+            data: {
+                _token: "{{ csrf_token() }}",
+                type: 'individual',
+                student_id: studentId,
+                exercise_id: exerciseId,
+                student_name: studentName
+            },
+            success: function(res) {
+                showAlert(res.message, 'success');
+                sessionStorage.setItem(`reminded_${studentId}_${exerciseId}`, '1');
+                dataTableInstance.ajax.reload(null, false);
+            },
+            error: function() {
+                showAlert('Gagal mengirim reminder.', 'danger');
+                btn.html('<i class="bx bx-bell"></i> Kirim Reminder').prop('disabled', false);
+            }
+        });
+    });
 });
+
+function sendReminderBulk() {
+    $('#btnBulkReminder').html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Mengirim...').prop('disabled', true);
+    
+    $.ajax({
+        url: "{{ route('guru.monitoring-quiz.reminder', [$kelasName, $serialModel->id]) }}{!! $lessonIdParam !!}",
+        method: 'POST',
+        data: {
+            _token: "{{ csrf_token() }}",
+            type: 'bulk'
+        },
+        success: function(res) {
+            showAlert(res.message, 'success');
+            
+            // Mark all "Belum Mengerjakan" as reminded in UI
+            let data = dataTableInstance.rows().data().toArray();
+            data.forEach(function(row) {
+                if (row.status_type === 'Belum Mengerjakan') {
+                    sessionStorage.setItem(`reminded_${row.student_id}_${row.exercise_id}`, '1');
+                }
+            });
+            dataTableInstance.ajax.reload(null, false);
+            
+            $('#btnBulkReminder').html('<i class="bx bx-bell me-1"></i>Ingatkan Semua yang Belum Mengerjakan').prop('disabled', false);
+        },
+        error: function() {
+            showAlert('Gagal mengirim reminder massal.', 'danger');
+            $('#btnBulkReminder').html('<i class="bx bx-bell me-1"></i>Ingatkan Semua yang Belum Mengerjakan').prop('disabled', false);
+        }
+    });
+}
+
+function showAlert(message, type) {
+    let alertHtml = `
+    <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>`;
+    $('#alertContainer').html(alertHtml);
+    
+    setTimeout(() => {
+        $('.alert').alert('close');
+    }, 5000);
+}
 </script>
 @endsection

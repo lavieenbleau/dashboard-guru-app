@@ -24,6 +24,16 @@ class Serial extends Model
         return (int) ($this->max_students_per_class ?? 45);
     }
 
+    /**
+     * Get max classrooms allowed for this serial based on its paket
+     */
+    public function getMaxClassrooms(): int
+    {
+        // paket is a string containing the number of classes allowed (e.g. "1", "3", "4", "9")
+        // if paket is not numeric or missing, default to 1 as fallback
+        return is_numeric($this->paket) ? (int) $this->paket : 1;
+    }
+
     public function product()
     {
         return $this->belongsTo(Product::class);

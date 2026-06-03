@@ -413,7 +413,6 @@
                                             </small>
                                         </div>
                                         
-                                        @if($comment->user_id == auth()->id())
                                         <x-action-dropdown>
                                                 <li>
                                                     <form action="{{ route('guru.materi.comment.delete', [$serial->id, $lesson->id, $materi->id, $comment->id]) }}" 
@@ -427,7 +426,6 @@
                                                     </form>
                                                 </li>
                                             </x-action-dropdown>
-                                        @endif
                                     </div>
                                     <p class="mb-0">{{ $comment->message }}</p>
                                 </div>
@@ -493,7 +491,6 @@
                                                         </small>
                                                     </div>
                                                     
-                                                    @if($reply->user_id == auth()->id())
                                                     <x-action-dropdown>
                                                             <li>
                                                                 <form action="{{ route('guru.materi.reply.delete', [$serial->id, $lesson->id, $materi->id, $reply->id]) }}" 
@@ -507,7 +504,6 @@
                                                                 </form>
                                                             </li>
                                                         </x-action-dropdown>
-                                                    @endif
                                                 </div>
                                                 <p class="mb-0 small">{{ $reply->message }}</p>
                                             </div>

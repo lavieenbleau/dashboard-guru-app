@@ -4,19 +4,45 @@
 
 @section('content')
 <div class="container-xxl py-4">
+    @php
+        $maxClassrooms = $serial->getMaxClassrooms();
+        $currentClassrooms = $classrooms->count();
+        $isLimitReached = $currentClassrooms >= $maxClassrooms;
+    @endphp
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="fw-bold mb-0">
-            <i class='bx bx-group text-info me-2'></i>Kelola Kelas
+            <i class='bx bx-group text-info me-2'></i>Kelola Kelas 
+            <span class="fs-6 ms-2 text-muted fw-normal">(Batas: {{ $maxClassrooms }} Kelas)</span>
         </h4>
+        @if(!$isLimitReached)
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahKelas">
             <i class='bx bx-plus me-1'></i>Tambah Kelas
         </button>
+        @else
+        <button class="btn btn-secondary" disabled title="Batas maksimal kelas telah tercapai">
+            <i class='bx bx-lock me-1'></i>Batas Tercapai
+        </button>
+        @endif
     </div>
 
     @if(session('success'))
         <div class="alert alert-success alert-dismissible" role="alert">
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+    
+    @if($isLimitReached && $currentClassrooms > 0)
+        <div class="alert alert-warning mb-4">
+            <i class='bx bx-info-circle me-1'></i> Anda telah mencapai batas maksimal pembuatan kelas untuk paket ini (<strong>{{ $maxClassrooms }} Kelas</strong>).
         </div>
     @endif
 
@@ -74,9 +100,11 @@
                         <i class='bx bx-group display-1 text-muted'></i>
                         <h5 class="mt-3">Belum Ada Kelas</h5>
                         <p class="text-muted mb-3">Tambahkan kelas untuk mulai mengelola siswa</p>
+                        @if(!$isLimitReached)
                         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahKelas">
                             <i class='bx bx-plus me-1'></i>Tambah Kelas Pertama
                         </button>
+                        @endif
                     </div>
                 </div>
             </div>

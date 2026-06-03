@@ -118,13 +118,41 @@
 
 <div class="bg-blobs"></div>
 <div class="container py-5" style="z-index: 1; position: relative;">
-    <!-- Header -->
     <div class="text-center mb-5">
         <div class="d-inline-block mb-4 p-3 rounded-circle" style="background: rgba(255,255,255,0.8); box-shadow: 0 8px 32px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.9);">
             <img src="{{ asset('images/logo-sci.png') }}" alt="SCI Media" height="60">
         </div>
         <h2 class="fw-bold mb-2" style="color: #0F172A; letter-spacing: -0.02em;">Halo, {{ explode(' ', auth()->user()->name)[0] }}!</h2>
         <p class="text-muted" style="font-size: 1.1rem;">Silakan pilih aplikasi kurikulum yang ingin dikelola</p>
+        <button class="btn btn-premium-outline mt-3" data-bs-toggle="modal" data-bs-target="#modalAktivasiSerial">
+            <i class='bx bx-plus me-1'></i> Tambah Serial
+        </button>
+    </div>
+
+    <!-- Alert Messages -->
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert" style="border-radius: 12px; background: rgba(212, 237, 218, 0.9); backdrop-filter: blur(8px);">
+                    <i class='bx bx-check-circle me-1'></i> {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0" role="alert" style="border-radius: 12px; background: rgba(248, 215, 218, 0.9); backdrop-filter: blur(8px);">
+                    <i class='bx bx-error-circle me-1'></i> {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+            
+            @if($errors->has('serial_code'))
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0" role="alert" style="border-radius: 12px; background: rgba(248, 215, 218, 0.9); backdrop-filter: blur(8px);">
+                    <i class='bx bx-error-circle me-1'></i> {{ $errors->first('serial_code') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+        </div>
     </div>
 
     <!-- Applications -->
@@ -138,6 +166,7 @@
                             <i class='bx bx-book-open' style="font-size: 40px;"></i>
                         </div>
                         <h5 class="fw-bold mb-2 text-dark" style="font-size: 1.2rem;">{{ $item->product->name }}</h5>
+                        <div class="text-muted small mb-2"><i class='bx bx-key'></i> Serial: {{ $item->serial }}</div>
                         <div class="d-flex gap-2 justify-content-center mt-2">
                             <span class="badge bg-label-primary rounded-pill px-3">Grade: {{ $item->product->grade }}</span>
                             <span class="badge bg-label-info rounded-pill px-3">Semester: {{ $item->product->semester }}</span>
@@ -164,6 +193,34 @@
                 <i class='bx bx-log-out me-2'></i>Keluar Aplikasi
             </button>
         </form>
+    </div>
+</div>
+
+<!-- Modal Aktivasi Serial -->
+<div class="modal fade" id="modalAktivasiSerial" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <form action="{{ route('guru.aplikasi.activate') }}" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">Aktivasi Serial</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">Masukkan kode serial yang diberikan admin atau dari hasil pembelian untuk menambahkan aplikasi ke akun Anda.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Kode Serial <span class="text-danger">*</span></label>
+                        <input type="text" name="serial_code" class="form-control form-control-lg text-center fw-bold" placeholder="Contoh: SCI-XXXX-XXXX-XXXX" required style="letter-spacing: 2px;">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class='bx bx-check-circle me-1'></i> Aktivasi Serial
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 

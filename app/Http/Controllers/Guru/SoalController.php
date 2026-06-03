@@ -27,13 +27,31 @@ class SoalController extends Controller
         $serial = Serial::with('product')->findOrFail($serial);
         $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
         
+        $mapels = Mapel::whereHas('lessons', function($query) use ($lessonIds) {
+            $query->whereIn('id', $lessonIds)
+                  ->where('category', Lesson::CATEGORY_MATERI); // using MATERI category for Soal lessons as well since they share the same lesson structure
+        })->withCount(['lessons' => function($query) use ($lessonIds) {
+            $query->whereIn('id', $lessonIds)
+                  ->where('category', Lesson::CATEGORY_MATERI);
+        }])->orderBy('name')->get();
+
+        return view('guru.soal.index-mapel', compact('serial', 'mapels'));
+    }
+    
+    public function mapel($serial, $mapel_id)
+    {
+        $serial = Serial::with('product')->findOrFail($serial);
+        $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
+        $mapel = Mapel::findOrFail($mapel_id);
+        
         $lessons = Lesson::whereIn('id', $lessonIds)
+            ->where('mapel_id', $mapel_id)
             ->where('category', Lesson::CATEGORY_MATERI)
             ->with('mapel')
             ->orderBy('name')
             ->get();
 
-        return view('guru.soal.index-lesson', compact('serial', 'lessons'));
+        return view('guru.soal.index-lesson', compact('serial', 'mapel', 'lessons'));
     }
     
     public function categories($serial, $lesson)
@@ -193,35 +211,51 @@ class SoalController extends Controller
         // Loop through all questions and create items
         $createdCount = 0;
         foreach ($request->questions as $index => $questionData) {
+            
+            // Format Options / Selection (seperti Admin: flat array, tanpa key A/B/C)
+            $options = [];
+            if (in_array($exerciseModelId, [1, 2]) && isset($questionData['options'])) {
+                // Ambil semua opsi yang tidak kosong
+                $options = array_values(array_filter($questionData['options'], function($opt) {
+                    return trim(strip_tags($opt)) !== '';
+                }));
+            }
+            $selectionJson = empty($options) ? json_encode([]) : json_encode($options);
+
+            // Format Answer (seperti Admin: selalu JSON Array)
+            $answerJson = json_encode([]);
+            if (isset($questionData['answer'])) {
+                if (is_array($questionData['answer'])) {
+                    $answerJson = json_encode($questionData['answer']);
+                } else {
+                    $answerVal = trim($questionData['answer']);
+                    if ($answerVal !== '') {
+                        if (str_contains($answerVal, ',')) {
+                            // Untuk PG banyak jika dipisah koma
+                            $ansArr = array_values(array_filter(array_map('trim', explode(',', $answerVal))));
+                            $answerJson = json_encode($ansArr);
+                        } else {
+                            $answerJson = json_encode([$answerVal]);
+                        }
+                    }
+                }
+            }
+
             $exerciseItemData = [
+                'admin_id' => null,
+                'user_id' => auth()->id() ?? 1,
+                'lesson_id' => $lesson->id,
                 'exercise_id' => $exercise->id,
                 'exercise_type_id' => $request->exercise_type_id,
                 'exercise_model_id' => $exerciseModelId,
-                'exercise_choice' => 1, // Default choice
+                'competence_id' => null,
+                'exercise_choice' => empty($options) ? 0 : 1, // 1 jika ada opsi
                 'exercise_number' => $index + 1,
                 'question' => $questionData['question'],
-                'answer' => isset($questionData['answer']) 
-                    ? (str_contains($questionData['answer'], ',') 
-                        ? array_values(array_filter(array_map('trim', explode(',', $questionData['answer'])))) 
-                        : [$questionData['answer']])
-                    : null,
+                'options' => $selectionJson, // Menggunakan JSON Array murni
+                'answer' => $answerJson, // Menggunakan JSON Array murni
                 'is_user' => 1, // Created by user (guru)
             ];
-
-            // Add options if multiple choice
-            if ($questionType === 'pilihan_ganda' && isset($questionData['options'])) {
-                $options = array_filter($questionData['options']);
-                $newOptions = [];
-                $labels = ['A', 'B', 'C', 'D', 'E'];
-                $i = 0;
-                foreach ($options as $opt) {
-                    if ($i < count($labels) && trim($opt) !== '') {
-                        $newOptions[] = ['key' => $labels[$i], 'text' => $opt];
-                    }
-                    $i++;
-                }
-                $exerciseItemData['options'] = empty($newOptions) ? null : $newOptions;
-            }
 
             ExerciseItem::create($exerciseItemData);
             
@@ -285,10 +319,41 @@ class SoalController extends Controller
         foreach ($request->items as $itemData) {
             $exerciseItem = ExerciseItem::findOrFail($itemData['id']);
             
-            // Map question_type to exercise_model_id
-            $exerciseModelId = 1; // Default: Pilihan Ganda
-            if ($itemData['question_type'] === 'essai') {
-                $exerciseModelId = 2;
+            // Format Options / Selection (seperti Admin: flat array)
+            $options = [];
+            if (in_array($itemData['question_type'], [1, 2, 'pilihan_ganda']) && isset($itemData['selection'])) {
+                // Ambil semua opsi yang tidak kosong
+                $options = array_values(array_filter($itemData['selection'], function($opt) {
+                    return trim(strip_tags($opt)) !== '';
+                }));
+            }
+            $selectionJson = empty($options) ? json_encode([]) : json_encode($options);
+
+            // Format Answer (seperti Admin: selalu JSON Array)
+            $answerJson = json_encode([]);
+            if (isset($itemData['answer'])) {
+                if (is_array($itemData['answer'])) {
+                    $answerJson = json_encode($itemData['answer']);
+                } else {
+                    $answerVal = trim($itemData['answer']);
+                    if ($answerVal !== '') {
+                        if (str_contains($answerVal, ',')) {
+                            // Untuk PG banyak jika dipisah koma
+                            $ansArr = array_values(array_filter(array_map('trim', explode(',', $answerVal))));
+                            $answerJson = json_encode($ansArr);
+                        } else {
+                            $answerJson = json_encode([$answerVal]);
+                        }
+                    }
+                }
+            }
+
+            // Map question_type to exercise_model_id (If it's passed as string in legacy code, we handle it)
+            $exerciseModelId = 1; // Default
+            if (is_numeric($itemData['question_type'])) {
+                $exerciseModelId = (int) $itemData['question_type'];
+            } elseif ($itemData['question_type'] === 'essai') {
+                $exerciseModelId = 2; // Default for essay in older form logic
             } elseif ($itemData['question_type'] === 'jawaban_singkat') {
                 $exerciseModelId = 3;
             }
@@ -297,29 +362,10 @@ class SoalController extends Controller
                 'exercise_type_id' => $request->exercise_type_id,
                 'exercise_model_id' => $exerciseModelId,
                 'question' => $itemData['question'],
-                'answer' => isset($itemData['answer']) 
-                    ? (str_contains($itemData['answer'], ',') 
-                        ? array_values(array_filter(array_map('trim', explode(',', $itemData['answer'])))) 
-                        : [$itemData['answer']])
-                    : null,
+                'options' => $selectionJson,
+                'answer' => $answerJson,
+                'exercise_choice' => empty($options) ? 0 : 1,
             ];
-
-            // Add options if pilihan ganda
-            if ($itemData['question_type'] === 'pilihan_ganda' && isset($itemData['selection'])) {
-                $options = array_filter($itemData['selection']);
-                $newOptions = [];
-                $labels = ['A', 'B', 'C', 'D', 'E'];
-                $i = 0;
-                foreach ($options as $opt) {
-                    if ($i < count($labels) && trim($opt) !== '') {
-                        $newOptions[] = ['key' => $labels[$i], 'text' => $opt];
-                    }
-                    $i++;
-                }
-                $updateData['options'] = empty($newOptions) ? null : $newOptions;
-            } else {
-                $updateData['options'] = null;
-            }
 
             $exerciseItem->update($updateData);
         }
@@ -1028,34 +1074,52 @@ class SoalController extends Controller
 
             // Create exercise items (questions) for this single exercise
             foreach ($validQuestions as $index => $questionData) {
+                // Format Options / Selection
+                $options = [];
+                if (in_array($exerciseModel->id, [1, 2]) && isset($questionData['options'])) {
+                    $options = array_values(array_filter($questionData['options'], function($opt) {
+                        return trim(strip_tags(is_array($opt) ? ($opt['text'] ?? '') : $opt)) !== '';
+                    }));
+                    // AI sometimes returns {"key": "A", "text": "value"}, let's extract text if so
+                    $options = array_map(function($opt) {
+                        return is_array($opt) ? ($opt['text'] ?? '') : $opt;
+                    }, $options);
+                }
+                $selectionJson = empty($options) ? json_encode([]) : json_encode($options);
+
+                // Format Answer
+                $answerJson = json_encode([]);
+                if (isset($questionData['answer'])) {
+                    if (is_array($questionData['answer'])) {
+                        $answerJson = json_encode($questionData['answer']);
+                    } else {
+                        $answerVal = trim($questionData['answer']);
+                        if ($answerVal !== '') {
+                            if (str_contains($answerVal, ',')) {
+                                $ansArr = array_values(array_filter(array_map('trim', explode(',', $answerVal))));
+                                $answerJson = json_encode($ansArr);
+                            } else {
+                                $answerJson = json_encode([$answerVal]);
+                            }
+                        }
+                    }
+                }
+
                 $itemData = [
+                    'admin_id' => null,
+                    'user_id' => auth()->id() ?? 1,
+                    'lesson_id' => $lessonModel->id,
                     'exercise_id' => $exercise->id,
                     'exercise_type_id' => $request->exercise_type_id,
                     'exercise_model_id' => $request->exercise_model_id,
-                    'exercise_choice' => 1,
+                    'competence_id' => null,
+                    'exercise_choice' => empty($options) ? 0 : 1,
                     'exercise_number' => $index + 1,
                     'question' => $questionData['question'],
-                    'answer' => isset($questionData['answer']) 
-                        ? (str_contains($questionData['answer'], ',') 
-                            ? array_values(array_filter(array_map('trim', explode(',', $questionData['answer'])))) 
-                            : [$questionData['answer']])
-                        : null,
+                    'options' => $selectionJson,
+                    'answer' => $answerJson,
                     'is_user' => 1,
                 ];
-
-                // Add options if multiple choice (Model 1 or 2)
-                if (in_array($exerciseModel->id, [1, 2]) && isset($questionData['options'])) {
-                    $newOptions = [];
-                    $labels = ['A', 'B', 'C', 'D', 'E'];
-                    $i = 0;
-                    foreach ($questionData['options'] as $opt) {
-                        if ($i < count($labels) && trim($opt) !== '') {
-                            $newOptions[] = ['key' => $labels[$i], 'text' => $opt];
-                        }
-                        $i++;
-                    }
-                    $itemData['options'] = empty($newOptions) ? null : $newOptions;
-                }
 
                 ExerciseItem::create($itemData);
             }

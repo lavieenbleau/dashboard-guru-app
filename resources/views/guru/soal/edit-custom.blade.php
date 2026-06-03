@@ -100,14 +100,7 @@
                                              id="content-soal-{{ $item->id }}" role="tabpanel">
                                             
                                             <input type="hidden" name="items[{{ $index }}][id]" value="{{ $item->id }}">
-
-                                            <!-- Jenis Soal -->
-                                            <div class="mb-3">
-                                                <span class="badge bg-label-primary px-3 py-2" style="font-size: 0.9rem;">
-                                                    {{ $item->exercise_model_id == 1 ? 'Pilihan Ganda' : ($item->exercise_model_id == 2 ? 'Essai' : 'Jawaban Singkat') }}
-                                                </span>
-                                                <input type="hidden" name="items[{{ $index }}][question_type]" value="{{ $item->exercise_model_id == 1 ? 'pilihan_ganda' : ($item->exercise_model_id == 2 ? 'essai' : 'jawaban_singkat') }}">
-                                            </div>
+                                            <input type="hidden" name="items[{{ $index }}][question_type]" value="{{ $item->exercise_model_id }}">
 
                                             <!-- Pertanyaan -->
                                             <div class="mb-3">
@@ -115,53 +108,90 @@
                                                 <textarea class="form-control summernote" name="items[{{ $index }}][question]" required>{!! old("items.{$index}.question", $item->question ?? '') !!}</textarea>
                                             </div>
 
-                                            <!-- Pilihan Jawaban (untuk Pilihan Ganda) -->
+                                            <!-- Opsi & Jawaban berdasarkan Model -->
                                             @php
-                                                $options = is_array($item->options) ? $item->options : json_decode($item->options, true);
-                                                $showOptions = ($item->exercise_model_id == 1);
-                                                $optionsDict = [];
-                                                if (is_array($options)) {
-                                                    foreach ($options as $opt) {
-                                                        if (isset($opt['key']) && isset($opt['text'])) {
-                                                            $optionsDict[$opt['key']] = $opt['text'];
-                                                        }
-                                                    }
-                                                }
+                                                $modelId = $item->exercise_model_id;
+                                                $options = is_array($item->options) ? $item->options : json_decode($item->options, true) ?? [];
+                                                $answers = is_array($item->answer) ? $item->answer : json_decode($item->answer, true) ?? [];
                                             @endphp
-                                            
-                                            <div class="options-section mb-3" style="{{ $showOptions ? '' : 'display:none' }}">
-                                                <label class="form-label">Pilihan Jawaban</label>
-                                                <div class="options-container">
-                                                    @if(is_array($optionsDict) && !empty($optionsDict))
-                                                        @foreach(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D', 'E' => 'E'] as $key => $label)
-                                                            <div class="mb-3 border p-2 rounded">
-                                                                <label class="form-label mb-1 fw-bold">Pilihan {{ $label }}</label>
-                                                                <textarea class="form-control summernote" name="items[{{ $index }}][selection][{{ $key }}]" 
-                                                                       placeholder="Opsi {{ $label }}">{!! old("items.{$index}.selection.{$key}", $optionsDict[$key] ?? '') !!}</textarea>
-                                                            </div>
-                                                        @endforeach
-                                                    @else
-                                                        @foreach(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D', 'E' => 'E'] as $key => $label)
-                                                            <div class="mb-3 border p-2 rounded">
-                                                                <label class="form-label mb-1 fw-bold">Pilihan {{ $label }}</label>
-                                                                <textarea class="form-control summernote" name="items[{{ $index }}][selection][{{ $key }}]" placeholder="Opsi {{ $label }}"></textarea>
-                                                            </div>
-                                                        @endforeach
-                                                    @endif
-                                                </div>
-                                            </div>
 
-                                            <!-- Kunci Jawaban -->
-                                            <div class="mb-3">
-                                                <label class="form-label">Kunci Jawaban</label>
-                                                @php
-                                                    $answerVal = is_array($item->answer) ? implode(',', $item->answer) : (is_string($item->answer) ? implode(',', json_decode($item->answer, true) ?? []) : '');
-                                                @endphp
-                                                <input type="text" class="form-control" name="items[{{ $index }}][answer]" 
-                                                       value="{{ old("items.{$index}.answer", $answerVal) }}" 
-                                                       placeholder="Untuk pilihan ganda: A/B/C/D/E. Untuk essay: jawaban yang benar">
-                                                <small class="text-muted">Untuk pilihan ganda: A/B/C/D/E | Untuk essay/singkat: jawaban yang benar</small>
-                                            </div>
+                                            @if($modelId == 1) {{-- Pilihan Ganda --}}
+                                                <div class="mb-3 border p-3 rounded">
+                                                    <h6>Pilihan Jawaban</h6>
+                                                    @foreach(['A', 'B', 'C', 'D'] as $i => $abjad)
+                                                        <div class="mb-3">
+                                                            <label>Pilihan {{ $abjad }}</label>
+                                                            <textarea class="form-control summernote" name="items[{{ $index }}][selection][]">{!! $options[$i] ?? '' !!}</textarea>
+                                                        </div>
+                                                    @endforeach
+                                                    <div class="mt-3 border-top pt-3">
+                                                        <label class="form-label fw-bold text-primary">Jawaban Benar</label>
+                                                        <select name="items[{{ $index }}][answer]" class="form-select border-primary" required>
+                                                            <option value="">-- Pilih Kunci Jawaban --</option>
+                                                            @foreach(['A', 'B', 'C', 'D'] as $abjad)
+                                                                <option value="{{ $abjad }}" {{ in_array($abjad, $answers) ? 'selected' : '' }}>{{ $abjad }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                            @elseif($modelId == 2) {{-- Pilihan Ganda Banyak --}}
+                                                <div class="mb-3 border p-3 rounded">
+                                                    <h6>Pilihan Jawaban (Pilihan Ganda Banyak)</h6>
+                                                    @foreach(['A', 'B', 'C', 'D'] as $i => $abjad)
+                                                        <div class="mb-3">
+                                                            <label>Pilihan {{ $abjad }}</label>
+                                                            <textarea class="form-control summernote" name="items[{{ $index }}][selection][]">{!! $options[$i] ?? '' !!}</textarea>
+                                                        </div>
+                                                    @endforeach
+                                                    <div class="mt-3 border-top pt-3">
+                                                        <label class="form-label fw-bold text-primary">Jawaban Benar (Bisa lebih dari satu)</label>
+                                                        <div class="d-flex gap-4 p-2 border border-primary rounded">
+                                                            @foreach(['A', 'B', 'C', 'D'] as $abjad)
+                                                                <div class="form-check">
+                                                                    <input type="checkbox" class="form-check-input" name="items[{{ $index }}][answer][]" value="{{ $abjad }}" id="q{{$index}}ans{{$abjad}}" {{ in_array($abjad, $answers) ? 'checked' : '' }}>
+                                                                    <label for="q{{$index}}ans{{$abjad}}" class="form-check-label fw-bold">{{ $abjad }}</label>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            @elseif($modelId == 3) {{-- Benar Salah --}}
+                                                <div class="mb-3 border p-3 rounded">
+                                                    <label class="form-label fw-bold text-primary">Kunci Jawaban</label>
+                                                    <select name="items[{{ $index }}][answer]" class="form-select border-primary" required>
+                                                        <option value="">-- Pilih Benar/Salah --</option>
+                                                        <option value="Benar" {{ in_array('Benar', $answers) ? 'selected' : '' }}>Benar</option>
+                                                        <option value="Salah" {{ in_array('Salah', $answers) ? 'selected' : '' }}>Salah</option>
+                                                    </select>
+                                                </div>
+
+                                            @elseif($modelId == 4) {{-- Isian --}}
+                                                <div class="mb-3 border p-3 rounded">
+                                                    <label class="form-label fw-bold text-primary">Kunci Jawaban</label>
+                                                    <input type="text" name="items[{{ $index }}][answer]" class="form-control border-primary" value="{{ $answers[0] ?? '' }}" placeholder="Isi jawaban benar..." required autocomplete="off" spellcheck="false">
+                                                </div>
+
+                                            @elseif($modelId == 5 || $modelId == 7) {{-- Uraian / Argumen --}}
+                                                <div class="mb-3 border p-3 rounded">
+                                                    <label class="form-label fw-bold text-primary">Panduan / Referensi Jawaban</label>
+                                                    <div class="border border-primary rounded">
+                                                        <textarea class="form-control summernote border-0" name="items[{{ $index }}][answer]" required>{!! $answers[0] ?? '' !!}</textarea>
+                                                    </div>
+                                                </div>
+
+                                            @elseif($modelId == 6) {{-- Iya Tidak --}}
+                                                <div class="mb-3 border p-3 rounded">
+                                                    <label class="form-label fw-bold text-primary">Kunci Jawaban</label>
+                                                    <select name="items[{{ $index }}][answer]" class="form-select border-primary" required>
+                                                        <option value="">-- Pilih Iya/Tidak --</option>
+                                                        <option value="Iya" {{ in_array('Iya', $answers) ? 'selected' : '' }}>Iya</option>
+                                                        <option value="Tidak" {{ in_array('Tidak', $answers) ? 'selected' : '' }}>Tidak</option>
+                                                    </select>
+                                                </div>
+                                            @endif
+                                            
                                         </div>
                                     @endforeach
                                 </div>
@@ -197,14 +227,12 @@
                         <input type="hidden" name="exercise_type_id" value="{{ $exercise->exercise_type_id }}">
                         <input type="hidden" name="title" value="{{ $exercise->title }}">
                         <input type="hidden" name="time_limit" value="{{ $exercise->time_limit }}">
+                        
+                        {{-- Hidden inputs for the rest of items so they don't get deleted --}}
                         @foreach($exercise->exerciseItems as $index => $item)
                             <input type="hidden" name="items[{{ $index }}][id]" value="{{ $item->id }}">
-                            <input type="hidden" name="items[{{ $index }}][question_type]" value="{{ $item->exercise_model_id == 1 ? 'pilihan_ganda' : ($item->exercise_model_id == 2 ? 'essai' : 'jawaban_singkat') }}">
+                            <input type="hidden" name="items[{{ $index }}][question_type]" value="{{ $item->exercise_model_id }}">
                             <input type="hidden" name="items[{{ $index }}][question]" value="{{ strip_tags($item->question) }}">
-                            @php
-                                $ansForHidden = is_array($item->answer) ? implode(',', $item->answer) : $item->answer;
-                            @endphp
-                            <input type="hidden" name="items[{{ $index }}][answer]" value="{{ is_string($ansForHidden) ? $ansForHidden : json_encode($ansForHidden) }}">
                         @endforeach
 
                         <div class="form-check mb-3">
@@ -255,24 +283,13 @@
                     <ul class="mb-0 small">
                         <li>✓ Isi semua field yang diperlukan</li>
                         <li>✓ Setiap tab adalah satu soal terpisah</li>
-                        <li>✓ Gunakan jenis soal yang sesuai</li>
-                        <li>✓ Kunci jawaban harus jelas</li>
-                        <li>✓ Tentukan waktu pengerjaan soal</li>
+                        <li>✓ Kunci jawaban disesuaikan dengan tipe soal</li>
+                        <li>✓ Jangan lupa simpan setelah melakukan edit</li>
                     </ul>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Hidden form for main submission -->
-    <form action="{{ route('guru.soal.update-custom', [$serial->id, $lesson->id, $exercise->id]) }}" method="POST" id="mainForm" style="display:none;">
-        @csrf
-        @method('PUT')
-        <input type="hidden" name="mapel_id" value="{{ $exercise->lesson->mapel_id }}">
-        <input type="hidden" name="exercise_type_id" value="{{ $exercise->exercise_type_id }}">
-        <input type="hidden" name="title" value="{{ $exercise->title }}">
-        <input type="hidden" name="time_limit" value="{{ $exercise->time_limit }}">
-    </form>
 </div>
 @endsection
 
@@ -283,21 +300,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const selectAllCheckbox = document.getElementById('selectAllClassrooms');
     const classroomCheckboxes = document.querySelectorAll('.classroom-checkbox');
-    const questionTypeSelects = document.querySelectorAll('.question-type-select');
-
-    // Handle question type change for each tab
-    questionTypeSelects.forEach(select => {
-        select.addEventListener('change', function() {
-            const tabPane = this.closest('.tab-pane');
-            const optionsSection = tabPane.querySelector('.options-section');
-            
-            if (this.value === 'pilihan_ganda') {
-                optionsSection.style.display = 'block';
-            } else {
-                optionsSection.style.display = 'none';
-            }
-        });
-    });
 
     // Select all classrooms
     selectAllCheckbox.addEventListener('change', function() {

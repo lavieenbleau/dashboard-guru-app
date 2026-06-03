@@ -22,13 +22,31 @@ class TugasController extends Controller
         $serial = Serial::with('product')->findOrFail($serial);
         $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
         
-        // Get lessons that belong to this guru's serial product and have category MATERI (1)
+        $mapels = Mapel::whereHas('lessons', function($query) use ($lessonIds) {
+            $query->whereIn('id', $lessonIds)
+                  ->where('category', Lesson::CATEGORY_MATERI);
+        })->withCount(['lessons' => function($query) use ($lessonIds) {
+            $query->whereIn('id', $lessonIds)
+                  ->where('category', Lesson::CATEGORY_MATERI);
+        }])->orderBy('name')->get();
+
+        return view('guru.tugas.index-mapel', compact('serial', 'mapels'));
+    }
+    
+    public function mapel($serial, $mapel_id)
+    {
+        $serial = Serial::with('product')->findOrFail($serial);
+        $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
+        $mapel = Mapel::findOrFail($mapel_id);
+        
         $lessons = Lesson::whereIn('id', $lessonIds)
+            ->where('mapel_id', $mapel_id)
             ->where('category', Lesson::CATEGORY_MATERI)
             ->with('mapel')
+            ->orderBy('name')
             ->get();
 
-        return view('guru.tugas.index', compact('serial', 'lessons'));
+        return view('guru.tugas.index', compact('serial', 'mapel', 'lessons'));
     }
 
     public function listByLesson($serial, $lesson)
@@ -40,10 +58,13 @@ class TugasController extends Controller
         $tugas = Post::where('serial_id', $serial->id)
             ->where('category', 'like', '%"lesson_id":' . $lesson->id . '%')
             ->where('is_task', 1)
+            ->with('classrooms')
             ->latest()
             ->get();
 
-        return view('guru.tugas.list', compact('serial', 'lesson', 'tugas'));
+        $classrooms = Classroom::where('serial_id', $serial->id)->orderBy('name')->get();
+
+        return view('guru.tugas.list', compact('serial', 'lesson', 'tugas', 'classrooms'));
     }
 
     public function create($serial, $lesson)
@@ -58,6 +79,13 @@ class TugasController extends Controller
     public function store(Request $request, $serial, $lesson)
     {
         $request->validate([
+            'classroom_ids' => 'required|array|min:1',
+            'classroom_ids.*' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('classrooms', 'id')->where(function ($query) use ($serial) {
+                    $query->where('serial_id', $serial);
+                }),
+            ],
             'title' => 'required|max:255',
             'description' => 'nullable',
             'link' => 'nullable|url',
@@ -77,7 +105,7 @@ class TugasController extends Controller
         }
         
         // Create tugas post
-        Post::create([
+        $post = Post::create([
             'serial_id' => $serial->id,
             'user_id' => auth()->id(),
             'mapel_id' => $lesson->mapel_id,
@@ -91,8 +119,10 @@ class TugasController extends Controller
             'is_task' => 1,
         ]);
 
+        $post->classrooms()->attach($request->classroom_ids);
+
         return redirect()->route('guru.tugas.mapel', [$serial->id, $lesson->id])
-            ->with('success', 'Tugas berhasil ditambahkan!');
+            ->with('success', 'Tugas berhasil dibuat dan didistribusikan ke ' . count($request->classroom_ids) . ' kelas');
     }
 
     public function show($serial, $lesson, $id)
@@ -111,7 +141,7 @@ class TugasController extends Controller
         $task = Post::findOrFail($id);
         $classrooms = Classroom::where('serial_id', $serial->id)->orderBy('name')->get();
         
-        $sharedClasses = $classrooms->pluck('id')->toArray();
+        $sharedClasses = $task->classrooms->pluck('id')->toArray();
 
         return view('guru.tugas.edit', compact('serial', 'lesson', 'task', 'classrooms', 'sharedClasses'));
     }
@@ -119,6 +149,13 @@ class TugasController extends Controller
     public function update(Request $request, $serial, $lesson, $id)
     {
         $request->validate([
+            'classroom_ids' => 'required|array|min:1',
+            'classroom_ids.*' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('classrooms', 'id')->where(function ($query) use ($serial) {
+                    $query->where('serial_id', $serial);
+                }),
+            ],
             'title' => 'required|max:255',
             'description' => 'nullable',
             'link' => 'nullable|url',
@@ -160,8 +197,10 @@ class TugasController extends Controller
             'attachment' => $attachmentPath,
         ]);
 
+        $task->classrooms()->sync($request->classroom_ids);
+
         return redirect()->route('guru.tugas.mapel', [$serial->id, $lesson->id])
-            ->with('success', 'Tugas berhasil diupdate!');
+            ->with('success', 'Tugas berhasil diperbarui untuk ' . count($request->classroom_ids) . ' kelas');
     }
 
     public function destroy($serial, $lesson, $id)
@@ -181,19 +220,25 @@ class TugasController extends Controller
             ->with('success', 'Tugas berhasil dihapus!');
     }
 
-    public function share(Request $request, $serial, $lesson, $id)
+    public function updateClassroom(Request $request, $serial, $lesson, $id)
     {
         $serial = Serial::findOrFail($serial);
         $lesson = Lesson::findOrFail($lesson);
         $task = Post::where('is_task', 1)->findOrFail($id);
         
-        $category = json_decode($task->category, true) ?? [];
-        $category['is_shared'] = true;
-        
-        $task->category = $category;
-        $task->save();
-        
-        return back()->with('success', 'Tugas berhasil dibagikan ke seluruh kelas!');
+        $request->validate([
+            'classroom_ids' => 'required|array|min:1',
+            'classroom_ids.*' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('classrooms', 'id')->where(function ($query) use ($serial) {
+                    $query->where('serial_id', $serial->id);
+                }),
+            ],
+        ]);
+
+        $task->classrooms()->sync($request->classroom_ids);
+
+        return back()->with('success', 'Distribusi tugas berhasil diperbarui ke ' . count($request->classroom_ids) . ' kelas');
     }
 
     // Store comment
@@ -240,9 +285,7 @@ class TugasController extends Controller
     // Delete comment
     public function deleteComment($serial, $lesson, $id, $commentId)
     {
-        $comment = PostComment::where('id', $commentId)
-            ->where('user_id', auth()->id())
-            ->firstOrFail();
+        $comment = PostComment::where('id', $commentId)->firstOrFail();
         
         // Delete all replies first
         $comment->replies()->delete();
@@ -256,9 +299,7 @@ class TugasController extends Controller
     // Delete reply
     public function deleteReply($serial, $lesson, $id, $replyId)
     {
-        $reply = PostChildComment::where('id', $replyId)
-            ->where('user_id', auth()->id())
-            ->firstOrFail();
+        $reply = PostChildComment::where('id', $replyId)->firstOrFail();
         
         $reply->delete();
 

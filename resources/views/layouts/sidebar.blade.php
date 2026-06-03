@@ -18,12 +18,26 @@
         $serialId = $classroom->serial_id ?? ($classroom->serial->id ?? null);
         }
 
-        if (!$serialId && isset($serial)) {
-        $serialId = $serial;
+        if (isset($serial) && is_object($serial)) {
+            $serialId = $serial->id;
+        } elseif (!$serialId && isset($serial)) {
+            $serialId = $serial;
+        }
+
+        if (isset($serialModel) && is_object($serialModel)) {
+            $serialId = $serialModel->id;
         }
 
         if (!$serialId) {
-        $serialId = request()->segment(2);
+            // Khusus untuk route monitoring-quiz yang formatnya /monitoring-quiz/{kelas}/{serial_id}
+            if (request()->is('monitoring-quiz/*/*')) {
+                $serialId = request()->segment(3);
+            } else {
+                $seg2 = request()->segment(2);
+                if (is_numeric($seg2)) {
+                    $serialId = $seg2;
+                }
+            }
         }
 
         // Fallback to user's first serial if still no serialId

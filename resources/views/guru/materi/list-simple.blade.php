@@ -51,7 +51,7 @@
                             
                             <div class="mb-2">
                                 @php
-                                    $categoryData = json_decode($materi->category, true) ?? [];
+                                    $categoryData = is_string($materi->category) ? json_decode($materi->category, true) : ($materi->category ?? []);
                                     $isShared = isset($categoryData['is_shared']) && $categoryData['is_shared'] === true;
                                 @endphp
                                 @if($isShared)
@@ -101,7 +101,7 @@
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     @php
-                                        $categoryData = json_decode($materi->category, true) ?? [];
+                                        $categoryData = is_string($materi->category) ? json_decode($materi->category, true) : ($materi->category ?? []);
                                         $isShared = isset($categoryData['is_shared']) && $categoryData['is_shared'] === true;
                                     @endphp
                                     <form action="{{ route('guru.materi.share', [$serial->id, $materi->id]) }}" method="POST" class="d-inline">

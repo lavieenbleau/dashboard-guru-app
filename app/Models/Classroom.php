@@ -22,6 +22,11 @@ class Classroom extends Model
         return $this->hasMany(Student::class);
     }
 
+    public function posts()
+    {
+        return $this->belongsToMany(Post::class, 'post_classrooms', 'classroom_id', 'post_id');
+    }
+
     /**
      * Get the max students limit from this classroom's serial, or fallback to constant
      */

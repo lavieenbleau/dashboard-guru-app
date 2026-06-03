@@ -25,6 +25,15 @@ class KelasController extends Controller
     {
         $serial = Serial::findOrFail($serial);
 
+        // Check classroom limit
+        $currentClassroomsCount = Classroom::where('serial_id', $serial->id)->count();
+        $maxClassrooms = $serial->getMaxClassrooms();
+        
+        if ($currentClassroomsCount >= $maxClassrooms) {
+            return redirect()->route('guru.kelas.pilih', ['serial' => $serial->id])
+                ->with('error', 'Gagal membuat kelas. Anda telah mencapai batas maksimal pembuatan kelas untuk paket ini (' . $maxClassrooms . ' Kelas).');
+        }
+
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'grade' => 'nullable|string|max:50',

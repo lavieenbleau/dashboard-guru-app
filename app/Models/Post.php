@@ -13,6 +13,7 @@ class Post extends Model
 
     protected $fillable = [
         'serial_id',
+        'classroom_id',
         'user_id',
         'mapel_id',
         'title',
@@ -34,6 +35,11 @@ class Post extends Model
     public function serial()
     {
         return $this->belongsTo(Serial::class, 'serial_id');
+    }
+    
+    public function classrooms()
+    {
+        return $this->belongsToMany(Classroom::class, 'post_classrooms', 'post_id', 'classroom_id');
     }
 
     public function user()

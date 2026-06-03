@@ -9,36 +9,35 @@
                 <nav aria-label="breadcrumb" class="mb-2">
                     <ol class="breadcrumb mb-0" style="font-size: 0.85rem;">
                         <li class="breadcrumb-item"><a href="{{ route('guru.materi', $serial->id) }}" class="text-sub text-decoration-none">Materi</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('guru.materi.admin', $serial->id) }}" class="text-sub text-decoration-none">Materi Admin</a></li>
-                        <li class="breadcrumb-item active text-main fw-medium">{{ $mapel->name }}</li>
+                        <li class="breadcrumb-item active text-main fw-medium">Materi Admin</li>
                     </ol>
                 </nav>
-                <h4 class="mb-1 text-main fw-bold">Materi Pusat (Admin)</h4>
-                <p class="text-sub mb-0" style="font-size: 0.9rem;">Telusuri dan kelola materi yang disediakan oleh administrator pusat.</p>
+                <h4 class="mb-1 text-main fw-bold">Pilih Mata Pelajaran</h4>
+                <p class="text-sub mb-0" style="font-size: 0.9rem;">Pilih mata pelajaran untuk melihat materi yang tersedia.</p>
             </div>
-            <a href="{{ route('guru.materi.admin', $serial->id) }}" class="btn-edu btn-edu-outline text-decoration-none">
+            <a href="{{ route('guru.materi', $serial->id) }}" class="btn-edu btn-edu-outline text-decoration-none">
                 <i class='bx bx-arrow-back me-2'></i> Kembali
             </a>
         </div>
 
-        <!-- Lesson (Paket Pembelajaran) Cards -->
+        <!-- Mapel Cards -->
         <div class="row g-3">
-            @forelse ($lessons as $lesson)
+            @forelse ($mapels as $mapel)
             <div class="col-md-6 col-lg-4">
-                <a href="{{ route('guru.materi.admin.lessons', [$serial->id, $lesson->id]) }}" class="text-decoration-none">
+                <a href="{{ route('guru.materi.admin.mapel', [$serial->id, $mapel->id]) }}" class="text-decoration-none">
                     <div class="edu-card h-100 item-card-hover">
                         <div class="edu-card-body d-flex flex-column h-100">
                             <div class="d-flex align-items-center mb-3">
                                 <div class="item-icon-box" style="width: 40px; height: 40px; font-size: 1.25rem;">
-                                    <i class='bx bx-book-bookmark'></i>
+                                    <i class='bx bx-folder-open'></i>
                                 </div>
-                                <h5 class="mb-0 text-main fw-semibold" style="font-size: 1.05rem;">{{ $lesson->name }}</h5>
+                                <h5 class="mb-0 text-main fw-semibold" style="font-size: 1.05rem;">{{ $mapel->name }}</h5>
                             </div>
                             <div class="mb-3 text-sub" style="font-size: 0.85rem;">
-                                Mata Pelajaran: <strong>{{ $mapel->name }}</strong>
+                                Jumlah Modul: <strong>{{ $mapel->lessons_count }}</strong>
                             </div>
                             <div class="mt-auto pt-2 d-flex justify-content-between align-items-center border-top" style="border-color: #F3F4F6 !important;">
-                                <span class="text-sub" style="font-size: 0.85rem;">Lihat Modul & Materi</span>
+                                <span class="text-sub" style="font-size: 0.85rem;">Lihat Daftar Modul</span>
                                 <i class='bx bx-chevron-right text-indigo' style="font-size: 1.25rem;"></i>
                             </div>
                         </div>
@@ -51,9 +50,9 @@
                     <div class="mx-auto mb-3" style="width: 48px; height: 48px; background-color: #F3F4F6; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                         <i class='bx bx-info-circle text-sub fs-3'></i>
                     </div>
-                    <h6 class="text-main fw-semibold mb-1">Modul Kosong</h6>
+                    <h6 class="text-main fw-semibold mb-1">Mata Pelajaran Kosong</h6>
                     <p class="mb-0 text-sub" style="font-size: 0.9rem;">
-                        Belum ada materi dari administrator pusat di jenjang ini.
+                        Belum ada mata pelajaran untuk produk ini.
                     </p>
                 </div>
             </div>

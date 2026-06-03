@@ -2,9 +2,20 @@
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4">
-        <span class="text-muted fw-light">Bank Soal /</span> Pilih Paket Pembelajaran
-    </h4>
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ route('guru.soal', $serial->id) }}">Bank Soal</a></li>
+            <li class="breadcrumb-item active">{{ $mapel->name }}</li>
+        </ol>
+    </nav>
+    <div class="d-flex justify-content-between align-items-center">
+        <h4 class="fw-bold py-3 mb-4">
+            Bank Soal / {{ $mapel->name }} / Pilih Modul Pembelajaran
+        </h4>
+        <a href="{{ route('guru.monitoring-quiz') }}" class="btn btn-primary">
+            <i class="bx bx-desktop me-1"></i> Monitoring Kuis
+        </a>
+    </div>
 
     @if(session('success'))
         <div class="alert alert-success alert-dismissible" role="alert">
@@ -26,7 +37,7 @@
                             </div>
                             <div>
                                 <h5 class="card-title mb-0">{{ $lesson->name }}</h5>
-                                <small class="text-muted">Mapel: {{ $lesson->mapel->name ?? '-' }}</small>
+                                <small class="text-muted">Mapel: {{ $mapel->name }}</small>
                             </div>
                         </div>
                         <a href="{{ route('guru.soal.lesson', [$serial->id, $lesson->id]) }}" class="btn btn-info btn-sm w-100">

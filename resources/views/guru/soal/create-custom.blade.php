@@ -50,11 +50,11 @@
 
                                 <!-- Jenis Soal -->
                                 <div class="mb-3" id="questionTypeSection" style="display: none;">
-                                    <label for="question_type" class="form-label">Jenis Soal <span class="text-danger">*</span></label>
+                                    <label for="question_type" class="form-label">Jenis Soal (Model) <span class="text-danger">*</span></label>
                                     <select class="form-select @error('question_type') is-invalid @enderror" id="question_type" name="question_type" required>
                                         <option value="">-- Pilih Jenis Soal --</option>
                                         @foreach($exerciseModels as $model)
-                                            <option value="{{ $model->id }}" data-type="{{ in_array($model->id, [1, 2]) ? 'pilihan_ganda' : 'essai' }}" {{ old('question_type') == $model->id ? 'selected' : '' }}>
+                                            <option value="{{ $model->id }}" {{ old('question_type') == $model->id ? 'selected' : '' }}>
                                                 {{ $model->name }}
                                             </option>
                                         @endforeach
@@ -87,16 +87,7 @@
                                         <!-- Waktu Pengerjaan -->
                                         <div class="col-md-6 mb-3">
                                             <label for="time_limit" class="form-label">Waktu Pengerjaan (Menit) <span class="text-danger">*</span></label>
-                                            <input 
-                                                type="number" 
-                                                class="form-control @error('time_limit') is-invalid @enderror" 
-                                                id="time_limit" 
-                                                name="time_limit" 
-                                                min="1" 
-                                                max="480" 
-                                                value="{{ old('time_limit') }}" 
-                                                placeholder="Contoh: 45"
-                                                required>
+                                            <input type="number" class="form-control @error('time_limit') is-invalid @enderror" id="time_limit" name="time_limit" min="1" max="480" value="{{ old('time_limit') }}" placeholder="Contoh: 45" required>
                                             @error('time_limit')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -106,7 +97,7 @@
 
                                     <!-- Container untuk multiple soal -->
                                     <div id="questionsContainer">
-                                        <div class="question-item border rounded p-3 mb-3" data-question-number="1">
+                                        <div class="question-item border rounded p-3 mb-3" data-index="0">
                                             <div class="d-flex justify-content-between align-items-center mb-3">
                                                 <h6 class="mb-0">Soal #<span class="question-number">1</span></h6>
                                                 <button type="button" class="btn btn-sm btn-danger remove-question-btn" style="display: none;">
@@ -117,38 +108,11 @@
                                             <!-- Pertanyaan -->
                                             <div class="mb-3">
                                                 <label class="form-label">Pertanyaan/Soal <span class="text-danger">*</span></label>
-                                                <textarea class="form-control summernote" name="questions[0][question]" placeholder="Tulis pertanyaan atau soal di sini..." required></textarea>
+                                                <textarea class="form-control summernote-question" name="questions[0][question]" placeholder="Tulis pertanyaan atau soal di sini..." required></textarea>
                                             </div>
 
-                                            <!-- Pilihan Ganda Options -->
-                                            <div class="mb-3 options-section" style="display: none;">
-                                                <label class="form-label">Pilihan Jawaban</label>
-                                                <div class="options-container">
-                                                    <div class="mb-3 border p-2 rounded">
-                                                        <label class="form-label mb-1 fw-bold">Pilihan A</label>
-                                                        <textarea class="form-control summernote" name="questions[0][options][]" placeholder="Opsi A"></textarea>
-                                                    </div>
-                                                    <div class="mb-3 border p-2 rounded">
-                                                        <label class="form-label mb-1 fw-bold">Pilihan B</label>
-                                                        <textarea class="form-control summernote" name="questions[0][options][]" placeholder="Opsi B"></textarea>
-                                                    </div>
-                                                    <div class="mb-3 border p-2 rounded">
-                                                        <label class="form-label mb-1 fw-bold">Pilihan C</label>
-                                                        <textarea class="form-control summernote" name="questions[0][options][]" placeholder="Opsi C"></textarea>
-                                                    </div>
-                                                    <div class="mb-3 border p-2 rounded">
-                                                        <label class="form-label mb-1 fw-bold">Pilihan D</label>
-                                                        <textarea class="form-control summernote" name="questions[0][options][]" placeholder="Opsi D"></textarea>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Jawaban -->
-                                            <div class="mb-3">
-                                                <label class="form-label">Kunci Jawaban</label>
-                                                <textarea class="form-control" name="questions[0][answer]" rows="2" placeholder="Tulis kunci jawaban di sini..."></textarea>
-                                                <small class="text-muted">Untuk pilihan ganda, tulis huruf jawaban yang benar (A/B/C/D).</small>
-                                            </div>
+                                            <!-- Container dinamis untuk opsi & jawaban -->
+                                            <div class="dynamic-inputs-container"></div>
                                         </div>
                                     </div>
 
@@ -220,13 +184,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const questionTypeSection = document.getElementById('questionTypeSection');
     const questionTypeSelect = document.getElementById('question_type');
     const mainFormSection = document.getElementById('mainFormSection');
-    const selectAllCheckbox = document.getElementById('selectAllClasses');
-    const classroomCheckboxes = document.querySelectorAll('.classroom-checkbox');
     const addQuestionBtn = document.getElementById('addQuestionBtn');
     const questionsContainer = document.getElementById('questionsContainer');
-    let questionCount = 1;
+    
+    const selectAllCheckbox = document.getElementById('selectAllClasses');
+    const classroomCheckboxes = document.querySelectorAll('.classroom-checkbox');
+    
+    let questionIndex = 0;
 
-    // Show question type section when type selected
+    // Show question type section
     exerciseTypeSelect.addEventListener('change', function() {
         if (this.value) {
             questionTypeSection.style.display = 'block';
@@ -240,50 +206,34 @@ document.addEventListener('DOMContentLoaded', function() {
     questionTypeSelect.addEventListener('change', function() {
         if (this.value) {
             mainFormSection.style.display = 'block';
-            
-            // Show/hide options based on question type for all question items
-            const optionsSections = document.querySelectorAll('.options-section');
-            const isPilihanGanda = [1, 2].includes(parseInt(this.value));
-            
-            optionsSections.forEach(section => {
-                if (isPilihanGanda) {
-                    section.style.display = 'block';
-                } else {
-                    section.style.display = 'none';
-                }
-            });
+            renderAllDynamicInputs();
         } else {
             mainFormSection.style.display = 'none';
         }
     });
 
-    // Apply reusable exercise model rule for create form
-    window.applyExerciseModelRule({
-        typeSelectId: 'exercise_type_id',
-        modelSelectId: 'question_type',
-        hintId: 'questionTypeRuleHint',
-        onChange: function(currentModelValue) {
-            if (exerciseTypeSelect.value) {
-                questionTypeSection.style.display = 'block';
+    // Apply rule script
+    if (window.applyExerciseModelRule) {
+        window.applyExerciseModelRule({
+            typeSelectId: 'exercise_type_id',
+            modelSelectId: 'question_type',
+            hintId: 'questionTypeRuleHint',
+            onChange: function(val) {
+                if(exerciseTypeSelect.value) questionTypeSection.style.display = 'block';
+                if (val) {
+                    mainFormSection.style.display = 'block';
+                    renderAllDynamicInputs();
+                } else {
+                    mainFormSection.style.display = 'none';
+                }
             }
-            if (currentModelValue) {
-                mainFormSection.style.display = 'block';
-                // Trigger change event so options-section visibility is updated
-                questionTypeSelect.dispatchEvent(new Event('change'));
-            } else {
-                mainFormSection.style.display = 'none';
-            }
-        }
-    });
-
-    // Select all classes functionality
-    selectAllCheckbox.addEventListener('change', function() {
-        classroomCheckboxes.forEach(checkbox => {
-            checkbox.checked = this.checked;
         });
+    }
+
+    selectAllCheckbox.addEventListener('change', function() {
+        classroomCheckboxes.forEach(checkbox => checkbox.checked = this.checked);
     });
 
-    // Update select all checkbox when individual checkboxes change
     classroomCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', function() {
             const allChecked = Array.from(classroomCheckboxes).every(cb => cb.checked);
@@ -293,88 +243,48 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Add new question
     addQuestionBtn.addEventListener('click', function() {
+        questionIndex++;
         const newQuestionHTML = `
-            <div class="question-item border rounded p-3 mb-3" data-question-number="${questionCount}">
+            <div class="question-item border rounded p-3 mb-3" data-index="${questionIndex}">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0">Soal #<span class="question-number">${questionCount + 1}</span></h6>
+                    <h6 class="mb-0">Soal #<span class="question-number"></span></h6>
                     <button type="button" class="btn btn-sm btn-danger remove-question-btn">
                         <i class='bx bx-trash'></i> Hapus
                     </button>
                 </div>
 
-                <!-- Pertanyaan -->
                 <div class="mb-3">
                     <label class="form-label">Pertanyaan/Soal <span class="text-danger">*</span></label>
-                    <textarea class="form-control summernote" name="questions[${questionCount}][question]" placeholder="Tulis pertanyaan atau soal di sini..." required></textarea>
+                    <textarea class="form-control summernote-question" name="questions[${questionIndex}][question]" placeholder="Tulis pertanyaan atau soal di sini..." required></textarea>
                 </div>
 
-                <!-- Pilihan Ganda Options -->
-                <div class="mb-3 options-section" style="display: ${questionTypeSelect.options[questionTypeSelect.selectedIndex].dataset.type === 'pilihan_ganda' ? 'block' : 'none'};">
-                    <label class="form-label">Pilihan Jawaban</label>
-                    <div class="options-container">
-                        <div class="mb-3 border p-2 rounded">
-                            <label class="form-label mb-1 fw-bold">Pilihan A</label>
-                            <textarea class="form-control summernote" name="questions[${questionCount}][options][]" placeholder="Opsi A"></textarea>
-                        </div>
-                        <div class="mb-3 border p-2 rounded">
-                            <label class="form-label mb-1 fw-bold">Pilihan B</label>
-                            <textarea class="form-control summernote" name="questions[${questionCount}][options][]" placeholder="Opsi B"></textarea>
-                        </div>
-                        <div class="mb-3 border p-2 rounded">
-                            <label class="form-label mb-1 fw-bold">Pilihan C</label>
-                            <textarea class="form-control summernote" name="questions[${questionCount}][options][]" placeholder="Opsi C"></textarea>
-                        </div>
-                        <div class="mb-3 border p-2 rounded">
-                            <label class="form-label mb-1 fw-bold">Pilihan D</label>
-                            <textarea class="form-control summernote" name="questions[${questionCount}][options][]" placeholder="Opsi D"></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Jawaban -->
-                <div class="mb-3">
-                    <label class="form-label">Kunci Jawaban</label>
-                    <textarea class="form-control" name="questions[${questionCount}][answer]" rows="2" placeholder="Tulis kunci jawaban di sini..."></textarea>
-                    <small class="text-muted">Untuk pilihan ganda, tulis huruf jawaban yang benar (A/B/C/D).</small>
-                </div>
+                <div class="dynamic-inputs-container"></div>
             </div>
         `;
         
         questionsContainer.insertAdjacentHTML('beforeend', newQuestionHTML);
+        const newItem = questionsContainer.lastElementChild;
         
-        // Initialize Summernote on new textareas
-        const newTextareas = questionsContainer.lastElementChild.querySelectorAll('.summernote');
-        $(newTextareas).summernote({
-            height: 150,
-            toolbar: [
-                ['style', ['style']],
-                ['font', ['bold', 'italic', 'underline', 'clear']],
-                ['para', ['ul', 'ol', 'paragraph']],
-                ['insert', ['picture', 'link']],
-                ['view', ['fullscreen', 'codeview']]
-            ]
-        });
-        
-        questionCount++;
-        updateRemoveButtons();
+        initSummernote(newItem.querySelectorAll('.summernote-question'));
+        renderDynamicInputs(newItem);
         updateQuestionNumbers();
     });
 
-    // Remove question
     questionsContainer.addEventListener('click', function(e) {
         if (e.target.closest('.remove-question-btn')) {
             e.target.closest('.question-item').remove();
-            updateRemoveButtons();
             updateQuestionNumbers();
         }
     });
 
-    // Update remove buttons visibility
-    function updateRemoveButtons() {
+    function updateQuestionNumbers() {
         const questionItems = document.querySelectorAll('.question-item');
         const removeButtons = document.querySelectorAll('.remove-question-btn');
+        
+        questionItems.forEach((item, idx) => {
+            item.querySelector('.question-number').textContent = idx + 1;
+        });
         
         if (questionItems.length > 1) {
             removeButtons.forEach(btn => btn.style.display = 'inline-block');
@@ -383,27 +293,131 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Update question numbers
-    function updateQuestionNumbers() {
-        const questionItems = document.querySelectorAll('.question-item');
-        questionItems.forEach((item, index) => {
-            item.querySelector('.question-number').textContent = index + 1;
+    function initSummernote(elements) {
+        if (typeof $ !== 'undefined' && $.fn.summernote) {
+            $(elements).summernote({
+                height: 120,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'italic', 'underline', 'clear']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['insert', ['picture', 'link']],
+                    ['view', ['fullscreen', 'codeview']]
+                ]
+            });
+        }
+    }
+
+    function renderAllDynamicInputs() {
+        document.querySelectorAll('.question-item').forEach(item => {
+            renderDynamicInputs(item);
         });
     }
 
-    // Initialize initial Summernote editors
-    if (typeof $ !== 'undefined' && $.fn.summernote) {
-        $('.summernote').summernote({
-            height: 150,
-            toolbar: [
-                ['style', ['style']],
-                ['font', ['bold', 'italic', 'underline', 'clear']],
-                ['para', ['ul', 'ol', 'paragraph']],
-                ['insert', ['picture', 'link']],
-                ['view', ['fullscreen', 'codeview']]
-            ]
-        });
+    function renderDynamicInputs(itemElement) {
+        const modelId = questionTypeSelect.value;
+        const container = itemElement.querySelector('.dynamic-inputs-container');
+        const idx = itemElement.getAttribute('data-index');
+        
+        // Save current data before unmounting
+        // Not strictly necessary for a fresh create form, but good practice
+        
+        let html = '';
+
+        if (modelId === '1') { // PG
+            html = `
+                <div class="mb-3 border p-3 rounded">
+                    <h6>Pilihan Jawaban</h6>
+                    <div class="mb-3"><label>Pilihan A</label><textarea class="form-control summernote-option" name="questions[${idx}][options][]"></textarea></div>
+                    <div class="mb-3"><label>Pilihan B</label><textarea class="form-control summernote-option" name="questions[${idx}][options][]"></textarea></div>
+                    <div class="mb-3"><label>Pilihan C</label><textarea class="form-control summernote-option" name="questions[${idx}][options][]"></textarea></div>
+                    <div class="mb-3"><label>Pilihan D</label><textarea class="form-control summernote-option" name="questions[${idx}][options][]"></textarea></div>
+                    <div class="mt-3 border-top pt-3">
+                        <label class="form-label fw-bold text-primary">Jawaban Benar</label>
+                        <select name="questions[${idx}][answer]" class="form-select border-primary" required>
+                            <option value="">-- Pilih Kunci Jawaban --</option>
+                            <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+        } else if (modelId === '2') { // PG Banyak
+            html = `
+                <div class="mb-3 border p-3 rounded">
+                    <h6>Pilihan Jawaban (Pilihan Ganda Banyak)</h6>
+                    <div class="mb-3"><label>Pilihan A</label><textarea class="form-control summernote-option" name="questions[${idx}][options][]"></textarea></div>
+                    <div class="mb-3"><label>Pilihan B</label><textarea class="form-control summernote-option" name="questions[${idx}][options][]"></textarea></div>
+                    <div class="mb-3"><label>Pilihan C</label><textarea class="form-control summernote-option" name="questions[${idx}][options][]"></textarea></div>
+                    <div class="mb-3"><label>Pilihan D</label><textarea class="form-control summernote-option" name="questions[${idx}][options][]"></textarea></div>
+                    <div class="mt-3 border-top pt-3">
+                        <label class="form-label fw-bold text-primary">Jawaban Benar (Bisa lebih dari satu)</label>
+                        <div class="d-flex gap-4 p-2 border border-primary rounded">
+                            <div class="form-check"><input type="checkbox" class="form-check-input" name="questions[${idx}][answer][]" value="A" id="q${idx}ansA"><label for="q${idx}ansA" class="form-check-label fw-bold">A</label></div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" name="questions[${idx}][answer][]" value="B" id="q${idx}ansB"><label for="q${idx}ansB" class="form-check-label fw-bold">B</label></div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" name="questions[${idx}][answer][]" value="C" id="q${idx}ansC"><label for="q${idx}ansC" class="form-check-label fw-bold">C</label></div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" name="questions[${idx}][answer][]" value="D" id="q${idx}ansD"><label for="q${idx}ansD" class="form-check-label fw-bold">D</label></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (modelId === '3') { // Benar Salah
+            html = `
+                <div class="mb-3 border p-3 rounded">
+                    <label class="form-label fw-bold text-primary">Kunci Jawaban</label>
+                    <select name="questions[${idx}][answer]" class="form-select border-primary" required>
+                        <option value="">-- Pilih Benar/Salah --</option>
+                        <option value="Benar">Benar</option>
+                        <option value="Salah">Salah</option>
+                    </select>
+                </div>
+            `;
+        } else if (modelId === '4') { // Isian
+            html = `
+                <div class="mb-3 border p-3 rounded">
+                    <label class="form-label fw-bold text-primary">Kunci Jawaban</label>
+                    <input type="text" name="questions[${idx}][answer]" class="form-control border-primary" placeholder="Isi jawaban benar..." required autocomplete="off" spellcheck="false">
+                </div>
+            `;
+        } else if (modelId === '5' || modelId === '7') { // Uraian / Argumen
+            html = `
+                <div class="mb-3 border p-3 rounded">
+                    <label class="form-label fw-bold text-primary">Panduan / Referensi Jawaban</label>
+                    <div class="border border-primary rounded">
+                        <textarea class="form-control summernote-answer border-0" name="questions[${idx}][answer]" required></textarea>
+                    </div>
+                </div>
+            `;
+        } else if (modelId === '6') { // Iya Tidak
+            html = `
+                <div class="mb-3 border p-3 rounded">
+                    <label class="form-label fw-bold text-primary">Kunci Jawaban</label>
+                    <select name="questions[${idx}][answer]" class="form-select border-primary" required>
+                        <option value="">-- Pilih Iya/Tidak --</option>
+                        <option value="Iya">Iya</option>
+                        <option value="Tidak">Tidak</option>
+                    </select>
+                </div>
+            `;
+        }
+
+        // Destroy old summernotes
+        const oldSummernotes = container.querySelectorAll('.summernote-option, .summernote-answer');
+        if (oldSummernotes.length > 0 && typeof $ !== 'undefined' && $.fn.summernote) {
+            $(oldSummernotes).summernote('destroy');
+        }
+
+        container.innerHTML = html;
+
+        // Initialize new summernotes
+        const newSummernotes = container.querySelectorAll('.summernote-option, .summernote-answer');
+        if (newSummernotes.length > 0) {
+            initSummernote(newSummernotes);
+        }
     }
+
+    // Init the very first question item on load
+    initSummernote(document.querySelectorAll('.summernote-question'));
+    updateQuestionNumbers();
 });
 </script>
 @include('guru.soal.partials.model-rule-script')

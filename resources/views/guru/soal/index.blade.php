@@ -2,11 +2,18 @@
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ route('guru.soal', $serial->id) }}">Bank Soal</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.soal.mapel', [$serial->id, $lesson->mapel_id ?? 0]) }}">{{ $lesson->mapel->name ?? 'Mata Pelajaran' }}</a></li>
+            <li class="breadcrumb-item active">{{ $lesson->name }}</li>
+        </ol>
+    </nav>
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="fw-bold mb-0">
-            <span class="text-muted fw-light"><a href="{{ route('guru.soal', $serial->id) }}" class="text-muted">Bank Soal</a> / {{ $lesson->name }} /</span> Pilih Kategori
+            Bank Soal / {{ $lesson->mapel->name ?? 'Mata Pelajaran' }} / {{ $lesson->name }} / Pilih Kategori
         </h4>
-        <a href="{{ route('guru.monitoring-quiz', $serial->id) }}" class="btn btn-primary">
+        <a href="{{ route('guru.monitoring-quiz') }}" class="btn btn-primary">
             <i class="bx bx-desktop me-1"></i> Monitoring Kuis
         </a>
     </div>
