@@ -147,6 +147,15 @@ class TugasController extends Controller
         $lesson = Lesson::findOrFail($lesson);
         $task = Post::with(['comments.user', 'comments.student', 'comments.replies.user', 'comments.replies.student'])->findOrFail($id);
 
+        $cat = is_string($task->category) ? json_decode($task->category, true) : ($task->category ?? []);
+        $groupId = $cat['group_id'] ?? null;
+        if ($groupId) {
+            $classroomIds = Post::where('serial_id', $serial->id)->where('category', 'like', '%"group_id":"' . $groupId . '"%')->where('is_task', 1)->pluck('classroom_id')->toArray();
+        } else {
+            $classroomIds = Post::where('serial_id', $serial->id)->where('title', $task->title)->where('is_task', 1)->pluck('classroom_id')->toArray();
+        }
+        $task->classrooms = \App\Models\Classroom::whereIn('id', $classroomIds)->get();
+
         return view('guru.tugas.show', compact('serial', 'lesson', 'task'));
     }
 
