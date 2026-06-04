@@ -67,66 +67,46 @@
                                 </div>
                             </div>
                             <x-action-dropdown>
-                                        <small class="text-muted">
-                                            <strong class="text-dark">Deadline:</strong>
-                                            @if($task->deadline)
-                                                {{ \Carbon\Carbon::parse($task->deadline)->format('d M Y H:i') }}
-                                            @else
-                                                Tidak ada deadline
-                                            @endif
-                                        </small>
-                                    </div>
-                                </div>
-                                <div class="mt-2 mb-1">
-                                    <strong class="text-dark d-block">Kelas:</strong>
-                                    @if(count($task->shared_to_classes ?? []) > 0)
-                                        @php
-                                            $classNames = collect($task->shared_to_classes ?? [])->map(function($id) use ($classrooms) {
-                                                return $classrooms->firstWhere('id', $id)?->name;
-                                            })->filter()->implode(', ');
-                                        @endphp
-                                        <span class="badge bg-label-success" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $classNames }}">
-                                            Dibagikan ke {{ count($task->shared_to_classes ?? []) }} Kelas
-                                        </span>
-                                    @else
-                                        <span class="badge bg-label-warning">Belum Dibagikan</span>
-                                    @endif
-                                </div>
-                            </div>
-                            <div class="col-md-3 text-end">
-                                <div class="d-flex flex-column gap-2 h-100 justify-content-center">
-                                    <a href="{{ route('guru.tugas.show', [$serial->id, $lesson->id, $task->id]) }}" class="btn btn-primary btn-sm">
-                                        <i class='bx bx-show me-1'></i> Detail
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('guru.tugas.show', [$serial->id, $lesson->id, $task->id]) }}">
+                                        <i class='bx bx-show me-1'></i> Lihat
                                     </a>
-                                    <a href="{{ route('guru.tugas.edit', [$serial->id, $lesson->id, $task->id]) }}" class="btn btn-outline-secondary btn-sm">
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('guru.tugas.edit', [$serial->id, $lesson->id, $task->id]) }}">
                                         <i class='bx bx-edit me-1'></i> Edit
                                     </a>
-                                    <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#distributeModal{{ $task->id }}">
-                                        <i class='bx bx-share-alt me-1'></i> {{ count($task->shared_to_classes ?? []) > 0 ? 'Kelola Distribusi' : 'Kelola Distribusi' }}
+                                </li>
+                                <li>
+                                    <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modalShare{{ $task->id }}">
+                                        <i class='bx bx-share-alt me-1'></i> {{ count($task->shared_classrooms ?? []) > 0 ? 'Kelola Distribusi' : 'Kelola Distribusi' }}
                                     </button>
-                                    <form method="POST" action="{{ route('guru.tugas.destroy', [$serial->id, $lesson->id, $task->id]) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus tugas ini? (Akan terhapus dari semua kelas yang dibagikan)');">
+                                </li>
+
+                                <li>
+                                    <form action="{{ route('guru.tugas.destroy', [$serial->id, $lesson->id, $task->id]) }}" method="POST" onsubmit="return confirm('Hapus tugas ini?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                        <button type="submit" class="dropdown-item text-danger">
                                             <i class='bx bx-trash me-1'></i> Hapus
                                         </button>
                                     </form>
-                                </div>
-                            </div>
+                                </li>
+                            </x-action-dropdown>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Modal Distribusi Tugas -->
-            <div class="modal fade" id="distributeModal{{ $task->id }}" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog">
-                    <form method="POST" action="{{ route('guru.tugas.updateClassroom', [$serial->id, $lesson->id, $task->id]) }}">
-                        @csrf
-                        @method('PUT')
-                        <div class="modal-content">
+            <!-- Modal Ubah Kelas -->
+            <div class="modal fade" id="modalShare{{ $task->id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <form action="{{ route('guru.tugas.update-classroom', [$serial->id, $lesson->id, $task->id]) }}" method="POST">
+                            @csrf
+                            @method('PUT')
                             <div class="modal-header">
-                                <h5 class="modal-title">Distribusi Tugas: {{ $task->title }}</h5>
+                                <h5 class="modal-title">Kelola Distribusi</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
@@ -138,13 +118,14 @@
                                     <label class="form-label">Pilih Kelas <span class="text-danger">*</span></label>
                                     <div class="list-group" style="max-height: 200px; overflow-y: auto;">
                                         @php
-                                            $taskClassroomIds = $task->shared_to_classes ?? [];
+                                            $taskClassroomIds = collect($task->shared_classrooms ?? [])->pluck('id')->toArray();
                                         @endphp
                                         @forelse($classrooms as $cls)
                                             <label class="list-group-item">
                                                 <input class="form-check-input me-1" type="checkbox" name="classroom_ids[]" value="{{ $cls->id }}" {{ in_array($cls->id, $taskClassroomIds) ? 'checked' : '' }}>
                                                 {{ $cls->name }}
                                             </label>
+                                        @empty
                                             <div class="alert alert-warning mb-0">
                                                 <i class='bx bx-info-circle'></i> Belum ada kelas. Silakan buat kelas terlebih dahulu.
                                             </div>

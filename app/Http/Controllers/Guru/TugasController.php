@@ -22,13 +22,31 @@ class TugasController extends Controller
         $serial = Serial::with('product')->findOrFail($serial);
         $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
         
-        // Get lessons that belong to this guru's serial product and have category MATERI (1)
+        $mapels = Mapel::whereHas('lessons', function($query) use ($lessonIds) {
+            $query->whereIn('id', $lessonIds)
+                  ->where('category', Lesson::CATEGORY_MATERI);
+        })->withCount(['lessons' => function($query) use ($lessonIds) {
+            $query->whereIn('id', $lessonIds)
+                  ->where('category', Lesson::CATEGORY_MATERI);
+        }])->orderBy('name')->get();
+
+        return view('guru.tugas.index-mapel', compact('serial', 'mapels'));
+    }
+    
+    public function mapel($serial, $mapel_id)
+    {
+        $serial = Serial::with('product')->findOrFail($serial);
+        $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
+        $mapel = Mapel::findOrFail($mapel_id);
+        
         $lessons = Lesson::whereIn('id', $lessonIds)
+            ->where('mapel_id', $mapel_id)
             ->where('category', Lesson::CATEGORY_MATERI)
             ->with('mapel')
+            ->orderBy('name')
             ->get();
 
-        return view('guru.tugas.index', compact('serial', 'lessons'));
+        return view('guru.tugas.index', compact('serial', 'mapel', 'lessons'));
     }
 
     public function listByLesson($serial, $lesson)
@@ -40,10 +58,26 @@ class TugasController extends Controller
         $tugas = Post::where('serial_id', $serial->id)
             ->where('category', 'like', '%"lesson_id":' . $lesson->id . '%')
             ->where('is_task', 1)
+            ->with('classroom')
             ->latest()
             ->get();
+            
+        // Group tasks by group_id or title
+        $groupedTugas = $tugas->groupBy(function($post) {
+            $cat = is_string($post->category) ? json_decode($post->category, true) : ($post->category ?? []);
+            return $cat['group_id'] ?? $post->title;
+        })->map(function($group) {
+            $master = $group->first();
+            $master->shared_classrooms = $group->pluck('classroom')->filter();
+            $master->all_ids = $group->pluck('id')->toArray();
+            return $master;
+        });
+        
+        $tugas = $groupedTugas->values();
 
-        return view('guru.tugas.list', compact('serial', 'lesson', 'tugas'));
+        $classrooms = Classroom::where('serial_id', $serial->id)->orderBy('name')->get();
+
+        return view('guru.tugas.list', compact('serial', 'lesson', 'tugas', 'classrooms'));
     }
 
     public function create($serial, $lesson)
@@ -84,23 +118,27 @@ class TugasController extends Controller
         }
         
         // Create tugas post
-        Post::create([
-            'serial_id' => $serial->id,
-            'user_id' => auth()->id(),
-            'mapel_id' => $lesson->mapel_id,
-            'title' => $request->title,
-            'description' => $request->description,
-            'slug' => Str::slug($request->title) . '-' . time(),
-            'link' => $request->link,
-            'attachment' => $attachmentPath,
-            'deadline' => $request->deadline,
-            'category' => ['lesson_id' => $lesson->id],
-            'shared_to_classes' => $request->classroom_ids,
-            'is_task' => 1,
-        ]);
+        $groupId = uniqid('task_');
+        
+        foreach ($request->classroom_ids as $classroomId) {
+            Post::create([
+                'serial_id' => $serial->id,
+                'classroom_id' => $classroomId,
+                'user_id' => auth()->id(),
+                'mapel_id' => $lesson->mapel_id,
+                'title' => $request->title,
+                'description' => $request->description,
+                'slug' => Str::slug($request->title) . '-' . time() . '-' . $classroomId,
+                'link' => $request->link,
+                'attachment' => $attachmentPath,
+                'due_date' => $request->deadline,
+                'category' => ['lesson_id' => $lesson->id, 'group_id' => $groupId],
+                'is_task' => 1,
+            ]);
+        }
 
         return redirect()->route('guru.tugas.mapel', [$serial->id, $lesson->id])
-            ->with('success', 'Tugas berhasil dibuat dan didistribusikan ke ' . count($request->classroom_ids) . ' kelas!');
+            ->with('success', 'Tugas berhasil dibuat dan didistribusikan ke ' . count($request->classroom_ids) . ' kelas');
     }
 
     public function show($serial, $lesson, $id)
@@ -119,7 +157,13 @@ class TugasController extends Controller
         $task = Post::findOrFail($id);
         $classrooms = Classroom::where('serial_id', $serial->id)->orderBy('name')->get();
         
-        $sharedClasses = is_array($task->shared_to_classes) ? $task->shared_to_classes : (json_decode($task->shared_to_classes, true) ?? []);
+        $cat = is_string($task->category) ? json_decode($task->category, true) : ($task->category ?? []);
+        $groupId = $cat['group_id'] ?? null;
+        if ($groupId) {
+            $sharedClasses = Post::where('serial_id', $serial->id)->where('category', 'like', '%"group_id":"' . $groupId . '"%')->where('is_task', 1)->pluck('classroom_id')->toArray();
+        } else {
+            $sharedClasses = Post::where('serial_id', $serial->id)->where('title', $task->title)->where('is_task', 1)->pluck('classroom_id')->toArray();
+        }
 
         return view('guru.tugas.edit', compact('serial', 'lesson', 'task', 'classrooms', 'sharedClasses'));
     }
@@ -166,18 +210,60 @@ class TugasController extends Controller
             $attachmentPath = null;
         }
         
-        // Update task
-        $task->update([
-            'title' => $request->title,
-            'description' => $request->description,
-            'link' => $request->link,
-            'deadline' => $request->deadline,
-            'attachment' => $attachmentPath,
-            'shared_to_classes' => $request->classroom_ids,
-        ]);
+        // Get all related tasks
+        $cat = is_string($task->category) ? json_decode($task->category, true) : ($task->category ?? []);
+        $groupId = $cat['group_id'] ?? null;
+        
+        if ($groupId) {
+            $allTasks = Post::where('serial_id', $serial->id)->where('category', 'like', '%"group_id":"' . $groupId . '"%')->where('is_task', 1)->get();
+        } else {
+            $allTasks = Post::where('serial_id', $serial->id)->where('title', $task->title)->where('is_task', 1)->get();
+            $groupId = uniqid('task_');
+        }
+
+        $existingClassroomIds = $allTasks->pluck('classroom_id')->toArray();
+        $newClassroomIds = $request->classroom_ids;
+
+        // Update existing tasks
+        foreach ($allTasks as $t) {
+            if (in_array($t->classroom_id, $newClassroomIds)) {
+                $tCategory = is_string($t->category) ? json_decode($t->category, true) : ($t->category ?? []);
+                $tCategory['group_id'] = $groupId;
+                $t->update([
+                    'title' => $request->title,
+                    'description' => $request->description,
+                    'link' => $request->link,
+                    'due_date' => $request->deadline,
+                    'attachment' => $attachmentPath,
+                    'category' => $tCategory,
+                ]);
+            } else {
+                // Remove if classroom no longer selected
+                $t->forceDelete();
+            }
+        }
+
+        // Create for new classrooms
+        $classroomsToAdd = array_diff($newClassroomIds, $existingClassroomIds);
+        foreach ($classroomsToAdd as $classroomId) {
+            Post::create([
+                'serial_id' => $serial->id,
+                'classroom_id' => $classroomId,
+                'user_id' => auth()->id(),
+                'mapel_id' => $lesson->mapel_id,
+                'title' => $request->title,
+                'description' => $request->description,
+                'slug' => Str::slug($request->title) . '-' . time() . '-' . $classroomId,
+                'link' => $request->link,
+                'attachment' => $attachmentPath,
+                'due_date' => $request->deadline,
+                'category' => ['lesson_id' => $lesson->id, 'group_id' => $groupId],
+                'is_task' => 1,
+            ]);
+        }
 
         return redirect()->route('guru.tugas.mapel', [$serial->id, $lesson->id])
-            ->with('success', 'Tugas berhasil diperbarui untuk ' . count($request->classroom_ids) . ' kelas!');
+            ->with('success', 'Tugas berhasil diperbarui untuk ' . count($request->classroom_ids) . ' kelas');
     }
 
     public function destroy($serial, $lesson, $id)
@@ -186,12 +272,22 @@ class TugasController extends Controller
         $lesson = Lesson::findOrFail($lesson);
         $task = Post::where('is_task', 1)->findOrFail($id);
         
-        // Delete attachment file if exists
-        if ($task->attachment && \Storage::disk('public')->exists($task->attachment)) {
-            \Storage::disk('public')->delete($task->attachment);
-        }
+        $cat = is_string($task->category) ? json_decode($task->category, true) : ($task->category ?? []);
+        $groupId = $cat['group_id'] ?? null;
         
-        $task->forceDelete();
+        if ($groupId) {
+            $allTasks = Post::where('serial_id', $serial->id)->where('category', 'like', '%"group_id":"' . $groupId . '"%')->where('is_task', 1)->get();
+        } else {
+            $allTasks = Post::where('serial_id', $serial->id)->where('title', $task->title)->where('is_task', 1)->get();
+        }
+
+        foreach ($allTasks as $t) {
+            // Delete attachment file if exists
+            if ($t->attachment && \Storage::disk('public')->exists($t->attachment)) {
+                \Storage::disk('public')->delete($t->attachment);
+            }
+            $t->forceDelete();
+        }
 
         return redirect()->route('guru.tugas.mapel', [$serial->id, $lesson->id])
             ->with('success', 'Tugas berhasil dihapus!');
@@ -213,9 +309,48 @@ class TugasController extends Controller
             ],
         ]);
 
-        $task->update(['shared_to_classes' => $request->classroom_ids]);
+        $cat = is_string($task->category) ? json_decode($task->category, true) : ($task->category ?? []);
+        $groupId = $cat['group_id'] ?? null;
+        
+        if ($groupId) {
+            $allTasks = Post::where('serial_id', $serial->id)->where('category', 'like', '%"group_id":"' . $groupId . '"%')->where('is_task', 1)->get();
+        } else {
+            $allTasks = Post::where('serial_id', $serial->id)->where('title', $task->title)->where('is_task', 1)->get();
+            $groupId = uniqid('task_');
+        }
 
-        return back()->with('success', 'Distribusi tugas berhasil diperbarui ke ' . count($request->classroom_ids) . ' kelas!');
+        $existingClassroomIds = $allTasks->pluck('classroom_id')->toArray();
+        $newClassroomIds = $request->classroom_ids;
+
+        foreach ($allTasks as $t) {
+            if (in_array($t->classroom_id, $newClassroomIds)) {
+                $tCategory = is_string($t->category) ? json_decode($t->category, true) : ($t->category ?? []);
+                $tCategory['group_id'] = $groupId;
+                $t->update(['category' => $tCategory]);
+            } else {
+                $t->forceDelete();
+            }
+        }
+
+        $classroomsToAdd = array_diff($newClassroomIds, $existingClassroomIds);
+        foreach ($classroomsToAdd as $classroomId) {
+            Post::create([
+                'serial_id' => $task->serial_id,
+                'classroom_id' => $classroomId,
+                'user_id' => $task->user_id,
+                'mapel_id' => $task->mapel_id,
+                'title' => $task->title,
+                'description' => $task->description,
+                'slug' => Str::slug($task->title) . '-' . time() . '-' . $classroomId,
+                'link' => $task->link,
+                'attachment' => $task->attachment,
+                'due_date' => $task->due_date,
+                'category' => ['lesson_id' => $lesson->id, 'group_id' => $groupId],
+                'is_task' => 1,
+            ]);
+        }
+
+        return back()->with('success', 'Distribusi tugas berhasil diperbarui ke ' . count($request->classroom_ids) . ' kelas');
     }
 
     // Store comment
@@ -262,9 +397,7 @@ class TugasController extends Controller
     // Delete comment
     public function deleteComment($serial, $lesson, $id, $commentId)
     {
-        $comment = PostComment::where('id', $commentId)
-            ->where('user_id', auth()->id())
-            ->firstOrFail();
+        $comment = PostComment::where('id', $commentId)->firstOrFail();
         
         // Delete all replies first
         $comment->replies()->delete();
@@ -278,9 +411,7 @@ class TugasController extends Controller
     // Delete reply
     public function deleteReply($serial, $lesson, $id, $replyId)
     {
-        $reply = PostChildComment::where('id', $replyId)
-            ->where('user_id', auth()->id())
-            ->firstOrFail();
+        $reply = PostChildComment::where('id', $replyId)->firstOrFail();
         
         $reply->delete();
 

@@ -13,6 +13,7 @@ class Post extends Model
 
     protected $fillable = [
         'serial_id',
+        'classroom_id',
         'user_id',
         'mapel_id',
         'title',
@@ -21,21 +22,24 @@ class Post extends Model
         'link',
         'attachment',
         'embed',
+        'due_date',
         'category',
-        'shared_to_classes',
-        'deadline',
         'is_task',
     ];
 
     protected $casts = [
         'category' => 'array',
-        'shared_to_classes' => 'array',
-        'deadline' => 'datetime',
+        'due_date' => 'datetime',
     ];
 
     public function serial()
     {
         return $this->belongsTo(Serial::class, 'serial_id');
+    }
+    
+    public function classroom()
+    {
+        return $this->belongsTo(Classroom::class, 'classroom_id');
     }
 
     public function user()
@@ -53,8 +57,18 @@ class Post extends Model
         return $this->hasMany(PostComment::class)->latest();
     }
 
-    public function getCategoryDataAttribute()
+    public function getDeadlineAttribute()
     {
-        return json_decode($this->category, true);
+        return $this->due_date;
+    }
+
+    public function setDeadlineAttribute($value)
+    {
+        $this->attributes['due_date'] = $value;
+    }
+
+    public function getSharedToClassesAttribute()
+    {
+        return null;
     }
 }
