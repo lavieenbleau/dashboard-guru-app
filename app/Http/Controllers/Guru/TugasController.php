@@ -137,7 +137,7 @@ class TugasController extends Controller
             ]);
         }
 
-        return redirect()->route('guru.tugas.mapel', [$serial->id, $lesson->id])
+        return redirect()->route('guru.tugas.lesson', [$serial->id, $lesson->id])
             ->with('success', 'Tugas berhasil dibuat dan didistribusikan ke ' . count($request->classroom_ids) . ' kelas');
     }
 
@@ -262,7 +262,7 @@ class TugasController extends Controller
             ]);
         }
 
-        return redirect()->route('guru.tugas.mapel', [$serial->id, $lesson->id])
+        return redirect()->route('guru.tugas.lesson', [$serial->id, $lesson->id])
             ->with('success', 'Tugas berhasil diperbarui untuk ' . count($request->classroom_ids) . ' kelas');
     }
 
@@ -289,7 +289,7 @@ class TugasController extends Controller
             $t->forceDelete();
         }
 
-        return redirect()->route('guru.tugas.mapel', [$serial->id, $lesson->id])
+        return redirect()->route('guru.tugas.lesson', [$serial->id, $lesson->id])
             ->with('success', 'Tugas berhasil dihapus!');
     }
 
