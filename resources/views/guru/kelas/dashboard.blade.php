@@ -97,7 +97,6 @@
                                 <th>Nama Siswa</th>
                                 <th>Username</th>
                                 <th>Email</th>
-                                <th>Password</th>
                                 <th width="100">Aksi</th>
                             </tr>
                         </thead>
@@ -125,14 +124,10 @@
                                                         <i class='bx bx-edit me-1'></i> Edit
                                                     </button>
                                                 </li>
-                                                <li>
-                                                    <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modalChangePassword{{ $student->id }}">
-                                                        <i class='bx bx-key me-1'></i> Ganti Password
-                                                    </button>
-                                                </li>
+
                                                 <li><hr class="dropdown-divider"></li>
                                                 <li>
-                                                    <form action="{{ route('guru.kelas.siswa.destroy', [$serial->id, $classroom->id, $student->id]) }}" method="POST" onsubmit="return confirm('Hapus siswa ini?')">
+                                                    <form action="{{ route('guru.kelas.siswa.destroy', [$serial->id, $classroom->id, $student->id]) }}" method="POST" onsubmit="confirmSubmit(event, 'Konfirmasi Hapus', 'Hapus siswa ini?', 'Ya, Hapus', true)">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="dropdown-item text-danger">
@@ -143,99 +138,6 @@
                                             </x-action-dropdown>
                                     </td>
                                 </tr>
-                                
-                                <!-- Modal Edit Siswa -->
-                                <div class="modal fade" id="modalEditSiswa{{ $student->id }}" tabindex="-1">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Edit Data Siswa</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <form method="POST" action="{{ route('guru.kelas.siswa.update', [$serial->id, $classroom->id, $student->id]) }}">
-                                                @csrf
-                                                @method('PUT')
-                                                <div class="modal-body">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
-                                                        <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" 
-                                                               value="{{ $student->name }}" required>
-                                                        @error('name')
-                                                            <div class="invalid-feedback">{{ $message }}</div>
-                                                        @enderror
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="form-label">NIS</label>
-                                                        <input type="text" name="nis" class="form-control @error('nis') is-invalid @enderror" 
-                                                               value="{{ $student->nis }}">
-                                                        @error('nis')
-                                                            <div class="invalid-feedback">{{ $message }}</div>
-                                                        @enderror
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Email</label>
-                                                        <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" 
-                                                               value="{{ $student->email }}">
-                                                        @error('email')
-                                                            <div class="invalid-feedback">{{ $message }}</div>
-                                                        @enderror
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Telepon</label>
-                                                        <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror" 
-                                                               value="{{ $student->phone }}">
-                                                        @error('phone')
-                                                            <div class="invalid-feedback">{{ $message }}</div>
-                                                        @enderror
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                                    <button type="submit" class="btn btn-primary">
-                                                        <i class='bx bx-save me-1'></i>Update
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Modal Ganti Password -->
-                                <div class="modal fade" id="modalChangePassword{{ $student->id }}" tabindex="-1">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Ganti Password</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <form method="POST" action="{{ route('guru.kelas.siswa.update-password', [$serial->id, $classroom->id, $student->id]) }}">
-                                                @csrf
-                                                @method('PUT')
-                                                <div class="modal-body">
-                                                    <div class="alert alert-info mb-3">
-                                                        <strong>Siswa:</strong> {{ $student->name }}<br>
-                                                        <strong>Username:</strong> <code>{{ $student->username }}</code>
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Password Baru <span class="text-danger">*</span></label>
-                                                        <input type="text" name="password" class="form-control @error('password') is-invalid @enderror" 
-                                                               placeholder="Masukkan password baru" required minlength="6">
-                                                        @error('password')
-                                                            <div class="invalid-feedback">{{ $message }}</div>
-                                                        @enderror
-                                                        <small class="text-muted">Minimal 6 karakter</small>
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                                    <button type="submit" class="btn btn-warning">
-                                                        <i class='bx bx-key me-1'></i>Ganti Password
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
                             @endforeach
                         </tbody>
                     </table>
@@ -367,4 +269,227 @@
         </div>
     </div>
 </div>
+
+@foreach($students as $index => $student)
+
+                                
+                                <!-- Modal Edit Data Siswa -->
+                                <div class="modal fade" id="modalEditSiswa{{ $student->id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-xl modal-dialog-centered">
+                                        <div class="modal-content">
+                                            
+                                            <!-- Header Profile Section -->
+                                            <div class="modal-header d-flex flex-column align-items-center position-relative pb-0 border-bottom-0">
+                                                <button type="button" class="btn-close position-absolute top-0 end-0 m-4" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                
+                                                <div class="mb-3 mt-4">
+                                                    @if($student->avatar)
+                                                        <img src="{{ Storage::url($student->avatar) }}" alt="Avatar" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
+                                                    @else
+                                                        <div class="avatar avatar-xl">
+                                                            <span class="avatar-initial rounded-circle bg-primary">{{ strtoupper(substr($student->name, 0, 1)) }}</span>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                                <h4 class="fw-bold mb-1 text-center">{{ $student->name }}</h4>
+                                                <p class="text-muted mb-1 text-center">
+                                                    NIS: {{ $student->nis ?? '-' }} &bull; Username: {{ $student->username }} &bull; Kelas: {{ $classroom->name }}
+                                                </p>
+                                                <p class="text-muted mb-4 text-center">{{ $student->email ?? '-' }}</p>
+                                            </div>
+
+                                            <div class="modal-body pt-0">
+                                                <form id="formSiswaModern{{ $student->id }}" action="{{ route('guru.kelas.siswa.update', [$serial->id, $classroom->id, $student->id]) }}" method="POST">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    
+                                                    <div class="row g-4">
+                                                        <!-- Kolom Kiri -->
+                                                        <div class="col-lg-6">
+                                                            <div class="card h-100 mb-4">
+                                                                <div class="card-header d-flex align-items-center justify-content-between">
+                                                                    <h5 class="mb-0">Informasi Siswa</h5>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
+                                                                        <input type="text" name="name" class="form-control" value="{{ $student->name }}" required>
+                                                                    </div>
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">NIS</label>
+                                                                        <input type="text" name="nis" class="form-control" value="{{ $student->nis }}">
+                                                                    </div>
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Email</label>
+                                                                        <input type="email" name="email" class="form-control" value="{{ $student->email }}">
+                                                                    </div>
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">No. Telepon</label>
+                                                                        <input type="text" name="phone" class="form-control" value="{{ $student->phone }}">
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Kolom Kanan -->
+                                                        <div class="col-lg-6">
+                                                            <div class="card mb-4">
+                                                                <div class="card-header d-flex align-items-center justify-content-between">
+                                                                    <h5 class="mb-0">Akun Siswa</h5>
+                                                                    <button type="button" class="btn btn-outline-warning btn-sm" onclick="resetPasswordSiswa{{ $student->id }}()">
+                                                                        <i class='bx bx-refresh me-1'></i> Reset Password
+                                                                    </button>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Username</label>
+                                                                        <input type="text" class="form-control" value="{{ $student->username }}" readonly disabled>
+                                                                    </div>
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Password Baru</label>
+                                                                        <input type="password" id="newPassword{{ $student->id }}" class="form-control" placeholder="Kosongkan jika tidak diubah">
+                                                                    </div>
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Konfirmasi Password</label>
+                                                                        <input type="password" id="confirmPassword{{ $student->id }}" class="form-control" placeholder="Ketik ulang password baru">
+                                                                        <small class="text-danger mt-1 d-none" id="errorPassword{{ $student->id }}">Password tidak cocok!</small>
+                                                                    </div>
+                                                                    <div class="form-check mt-2">
+                                                                        <input class="form-check-input" type="checkbox" id="showPassword{{ $student->id }}" onclick="togglePassword{{ $student->id }}()">
+                                                                        <label class="form-check-label" for="showPassword{{ $student->id }}">
+                                                                            Tampilkan Password
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Informasi Sistem -->
+                                                            <div class="card">
+                                                                <div class="card-header">
+                                                                    <h5 class="mb-0">Informasi Sistem</h5>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <ul class="list-unstyled mb-0">
+                                                                        <li class="d-flex justify-content-between mb-2">
+                                                                            <span class="text-muted">ID Siswa</span>
+                                                                            <span class="fw-semibold">#{{ $student->id }}</span>
+                                                                        </li>
+                                                                        <li class="d-flex justify-content-between mb-2">
+                                                                            <span class="text-muted">Dibuat</span>
+                                                                            <span class="fw-semibold">{{ $student->created_at->translatedFormat('d F Y') }}</span>
+                                                                        </li>
+                                                                        <li class="d-flex justify-content-between mb-2">
+                                                                            <span class="text-muted">Terakhir Diubah</span>
+                                                                            <span class="fw-semibold">{{ $student->updated_at->translatedFormat('d F Y') }}</span>
+                                                                        </li>
+                                                                        <li class="d-flex justify-content-between">
+                                                                            <span class="text-muted">Status Akun</span>
+                                                                            <span class="badge bg-label-success">Aktif</span>
+                                                                        </li>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+
+                                                <!-- Hidden Form for Password -->
+                                                <form id="formPassword{{ $student->id }}" action="{{ route('guru.kelas.siswa.update-password', [$serial->id, $classroom->id, $student->id]) }}" method="POST" class="d-none">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <input type="hidden" name="password" id="hiddenPasswordField{{ $student->id }}">
+                                                </form>
+                                            </div>
+                                            
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                                <button type="button" class="btn btn-primary" onclick="submitSiswaModern{{ $student->id }}()">Simpan Perubahan</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <script>
+                                    // Scripts scoped per student modal to handle logic
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        const modalEl = document.getElementById('modalEditSiswa{{ $student->id }}');
+                                        const modalContent = document.getElementById('modalContent{{ $student->id }}');
+                                        
+                                        // Animation on show
+                                        modalEl.addEventListener('show.bs.modal', function () {
+                                            setTimeout(() => {
+                                                modalContent.style.opacity = '1';
+                                                modalContent.style.transform = 'scale(1)';
+                                            }, 10);
+                                        });
+                                        
+                                        // Animation on hide
+                                        modalEl.addEventListener('hide.bs.modal', function () {
+                                            modalContent.style.opacity = '0';
+                                            modalContent.style.transform = 'scale(0.95)';
+                                        });
+                                    });
+
+                                    function togglePassword{{ $student->id }}() {
+                                        const pwd1 = document.getElementById('newPassword{{ $student->id }}');
+                                        const pwd2 = document.getElementById('confirmPassword{{ $student->id }}');
+                                        const type = document.getElementById('showPassword{{ $student->id }}').checked ? 'text' : 'password';
+                                        pwd1.type = type;
+                                        pwd2.type = type;
+                                    }
+
+                                    function resetPasswordSiswa{{ $student->id }}() {
+                                        showConfirm('Konfirmasi Tindakan', 'Reset password siswa ini? Password akan diubah ke standar: siswa1234.', 'Ya, Reset Password').then((result) => {
+                                            if(result.isConfirmed) {
+                                                const defaultPwd = 'siswa1234';
+                                                document.getElementById('hiddenPasswordField{{ $student->id }}').value = defaultPwd;
+                                                showSuccess('Password baru: ' + defaultPwd + '<br>Menyimpan perubahan...').then(() => {
+                                                    document.getElementById('formPassword{{ $student->id }}').submit();
+                                                });
+                                            }
+                                        });
+                                    }
+
+                                    function submitSiswaModern{{ $student->id }}() {
+                                        const pwd1 = document.getElementById('newPassword{{ $student->id }}').value;
+                                        const pwd2 = document.getElementById('confirmPassword{{ $student->id }}').value;
+                                        const errorMsg = document.getElementById('errorPassword{{ $student->id }}');
+                                        
+                                        if (pwd1 !== '') {
+                                            if (pwd1 !== pwd2) {
+                                                errorMsg.classList.remove('d-none');
+                                                return;
+                                            }
+                                            if (pwd1.length < 6) {
+                                                errorMsg.textContent = 'Password minimal 6 karakter!';
+                                                errorMsg.classList.remove('d-none');
+                                                return;
+                                            }
+                                            
+                                            errorMsg.classList.add('d-none');
+                                            
+                                            // Submitting password first via Fetch, then submitting the main form
+                                            // This is to avoid changing backend logic while fulfilling UI requirements
+                                            const pwdForm = document.getElementById('formPassword{{ $student->id }}');
+                                            document.getElementById('hiddenPasswordField{{ $student->id }}').value = pwd1;
+                                            
+                                            fetch(pwdForm.action, {
+                                                method: 'POST',
+                                                body: new FormData(pwdForm)
+                                            }).then(() => {
+                                                document.getElementById('formSiswaModern{{ $student->id }}').submit();
+                                            }).catch(err => {
+                                                console.error(err);
+                                                showError('Gagal menyimpan password. Menyimpan data utama...').then(() => {
+                                                    document.getElementById('formSiswaModern{{ $student->id }}').submit();
+                                                });
+                                            });
+                                            
+                                        } else {
+                                            // No password change, just submit main form
+                                            document.getElementById('formSiswaModern{{ $student->id }}').submit();
+                                        }
+                                    }
+                                </script>
+@endforeach
 @endsection

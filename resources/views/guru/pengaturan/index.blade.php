@@ -255,13 +255,15 @@
         } else {
             // No unsaved image selected. If there is a saved image in database, delete it!
             @if($user->img)
-                if (confirm('Apakah Anda yakin ingin menghapus foto profil saat ini?')) {
-                    document.getElementById('delete_avatar').value = '1';
-                    fileInput.form.submit();
-                }
+                showConfirm('Konfirmasi', 'Apakah Anda yakin ingin menghapus foto profil saat ini?', 'Ya, Hapus', true).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById('delete_avatar').value = '1';
+                        fileInput.form.submit();
+                    }
+                });
             @else
                 // No image uploaded yet, nothing to reset
-                alert('Belum ada foto profil yang diunggah.');
+                showError('Belum ada foto profil yang diunggah.');
             @endif
         }
     });

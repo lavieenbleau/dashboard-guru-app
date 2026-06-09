@@ -184,7 +184,7 @@ class SoalController extends Controller
         $exerciseModel = ExerciseModel::findOrFail($request->question_type);
         $allowedModels = $this->getAllowedExerciseModelIds($request->exercise_type_id);
         
-        if (!in_array($request->question_type, $allowedModels)) {
+        if (!in_array((int) $request->question_type, $allowedModels, true)) {
             return back()
                 ->withInput()
                 ->with('error', "Jenis Soal \"{$exerciseModel->name}\" tidak diizinkan untuk Tipe Soal \"{$exerciseType->name}\"");
@@ -252,7 +252,7 @@ class SoalController extends Controller
                 'exercise_choice' => empty($options) ? 0 : 1, // 1 jika ada opsi
                 'exercise_number' => $index + 1,
                 'question' => $questionData['question'],
-                'selection' => $selectionJson, // Menggunakan JSON Array murni
+                'options' => $selectionJson, // Menggunakan JSON Array murni
                 'answer' => $answerJson, // Menggunakan JSON Array murni
                 'is_user' => 1, // Created by user (guru)
             ];
@@ -303,7 +303,7 @@ class SoalController extends Controller
             'items.*.question_type' => 'required|in:pilihan_ganda,essai,jawaban_singkat,1,2,3,4,5',
             'items.*.question' => 'required',
             'items.*.answer' => 'nullable',
-            'items.*.selection' => 'nullable|array',
+            'items.*.options' => 'nullable|array',
             'classrooms' => 'nullable|array',
         ]);
 
@@ -321,9 +321,9 @@ class SoalController extends Controller
             
             // Format Options / Selection (seperti Admin: flat array)
             $options = [];
-            if (in_array($itemData['question_type'], [1, 2, 'pilihan_ganda']) && isset($itemData['selection'])) {
+            if (in_array($itemData['question_type'], [1, 2, 'pilihan_ganda']) && isset($itemData['options'])) {
                 // Ambil semua opsi yang tidak kosong
-                $options = array_values(array_filter($itemData['selection'], function($opt) {
+                $options = array_values(array_filter($itemData['options'], function($opt) {
                     return trim(strip_tags($opt)) !== '';
                 }));
             }
@@ -362,7 +362,7 @@ class SoalController extends Controller
                 'exercise_type_id' => $request->exercise_type_id,
                 'exercise_model_id' => $exerciseModelId,
                 'question' => $itemData['question'],
-                'selection' => $selectionJson,
+                'options' => $selectionJson,
                 'answer' => $answerJson,
                 'exercise_choice' => empty($options) ? 0 : 1,
             ];
@@ -1116,7 +1116,7 @@ class SoalController extends Controller
                     'exercise_choice' => empty($options) ? 0 : 1,
                     'exercise_number' => $index + 1,
                     'question' => $questionData['question'],
-                    'selection' => $selectionJson,
+                    'options' => $selectionJson,
                     'answer' => $answerJson,
                     'is_user' => 1,
                 ];
@@ -1152,6 +1152,82 @@ class SoalController extends Controller
         $exercise->load(['lesson.mapel', 'exerciseItems', 'exerciseType']);
 
         return view('guru.soal.view-exercise', compact('serial', 'lesson', 'exercise'));
+    }
+
+    /**
+     * Tampilkan Hasil Pengerjaan Siswa.
+     */
+    public function studentResults($serial, $lesson, $exerciseId)
+    {
+        $serial = Serial::findOrFail($serial);
+        $lesson = Lesson::findOrFail($lesson);
+        $exercise = Exercise::findOrFail($exerciseId);
+        $exercise->load(['exerciseItems', 'exerciseType']);
+
+        // Dapatkan data exercise points (pekerjaan siswa)
+        $exercisePoints = \App\Models\ExercisePoint::with('student')
+            ->where('exercise_id', $exerciseId)
+            ->paginate(20);
+
+        return view('guru.soal.student-results', compact('serial', 'lesson', 'exercise', 'exercisePoints'));
+    }
+
+    public function studentAnswerDetail($serial, $lesson, $exerciseId, $studentId)
+    {
+        $serial = Serial::findOrFail($serial);
+        $lesson = Lesson::findOrFail($lesson);
+        $exercise = Exercise::findOrFail($exerciseId);
+        $student = \App\Models\Student::findOrFail($studentId);
+        
+        $exercise->load(['exerciseItems.exerciseModel', 'exerciseType']);
+
+        $exercisePoint = \App\Models\ExercisePoint::where('exercise_id', $exerciseId)
+            ->where('student_id', $studentId)
+            ->firstOrFail();
+
+        // Get student answers as array (item_id => answer)
+        $studentAnswers = json_decode($exercisePoint->answer, true) ?? [];
+        $competencePoints = json_decode($exercisePoint->competence_point, true) ?? [];
+
+        return view('guru.soal.student-answer-detail', compact('serial', 'lesson', 'exercise', 'student', 'exercisePoint', 'studentAnswers', 'competencePoints'));
+    }
+
+    public function saveManualGrade(Request $request, $serial, $lesson, $exerciseId, $studentId)
+    {
+        $request->validate([
+            'grades' => 'required|array',
+            'grades.*' => 'nullable|numeric|min:0'
+        ]);
+
+        $exercisePoint = \App\Models\ExercisePoint::where('exercise_id', $exerciseId)
+            ->where('student_id', $studentId)
+            ->firstOrFail();
+
+        // Retrieve existing competence points if any
+        $competencePoints = json_decode($exercisePoint->competence_point, true) ?? [];
+
+        // Calculate total and save points
+        $totalInput = 0;
+        foreach ($request->grades as $itemId => $grade) {
+            if (is_numeric($grade)) {
+                $competencePoints[$itemId] = min(100, max(0, $grade));
+            }
+        }
+        
+        // Sum all values in competencePoints (so past grades + new grades)
+        foreach ($competencePoints as $val) {
+            $totalInput += floatval($val);
+        }
+
+        $totalQuestions = $exercisePoint->exercise->exerciseItems->count();
+        $finalScore = $totalQuestions > 0 ? ($totalInput / $totalQuestions) : 0;
+
+        // Save back
+        $exercisePoint->competence_point = json_encode($competencePoints);
+        $exercisePoint->exercise_point = min(100, round($finalScore)); // Saving the average to exercise_point column
+        $exercisePoint->save();
+
+        return response()->json(['success' => true, 'message' => 'Penilaian berhasil disimpan!', 'total_score' => $finalScore]);
     }
 
     /**

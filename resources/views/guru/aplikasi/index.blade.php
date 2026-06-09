@@ -129,29 +129,9 @@
         </button>
     </div>
 
-    <!-- Alert Messages -->
+    <!-- Alert Messages handled by SweetAlert2 -->
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert" style="border-radius: 12px; background: rgba(212, 237, 218, 0.9); backdrop-filter: blur(8px);">
-                    <i class='bx bx-check-circle me-1'></i> {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if(session('error'))
-                <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0" role="alert" style="border-radius: 12px; background: rgba(248, 215, 218, 0.9); backdrop-filter: blur(8px);">
-                    <i class='bx bx-error-circle me-1'></i> {{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-            
-            @if($errors->has('serial_code'))
-                <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0" role="alert" style="border-radius: 12px; background: rgba(248, 215, 218, 0.9); backdrop-filter: blur(8px);">
-                    <i class='bx bx-error-circle me-1'></i> {{ $errors->first('serial_code') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
         </div>
     </div>
 
@@ -200,7 +180,7 @@
 <div class="modal fade" id="modalAktivasiSerial" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
-            <form action="{{ route('guru.aplikasi.activate') }}" method="POST">
+            <form action="{{ route('guru.aplikasi.activate') }}" method="POST" id="formAktivasiSerial">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">Aktivasi Serial</h5>
@@ -223,5 +203,66 @@
         </div>
     </div>
 </div>
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        @if(session('success'))
+            if (typeof showSuccess === 'function') {
+                showSuccess("{{ session('success') }}");
+            } else {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: "{{ session('success') }}"
+                });
+            }
+        @endif
+
+        @if(session('error'))
+            if (typeof showError === 'function') {
+                showError("{{ session('error') }}");
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: "{{ session('error') }}"
+                });
+            }
+        @endif
+
+        @if($errors->has('serial_code'))
+            if (typeof showError === 'function') {
+                showError("{{ $errors->first('serial_code') }}");
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: "{{ $errors->first('serial_code') }}"
+                });
+            }
+        @endif
+
+        // Loading state for form submission
+        const activationForm = document.getElementById('formAktivasiSerial');
+        if (activationForm) {
+            activationForm.addEventListener('submit', function() {
+                if (typeof showLoading === 'function') {
+                    showLoading();
+                } else {
+                    Swal.fire({
+                        title: 'Memproses...',
+                        text: 'Mohon tunggu sebentar',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                }
+            });
+        }
+    });
+</script>
+@endsection
 
 @endsection

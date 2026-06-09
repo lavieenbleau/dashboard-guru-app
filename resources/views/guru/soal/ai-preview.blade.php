@@ -240,19 +240,22 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function() {
             const questionItem = this.closest('.question-item');
             const deletedInput = questionItem.querySelector('.deleted-input');
+            const button = this; // save context for the promise
             
-            if (confirm('Apakah Anda yakin ingin menghapus soal ini?')) {
-                deletedInput.value = 'true';
-                questionItem.style.opacity = '0.5';
-                questionItem.style.background = '#f8d7da';
-                this.disabled = true;
-                this.innerHTML = '<i class="bx bx-check"></i> Dihapus';
-                this.classList.remove('btn-danger');
-                this.classList.add('btn-secondary');
-                
-                // Update count
-                updateQuestionCount();
-            }
+            showConfirm('Konfirmasi Hapus', 'Apakah Anda yakin ingin menghapus soal ini?', 'Ya, Hapus', true).then((result) => {
+                if (result.isConfirmed) {
+                    deletedInput.value = 'true';
+                    questionItem.style.opacity = '0.5';
+                    questionItem.style.background = '#f8d7da';
+                    button.disabled = true;
+                    button.innerHTML = '<i class="bx bx-check"></i> Dihapus';
+                    button.classList.remove('btn-danger');
+                    button.classList.add('btn-secondary');
+                    
+                    // Update count
+                    updateQuestionCount();
+                }
+            });
         });
     });
 
@@ -275,7 +278,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (activeQuestions === 0) {
             e.preventDefault();
-            alert('Anda harus memilih minimal 1 soal untuk disimpan!');
+            showError('Anda harus memilih minimal 1 soal untuk disimpan!');
             noQuestionsAlert.style.display = 'block';
             window.scrollTo(0, 0);
         } else {

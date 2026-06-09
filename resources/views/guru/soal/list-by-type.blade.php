@@ -102,7 +102,7 @@
                         <form action="{{ route('guru.soal.share-single', [$serial->id, $type, $exerciseType->id, $exercise->id]) }}" method="POST" style="display: inline;">
                             @csrf
                             <button type="submit" class="btn btn-sm {{ $exercise->shared_to_classes ? 'btn-success' : 'btn-primary' }}" 
-                                    onclick="return confirm('{{ $exercise->shared_to_classes ? 'Batalkan share soal ini?' : 'Share soal ke semua kelas?' }}')">
+                                    onclick="confirmClick(event, 'Konfirmasi', '{{ $exercise->shared_to_classes ? 'Batalkan share soal ini?' : 'Share soal ke semua kelas?' }}')">
                                 <i class='bx {{ $exercise->shared_to_classes ? 'bx-check-circle' : 'bx-share-alt' }} me-1'></i>
                                 {{ $exercise->shared_to_classes ? 'Shared' : 'Share' }}
                             </button>
@@ -116,7 +116,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <form action="#" method="POST" onsubmit="return confirm('Hapus soal ini?')">
+                                    <form action="#" method="POST" onsubmit="confirmSubmit(event, 'Konfirmasi Hapus', 'Hapus soal ini?', 'Ya, Hapus', true)">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="dropdown-item text-danger">
@@ -208,14 +208,16 @@ document.addEventListener('DOMContentLoaded', function() {
             .map(cb => cb.value);
         
         if (selected.length === 0) {
-            alert('Pilih minimal satu soal!');
+            showError('Pilih minimal satu soal!');
             return;
         }
 
-        if (confirm(`Share ${selected.length} soal ke semua kelas?`)) {
-            exerciseIdsInput.value = JSON.stringify(selected);
-            bulkShareForm.submit();
-        }
+        showConfirm('Konfirmasi Share', `Share ${selected.length} soal ke semua kelas?`, 'Ya, Lanjutkan').then((result) => {
+            if (result.isConfirmed) {
+                exerciseIdsInput.value = JSON.stringify(selected);
+                bulkShareForm.submit();
+            }
+        });
     });
 });
 </script>

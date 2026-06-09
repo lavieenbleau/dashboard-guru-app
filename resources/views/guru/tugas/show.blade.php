@@ -48,7 +48,7 @@
                         </li>
                         <li class="mb-3">
                             <strong class="d-block text-muted small">Kelas Tujuan</strong>
-                            @if(count($task->classrooms) > 0)
+                            @if(count($task->classrooms ?? []) > 0)
                                 <div class="d-flex flex-wrap gap-1">
                                     @foreach($task->classrooms as $cls)
                                         <span class="badge bg-label-primary">{{ $cls->name }}</span>
@@ -129,7 +129,7 @@
                 </div>
                 <div class="card-body">
                     @if($task->description)
-                        <div class="mb-3">{!! nl2br(e($task->description)) !!}</div>
+                        <div class="mb-3">{!! $task->description !!}</div>
                     @else
                         <p class="text-muted">Tidak ada deskripsi untuk tugas ini.</p>
                     @endif
@@ -228,7 +228,7 @@
                                                 <li>
                                                     <form action="{{ route('guru.tugas.comment.delete', [$serial->id, $lesson->id, $task->id, $comment->id]) }}" 
                                                           method="POST" 
-                                                          onsubmit="return confirm('Hapus komentar ini?')">
+                                                          onsubmit="confirmSubmit(event, 'Konfirmasi Hapus', 'Hapus komentar ini?', 'Ya, Hapus', true)">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="dropdown-item text-danger">
@@ -306,7 +306,7 @@
                                                             <li>
                                                                 <form action="{{ route('guru.tugas.reply.delete', [$serial->id, $lesson->id, $task->id, $reply->id]) }}" 
                                                                       method="POST" 
-                                                                      onsubmit="return confirm('Hapus balasan ini?')">
+                                                                      onsubmit="confirmSubmit(event, 'Konfirmasi Hapus', 'Hapus balasan ini?', 'Ya, Hapus', true)">
                                                                     @csrf
                                                                     @method('DELETE')
                                                                     <button type="submit" class="dropdown-item text-danger">

@@ -113,12 +113,15 @@
                     @enderror
                 </div>
 
+                <!-- Checkbox "Ingat Saya" disembunyikan karena penyesuaian database -->
+                <!--
                 <div class="mb-4">
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="remember_me" name="remember" />
                         <label class="form-check-label" for="remember_me"> Ingat Saya </label>
                     </div>
                 </div>
+                -->
 
                 <div class="mb-3">
                     <button class="btn btn-premium d-grid w-100" type="submit">Masuk ke Dashboard</button>
@@ -141,6 +144,8 @@
             const togglePassword = document.getElementById("togglePassword");
             const password = document.getElementById("password");
             const toggleIcon = document.getElementById("toggleIcon");
+            const form = document.getElementById("formAuthentication");
+            const submitBtn = form.querySelector('button[type="submit"]');
 
             if (togglePassword && password) {
                 togglePassword.addEventListener("click", function () {
@@ -156,6 +161,14 @@
                         toggleIcon.classList.remove("bx-show");
                         toggleIcon.classList.add("bx-hide");
                     }
+                });
+            }
+
+            // Prevent double submission which can cause 419 Page Expired errors
+            if (form && submitBtn) {
+                form.addEventListener("submit", function() {
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Memproses...';
+                    submitBtn.disabled = true;
                 });
             }
         });

@@ -52,6 +52,20 @@
                 </div>
             </div>
 
+            <!-- Nav Tabs -->
+            <ul class="nav nav-tabs mb-4">
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ route('guru.soal.view-exercise', [$serial->id, $lesson->id, $exercise->id]) }}">
+                        <i class="bx bx-list-ol me-1"></i> Detail Soal
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('guru.soal.student-results', [$serial->id, $lesson->id, $exercise->id]) }}">
+                        <i class="bx bx-check-shield me-1"></i> Hasil Pengerjaan Siswa
+                    </a>
+                </li>
+            </ul>
+
             <!-- Questions -->
             <div class="card">
                 <div class="card-header">
@@ -76,12 +90,12 @@
 
                             <!-- Options (if multiple choice) -->
                             @if($item->exerciseModel && $item->exerciseModel->name && str_contains($item->exerciseModel->name, 'Pilihan'))
-                                @if($item->selection)
+                                @if($item->options)
                                     <div class="mb-3">
                                         <h6 class="fw-bold mb-2">Pilihan Jawaban:</h6>
                                         <div class="options-list">
                                             @php
-                                                $options = json_decode($item->selection, true) ?? [];
+                                                $options = json_decode($item->options, true) ?? [];
                                                 $letters = ['A', 'B', 'C', 'D', 'E'];
                                             @endphp
                                             @foreach($letters as $index => $letter)
@@ -148,7 +162,7 @@
                     <a href="{{ route('guru.soal.edit-custom', [$serial->id, $lesson->id, $exercise->id]) }}" class="btn btn-primary">
                         <i class='bx bx-edit me-1'></i>Edit Soal
                     </a>
-                    <form method="POST" action="{{ route('guru.soal.destroy-custom', [$serial->id, $lesson->id, $exercise->id]) }}" style="display: inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus soal ini?');">
+                    <form method="POST" action="{{ route('guru.soal.destroy-custom', [$serial->id, $lesson->id, $exercise->id]) }}" style="display: inline;" onsubmit="confirmSubmit(event, 'Konfirmasi Hapus', 'Apakah Anda yakin ingin menghapus soal ini?', 'Ya, Hapus', true);">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger">

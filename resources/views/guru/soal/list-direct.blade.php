@@ -96,19 +96,18 @@
                         </div>
 
                         <!-- Action Buttons -->
-                        <x-action-dropdown>
-                            @if($category === 'tambahan')
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('guru.soal.view-exercise', ['serial' => $serial->id, 'lesson' => $lesson->id, 'exerciseId' => $exercise->id]) }}">
-                                        <i class="bx bx-show me-1"></i> Lihat
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('guru.soal.edit-custom', [$serial->id, $lesson->id, $exercise->id]) }}">
-                                        <i class="bx bx-edit-alt me-1"></i> Edit
-                                    </a>
-                                </li>
-                            @endif
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="{{ route('guru.soal.view-exercise', ['serial' => $serial->id, 'lesson' => $lesson->id, 'exerciseId' => $exercise->id]) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bx bx-show me-1"></i> Detail Soal
+                            </a>
+                            <x-action-dropdown>
+                                @if($category === 'tambahan')
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('guru.soal.edit-custom', [$serial->id, $lesson->id, $exercise->id]) }}">
+                                            <i class="bx bx-edit-alt me-1"></i> Edit
+                                        </a>
+                                    </li>
+                                @endif
                             
                             <li>
                                 <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#shareModal{{ $exercise->id }}">
@@ -121,13 +120,14 @@
                                     <form action="{{ route('guru.soal.destroy-custom', [$serial->id, $lesson->id, $exercise->id]) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Hapus soal ini?')">
+                                        <button type="submit" class="dropdown-item text-danger" onclick="confirmClick(event, 'Konfirmasi Hapus', 'Hapus soal ini?', 'Ya, Hapus', true)">
                                             <i class="bx bx-trash me-1"></i> Hapus
                                         </button>
                                     </form>
                                 </li>
                             @endif
-                        </x-action-dropdown>
+                            </x-action-dropdown>
+                        </div>
                     </div>
                 </div>
             </div>

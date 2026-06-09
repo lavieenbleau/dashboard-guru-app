@@ -111,7 +111,7 @@
                                             <!-- Opsi & Jawaban berdasarkan Model -->
                                             @php
                                                 $modelId = $item->exercise_model_id;
-                                                $options = is_array($item->selection) ? $item->selection : json_decode($item->selection, true) ?? [];
+                                                $options = is_array($item->options) ? $item->options : json_decode($item->options, true) ?? [];
                                                 $answers = is_array($item->answer) ? $item->answer : json_decode($item->answer, true) ?? [];
                                             @endphp
 
@@ -121,7 +121,7 @@
                                                     @foreach(['A', 'B', 'C', 'D'] as $i => $abjad)
                                                         <div class="mb-3">
                                                             <label>Pilihan {{ $abjad }}</label>
-                                                            <textarea class="form-control summernote" name="items[{{ $index }}][selection][]">{!! $options[$i] ?? '' !!}</textarea>
+                                                            <textarea class="form-control summernote" name="items[{{ $index }}][options][]">{!! $options[$i] ?? '' !!}</textarea>
                                                         </div>
                                                     @endforeach
                                                     <div class="mt-3 border-top pt-3">
@@ -141,7 +141,7 @@
                                                     @foreach(['A', 'B', 'C', 'D'] as $i => $abjad)
                                                         <div class="mb-3">
                                                             <label>Pilihan {{ $abjad }}</label>
-                                                            <textarea class="form-control summernote" name="items[{{ $index }}][selection][]">{!! $options[$i] ?? '' !!}</textarea>
+                                                            <textarea class="form-control summernote" name="items[{{ $index }}][options][]">{!! $options[$i] ?? '' !!}</textarea>
                                                         </div>
                                                     @endforeach
                                                     <div class="mt-3 border-top pt-3">
@@ -335,7 +335,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 ['para', ['ul', 'ol', 'paragraph']],
                 ['insert', ['picture', 'link']],
                 ['view', ['fullscreen', 'codeview']]
-            ]
+            ],
+            callbacks: {
+                onImageUpload: function(files) {
+                    uploadImage(files[0], 'soal', this);
+                }
+            }
         });
     }
 });

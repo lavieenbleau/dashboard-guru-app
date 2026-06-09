@@ -71,7 +71,7 @@
                             <!-- Jenis Soal -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Jenis Soal <span class="text-danger">*</span></label>
-                                <select name="exercise_model_id" class="form-select @error('exercise_model_id') is-invalid @enderror" required>
+                                <select id="exercise_model_id" name="exercise_model_id" class="form-select @error('exercise_model_id') is-invalid @enderror" required>
                                     <option value="">-- Pilih Jenis Soal --</option>
                                     @foreach($exerciseModels as $model)
                                         <option value="{{ $model->id }}" {{ old('exercise_model_id') == $model->id ? 'selected' : '' }}>
@@ -82,12 +82,13 @@
                                 @error('exercise_model_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <div id="questionTypeRuleHint" class="text-danger small mt-1" style="display: none;"></div>
                             </div>
 
                             <!-- Tipe Soal -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Tipe Soal <span class="text-danger">*</span></label>
-                                <select name="exercise_type_id" class="form-select @error('exercise_type_id') is-invalid @enderror" required>
+                                <select id="exercise_type_id" name="exercise_type_id" class="form-select @error('exercise_type_id') is-invalid @enderror" required>
                                     <option value="">-- Pilih Tipe Soal --</option>
                                     @foreach($exerciseTypes as $type)
                                         <option value="{{ $type->id }}" {{ old('exercise_type_id') == $type->id ? 'selected' : '' }}>
@@ -192,7 +193,12 @@ document.getElementById('addQuestion').addEventListener('click', function() {
             ['para', ['ul', 'ol', 'paragraph']],
             ['insert', ['picture', 'link']],
             ['view', ['fullscreen', 'codeview']]
-        ]
+        ],
+        callbacks: {
+            onImageUpload: function(files) {
+                uploadImage(files[0], 'soal', this);
+            }
+        }
     });
     
     updateRemoveButtons();
@@ -235,9 +241,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 ['para', ['ul', 'ol', 'paragraph']],
                 ['insert', ['picture', 'link']],
                 ['view', ['fullscreen', 'codeview']]
-            ]
+            ],
+            callbacks: {
+                onImageUpload: function(files) {
+                    uploadImage(files[0], 'soal', this);
+                }
+            }
         });
     }
 });
+
+    if (window.applyExerciseModelRule) {
+        window.applyExerciseModelRule({
+            typeSelectId: 'exercise_type_id',
+            modelSelectId: 'exercise_model_id',
+            hintId: 'questionTypeRuleHint'
+        });
+    }
 </script>
+@include('guru.soal.partials.model-rule-script')
 @endsection

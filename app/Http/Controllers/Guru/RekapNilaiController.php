@@ -68,10 +68,8 @@ class RekapNilaiController extends Controller
                 ->where('category', 'like', '%"lesson_id":' . $lesson->id . '%')
                 ->where('is_task', 1)
                 ->where(function($q) use ($classroom) {
-                    $q->doesntHave('classrooms')
-                      ->orWhereHas('classrooms', function($query) use ($classroom) {
-                          $query->where('classrooms.id', $classroom->id);
-                      });
+                    $q->whereNull('classroom_id')
+                      ->orWhere('classroom_id', $classroom->id);
                 })
                 ->orderBy('created_at')
                 ->get();
@@ -240,10 +238,8 @@ class RekapNilaiController extends Controller
                 ->where('category', 'like', '%"lesson_id":' . $lesson->id . '%')
                 ->where('is_task', 1)
                 ->where(function($q) use ($classroom) {
-                    $q->doesntHave('classrooms')
-                      ->orWhereHas('classrooms', function($query) use ($classroom) {
-                          $query->where('classrooms.id', $classroom->id);
-                      });
+                    $q->whereNull('classroom_id')
+                      ->orWhere('classroom_id', $classroom->id);
                 })
                 ->orderBy('created_at')
                 ->get();

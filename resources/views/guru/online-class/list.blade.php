@@ -52,7 +52,7 @@
                                 </a>
                             </li>
                             <li>
-                                <form action="{{ route('guru.onlineclass.destroy', [$serial->id, $mapel->id, $tema->id, $subtema->id, $lesson->id]) }}" method="POST" onsubmit="return confirm('Hapus online class ini?')">
+                                <form action="{{ route('guru.onlineclass.destroy', [$serial->id, $mapel->id, $tema->id, $subtema->id, $lesson->id]) }}" method="POST" onsubmit="confirmSubmit(event, 'Konfirmasi Hapus', 'Hapus online class ini?', 'Ya, Hapus', true)">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="dropdown-item text-danger">

@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? "Dashboard" }}</title>
 
     <!-- Sneat CSS -->
@@ -487,6 +488,11 @@
             margin: 6px 0 !important;
         }
 
+        /* Fix SweetAlert2 z-index so it appears above Bootstrap Modals */
+        .swal2-container {
+            z-index: 99999 !important;
+        }
+
         /* Prevent horizontal scroll */
         html, body {
             overflow-x: hidden;
@@ -575,8 +581,120 @@
 
     <script>
     // Initialize Lucide icons
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+    
+    // Global Image Fallback
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('img').forEach(function(img) {
+            img.onerror = function() {
+                this.src = '/assets/img/no-image.png';
+            };
+        });
+    });
+
+    // Global Upload Image Helper for Summernote
+    function uploadImage(file, folder, editor) {
+        let data = new FormData();
+        data.append('image', file);
+        data.append('folder', folder);
+
+        if (typeof $ !== 'undefined') {
+            $.ajax({
+                url: '/upload/image',
+                method: 'POST',
+                data: data,
+                processData: false,
+                contentType: false,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $(editor).summernote('insertImage', response.url);
+                    } else {
+                        alert(response.message || 'Upload gagal');
+                    }
+                },
+                error: function(xhr) {
+                    let msg = 'Terjadi kesalahan saat upload';
+                    if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                    alert(msg);
+                }
+            });
+        }
+    }
+    
+    // Global SweetAlert2 Helpers
+    function showSuccess(message) {
+        if (typeof Swal === 'undefined') return alert(message);
+        return Swal.fire({
+            title: 'Berhasil',
+            text: message,
+            icon: 'success',
+            confirmButtonText: 'Tutup',
+            customClass: { confirmButton: 'btn btn-primary' },
+            buttonsStyling: false
+        });
+    }
+
+    function showError(message) {
+        if (typeof Swal === 'undefined') return alert(message);
+        return Swal.fire({
+            title: 'Gagal',
+            text: message,
+            icon: 'error',
+            confirmButtonText: 'Tutup',
+            customClass: { confirmButton: 'btn btn-primary' },
+            buttonsStyling: false
+        });
+    }
+
+    function showConfirm(title, text, confirmBtnText = 'Ya, Lanjutkan', isDanger = false) {
+        if (typeof Swal === 'undefined') {
+            return Promise.resolve({ isConfirmed: confirm(title + '\n' + text) });
+        }
+        return Swal.fire({
+            title: title || 'Konfirmasi Tindakan',
+            text: text,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: confirmBtnText,
+            cancelButtonText: 'Batal',
+            customClass: {
+                confirmButton: isDanger ? 'btn btn-danger me-2' : 'btn btn-primary me-2',
+                cancelButton: 'btn btn-secondary'
+            },
+            buttonsStyling: false
+        });
+    }
+
+    function confirmSubmit(event, title, text, confirmBtnText = 'Ya, Lanjutkan', isDanger = false) {
+        event.preventDefault();
+        const form = event.target;
+        showConfirm(title, text, confirmBtnText, isDanger).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    }
+
+    function confirmClick(event, title, text, confirmBtnText = 'Ya, Lanjutkan', isDanger = false) {
+        event.preventDefault();
+        const element = event.currentTarget;
+        showConfirm(title, text, confirmBtnText, isDanger).then((result) => {
+            if (result.isConfirmed) {
+                if (element.tagName === 'A') {
+                    window.location.href = element.href;
+                } else if (element.closest('form')) {
+                    element.closest('form').submit();
+                }
+            }
+        });
+    }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     @yield('scripts')
 </body>

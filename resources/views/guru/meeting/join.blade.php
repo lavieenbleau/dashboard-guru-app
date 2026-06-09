@@ -72,7 +72,7 @@
                             style="display: inline;">
                             @csrf
                             <button type="submit" class="btn btn-sm btn-danger btn-meeting"
-                                onclick="return confirm('Akhiri meeting ini untuk semua peserta?')"
+                                onclick="confirmClick(event, 'Konfirmasi Akhiri', 'Akhiri meeting ini untuk semua peserta?', 'Ya, Akhiri', true)"
                                 title="Akhiri Meeting">
                                 <i class='bx bx-stop-circle me-1'></i>Akhiri
                             </button>

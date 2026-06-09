@@ -16,7 +16,12 @@ class GuruDashboardController extends Controller
         } else {
             $serials = Serial::with(['product','classrooms'])
                         ->where('user_id', auth()->id())
-                        ->get();
+                        ->get()
+                        ->groupBy('product_id')
+                        ->map(function ($group) {
+                            return $group->sortByDesc('expired_at')->first();
+                        })
+                        ->values();
         }
 
         return view('guru.dashboard', compact('serials'));

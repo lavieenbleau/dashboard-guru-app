@@ -78,7 +78,7 @@
                             </a>
                         </li>
                         <li>
-                            <form action="{{ route('guru.materi.destroy', [$serial->id, $lesson->id, $materi->id]) }}" method="POST" onsubmit="return confirm('Hapus materi ini?')">
+                            <form action="{{ route('guru.materi.destroy', [$serial->id, $lesson->id, $materi->id]) }}" method="POST" onsubmit="confirmSubmit(event, 'Konfirmasi Hapus', 'Hapus materi ini?', 'Ya, Hapus', true)">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="dropdown-item text-danger">
@@ -117,7 +117,7 @@
                 </div>
                 <div class="card-body">
                     <div class="materi-content">
-                        {!! nl2br(e($materi->description)) !!}
+                        {!! $materi->description !!}
                     </div>
                 </div>
             </div>
@@ -417,7 +417,7 @@
                                                 <li>
                                                     <form action="{{ route('guru.materi.comment.delete', [$serial->id, $lesson->id, $materi->id, $comment->id]) }}" 
                                                           method="POST" 
-                                                          onsubmit="return confirm('Hapus komentar ini?')">
+                                                          onsubmit="confirmSubmit(event, 'Konfirmasi Hapus', 'Hapus komentar ini?', 'Ya, Hapus', true)">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="dropdown-item text-danger">
@@ -495,7 +495,7 @@
                                                             <li>
                                                                 <form action="{{ route('guru.materi.reply.delete', [$serial->id, $lesson->id, $materi->id, $reply->id]) }}" 
                                                                       method="POST" 
-                                                                      onsubmit="return confirm('Hapus balasan ini?')">
+                                                                      onsubmit="confirmSubmit(event, 'Konfirmasi Hapus', 'Hapus balasan ini?', 'Ya, Hapus', true)">
                                                                     @csrf
                                                                     @method('DELETE')
                                                                     <button type="submit" class="dropdown-item text-danger">

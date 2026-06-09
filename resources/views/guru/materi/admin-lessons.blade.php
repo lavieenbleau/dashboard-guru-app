@@ -33,13 +33,12 @@
     /* Lists */
     .item-row {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 1rem 1.25rem;
+        align-items: flex-start;
+        padding: 20px;
         background: #FFFFFF;
         border: 1px solid #E5E7EB;
-        border-radius: 10px;
-        margin-bottom: 0.75rem;
+        border-radius: 12px;
+        margin-bottom: 20px;
         transition: all 0.2s ease;
     }
     .item-row:hover {
@@ -58,6 +57,21 @@
         justify-content: center;
         margin-right: 1rem;
         flex-shrink: 0;
+    }
+    
+    @media (max-width: 767.98px) {
+        .item-row {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+        .item-actions {
+            width: 100%;
+            margin-top: 1rem;
+        }
+        .item-actions .btn-edu {
+            flex: 1;
+            justify-content: center;
+        }
     }
 </style>
 
@@ -140,41 +154,72 @@
                                         @php $materiCounter = 1; @endphp
                                         @foreach ($subthemeItems as $item)
                                         <div class="item-row">
-                                            <div class="d-flex align-items-center">
-                                                <div class="item-icon-box">
-                                                    <i class='bx bx-file'></i>
-                                                </div>
-                                                <div>
-                                                    <p class="mb-1 text-main fw-semibold" style="font-size: 0.95rem;">
-                                                        Materi {{ $item->number ?? $materiCounter++ }}: {{ $item->title }}
-                                                    </p>
-                                                    <div class="d-flex align-items-center mt-1">
-                                                        <span class="edu-badge badge-gray me-3">Admin</span>
-                                                        <span class="text-sub d-flex align-items-center" style="font-size: 0.75rem;">
-                                                            <i class='bx bx-time-five me-1'></i> {{ $item->created_at ? $item->created_at->format('d M Y H:i') : '' }}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="d-flex gap-2">
-                                                @if($item->embed)
+                                            <div class="d-flex flex-column flex-md-row w-100">
                                                 @php
-                                                    $embedUrl = $item->embed;
-                                                    if (preg_match('/src="([^"]+)"/i', $item->embed, $matches)) {
-                                                        $embedUrl = $matches[1];
-                                                    } elseif (preg_match("/src='([^']+)'/i", $item->embed, $matches)) {
-                                                        $embedUrl = $matches[1];
+                                                    $youtubeId = null;
+                                                    $embedUrl = null;
+                                                    if($item->embed) {
+                                                        $embedUrl = $item->embed;
+                                                        if (preg_match('/src="([^"]+)"/i', $item->embed, $matches)) {
+                                                            $embedUrl = $matches[1];
+                                                        } elseif (preg_match("/src='([^']+)'/i", $item->embed, $matches)) {
+                                                            $embedUrl = $matches[1];
+                                                        }
+                                                        
+                                                        // Ambil ID YouTube
+                                                        if (preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/\s]{11})%i', $embedUrl, $match)) {
+                                                            $youtubeId = $match[1];
+                                                        }
                                                     }
                                                 @endphp
-                                                <a href="{{ $embedUrl }}" target="_blank" class="btn-edu btn-edu-outline text-decoration-none text-cyan border-light">
-                                                    <i class='bx bx-play-circle me-1'></i> Video
-                                                </a>
+
+                                                @if($youtubeId)
+                                                    <div class="flex-shrink-0 mb-3 mb-md-0 me-md-3" style="width: 180px;">
+                                                        <div class="position-relative" style="width: 100%; height: 100px; border-radius: 8px; overflow: hidden; background-color: #000;">
+                                                            <img src="https://img.youtube.com/vi/{{ $youtubeId }}/maxresdefault.jpg" onerror="this.src='https://img.youtube.com/vi/{{ $youtubeId }}/hqdefault.jpg'" alt="Thumbnail" style="width: 100%; height: 100%; object-fit: cover;">
+                                                            <a href="{{ $embedUrl }}" target="_blank" class="position-absolute top-50 start-50 translate-middle text-white text-decoration-none">
+                                                                <i class='bx bx-play-circle' style="font-size: 2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                @else
+                                                    <div class="item-icon-box mb-3 mb-md-0 d-flex flex-shrink-0 me-md-3">
+                                                        <i class='bx bx-file'></i>
+                                                    </div>
                                                 @endif
-                                                <button type="button" class="btn-edu btn-edu-primary" 
-                                                        data-bs-toggle="modal" 
-                                                        data-bs-target="#shareModal{{ $item->id }}">
-                                                    <i class='bx bx-share-alt me-1'></i> Share
-                                                </button>
+
+                                                <div class="flex-grow-1 d-flex flex-column justify-content-between">
+                                                    <div class="pe-0">
+                                                        <h6 class="mb-1 text-main fw-bold" style="font-size: 1rem;">
+                                                            Materi {{ $item->number ?? $materiCounter++ }}: {{ $item->title }}
+                                                        </h6>
+                                                        <div class="d-flex align-items-center gap-2 text-sub" style="font-size: 0.8rem;">
+                                                            <span class="edu-badge badge-gray px-2 py-1">Admin</span>
+                                                            <span>•</span>
+                                                            <span class="d-flex align-items-center"><i class='bx bx-time-five me-1'></i> {{ $item->created_at ? $item->created_at->format('d M Y') : '' }}</span>
+                                                        </div>
+                                                        @if(isset($item->description) && $item->description)
+                                                        <p class="text-muted mt-2 mb-0" style="font-size: 0.85rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                                            {{ strip_tags($item->description) }}
+                                                        </p>
+                                                        @endif
+                                                    </div>
+                                                    
+                                                    <div class="d-flex justify-content-end mt-3 mt-md-0 align-items-center" style="gap: 12px;">
+                                                        @if($item->embed)
+                                                        <a href="{{ $embedUrl }}" target="_blank" class="btn btn-sm btn-outline-primary px-3" style="border-radius: 6px;">
+                                                            <i class='bx bx-play-circle me-1'></i> Video
+                                                        </a>
+                                                        @endif
+                                                        <x-action-dropdown>
+                                                            <li>
+                                                                <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#shareModal{{ $item->id }}">
+                                                                    <i class='bx bx-share-alt me-2'></i>Share
+                                                                </button>
+                                                            </li>
+                                                        </x-action-dropdown>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                         @endforeach

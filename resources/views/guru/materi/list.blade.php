@@ -38,118 +38,117 @@
     @endif
 
     <!-- Materi List -->
-    <div class="row g-3">
+    <div class="row g-4">
         @forelse ($materis as $materi)
         <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div class="flex-grow-1">
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                                <h5 class="mb-0">{{ $materi->title }}</h5>
+            <div class="card" style="border-radius: 12px; margin-bottom: 20px; border: 1px solid #E5E7EB; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                <div class="card-body" style="padding: 20px;">
+                    <div class="d-flex flex-column flex-md-row w-100">
+                        @php
+                            $youtubeId = null;
+                            $embedUrl = null;
+                            if($embed) {
+                                $embedUrl = $embed;
+                                if (preg_match('/src="([^"]+)"/i', $embed, $matches)) {
+                                    $embedUrl = $matches[1];
+                                } elseif (preg_match("/src='([^']+)'/i", $embed, $matches)) {
+                                    $embedUrl = $matches[1];
+                                }
+                                if (preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/\s]{11})%i', $embedUrl, $match)) {
+                                    $youtubeId = $match[1];
+                                }
+                            }
+                        @endphp
+
+                        @if($youtubeId)
+                            <div class="flex-shrink-0 mb-3 mb-md-0 me-md-3" style="width: 180px;">
+                                <div class="position-relative" style="width: 100%; height: 100px; border-radius: 8px; overflow: hidden; background-color: #000;">
+                                    <img src="https://img.youtube.com/vi/{{ $youtubeId }}/maxresdefault.jpg" onerror="this.src='https://img.youtube.com/vi/{{ $youtubeId }}/hqdefault.jpg'" alt="Thumbnail" style="width: 100%; height: 100%; object-fit: cover;">
+                                    <a href="{{ $embedUrl }}" target="_blank" class="position-absolute top-50 start-50 translate-middle text-white text-decoration-none">
+                                        <i class='bx bx-play-circle' style="font-size: 2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        @else
+                            <div class="flex-shrink-0 mb-3 mb-md-0 me-md-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; border-radius: 8px; background-color: #EEF2FF; color: #4F46E5;">
+                                <i class='bx bx-file fs-4'></i>
+                            </div>
+                        @endif
+
+                        <div class="flex-grow-1 d-flex flex-column justify-content-between">
+                            <div class="pe-0">
+                                <h6 class="mb-1 text-dark fw-bold" style="font-size: 1.05rem;">
+                                    {{ $materi->title }}
+                                </h6>
+                                
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2 text-muted" style="font-size: 0.8rem;">
+                                    @if($type === 'admin' && $sharedToClasses)
+                                        @php
+                                            $sharedCount = is_array($sharedToClasses) ? count($sharedToClasses) : count(json_decode($sharedToClasses, true) ?? []);
+                                        @endphp
+                                        @if($sharedCount > 0)
+                                            <span class="badge bg-label-primary px-2 py-1"><i class='bx bx-share-alt me-1'></i>Shared ke {{ $sharedCount }} kelas</span>
+                                        @endif
+                                    @endif
+                                    <span><i class='bx bx-user'></i> {{ $userName }}</span>
+                                    <span>•</span>
+                                    <span><i class='bx bx-time'></i> {{ $createdAt->format('d M Y') }}</span>
+                                </div>
+                                
+                                @if($materi->description)
+                                <p class="text-muted mb-0" style="font-size: 0.85rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                    {{ strip_tags($materi->description) }}
+                                </p>
+                                @endif
                             </div>
                             
-                            @if($materi->description)
-                            <p class="text-muted mb-3">{{ Str::limit($materi->description, 200) }}</p>
-                            @endif
-
-                            <div class="d-flex flex-wrap gap-2 mb-3">
-                                @if($materi->link)
-                                <span class="badge bg-label-primary">
-                                    <i class='bx bx-link-alt'></i> Link
-                                </span>
-                                @endif
-                                
-                                @if($attachment)
-                                <span class="badge bg-label-success">
-                                    <i class='bx bx-file'></i> File
-                                </span>
-                                @endif
-                                
+                            <div class="d-flex justify-content-end mt-3 mt-md-0 align-items-center" style="gap: 12px;">
                                 @if($embed)
-                                <span class="badge bg-label-info">
-                                    <i class='bx bx-video'></i> Embed
-                                </span>
+                                    <a href="{{ $embedUrl }}" target="_blank" class="btn btn-sm btn-outline-primary px-3" style="border-radius: 6px;">
+                                        <i class='bx bx-play-circle me-1'></i> Video
+                                    </a>
+                                @endif
+                                @if($link)
+                                    <a href="{{ $link }}" target="_blank" class="btn btn-sm btn-outline-primary px-3" style="border-radius: 6px;">
+                                        <i class='bx bx-link-external me-1'></i> Buka Link
+                                    </a>
+                                @endif
+                                @if($attachment)
+                                    <a href="{{ Storage::url($attachment) }}" target="_blank" class="btn btn-sm btn-primary px-3" style="border-radius: 6px;">
+                                        <i class='bx bx-download me-1'></i> Download
+                                    </a>
                                 @endif
                                 
-                                @if($type === 'admin' && $sharedToClasses)
-                                @php
-                                    $sharedCount = is_array($sharedToClasses) ? count($sharedToClasses) : count(json_decode($sharedToClasses, true) ?? []);
-                                @endphp
-                                @if($sharedCount > 0)
-                                <span class="badge bg-label-primary">
-                                    <i class='bx bx-share-alt'></i> Shared ke {{ $sharedCount }} kelas
-                                </span>
-                                @endif
-                                @endif
-                            </div>
-
-                            <small class="text-muted">
-                                <i class='bx bx-user'></i> {{ $userName }} • 
-                                <i class='bx bx-time'></i> {{ $createdAt->diffForHumans() }}
-                            </small>
-                            </div>
-                        </div>
-
-                        @if($type === 'admin')
-                        <!-- Tombol Share Individual untuk Materi Admin -->
-                        <form action="{{ route('guru.materi.share-single', [$serial->id, $tema->id, $subtema->id, $itemId]) }}" method="POST" style="display: inline;">
-                            @csrf
-                            <button type="submit" class="btn btn-sm {{ $sharedToClasses ? 'btn-success' : 'btn-primary' }}" 
-                                    onclick="return confirm('{{ $sharedToClasses ? 'Batalkan share materi ini?' : 'Share materi ke semua kelas?' }}')">
-                                <i class='bx {{ $sharedToClasses ? 'bx-check-circle' : 'bx-share-alt' }} me-1'></i>
-                                {{ $sharedToClasses ? 'Shared' : 'Share' }}
-                            </button>
-                        </form>
-                        @else
-                        <!-- Edit/Delete untuk Materi Custom Guru -->
-                        <x-action-dropdown>
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('guru.materi.edit', [$serial->id, $tema->id, $subtema->id, $itemId, $type]) }}">
-                                        <i class='bx bx-edit me-2'></i>Edit
-                                    </a>
-                                </li>
-                                <li>
-                                    <form action="{{ route('guru.materi.destroy', [$serial->id, $tema->id, $subtema->id, $itemId]) }}" method="POST" onsubmit="return confirm('Hapus materi ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="dropdown-item text-danger">
-                                            <i class='bx bx-trash me-2'></i>Hapus
-                                        </button>
-                                    </form>
-                                </li>
-                            </x-action-dropdown>
-                        @endif
-                    </div>
-
-                    <!-- Content Details -->
-                    @if($link || $attachment || $embed)
-                    <div class="mt-3 pt-3 border-top">
-                        @if($link)
-                        <div class="mb-2">
-                            <a href="{{ $link }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                <i class='bx bx-link-external'></i> Buka Link
-                            </a>
-                        </div>
-                        @endif
-
-                        @if($attachment)
-                        <div class="mb-2">
-                            <a href="{{ Storage::url($attachment) }}" target="_blank" class="btn btn-sm btn-outline-success">
-                                <i class='bx bx-download'></i> Download File
-                            </a>
-                        </div>
-                        @endif
-
-                        @if($embed)
-                        <div class="mt-3">
-                            <div class="ratio ratio-16x9">
-                                {!! $embed !!}
+                                <x-action-dropdown>
+                                    @if($type === 'admin')
+                                        <li>
+                                            <form action="{{ route('guru.materi.share-single', [$serial->id, $tema->id, $subtema->id, $itemId]) }}" method="POST" style="display: inline;">
+                                                @csrf
+                                                <button type="button" class="dropdown-item" onclick="confirmClick(event, 'Konfirmasi', '{{ $sharedToClasses ? 'Batalkan share materi ini?' : 'Share materi ke semua kelas?' }}', 'Ya, Lanjutkan')">
+                                                    <i class='bx {{ $sharedToClasses ? 'bx-check-circle' : 'bx-share-alt' }} me-2'></i>{{ $sharedToClasses ? 'Batalkan Share' : 'Bagikan' }}
+                                                </button>
+                                            </form>
+                                        </li>
+                                    @else
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('guru.materi.edit', [$serial->id, $tema->id, $subtema->id, $itemId, $type]) }}">
+                                                <i class='bx bx-edit me-2'></i>Edit
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form action="{{ route('guru.materi.destroy', [$serial->id, $tema->id, $subtema->id, $itemId]) }}" method="POST" onsubmit="confirmSubmit(event, 'Konfirmasi Hapus', 'Hapus materi ini?', 'Ya, Hapus', true)">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="dropdown-item text-danger">
+                                                    <i class='bx bx-trash me-2'></i>Hapus
+                                                </button>
+                                            </form>
+                                        </li>
+                                    @endif
+                                </x-action-dropdown>
                             </div>
                         </div>
-                        @endif
-                    </div>
-                    @endif
                 </div>
             </div>
         </div>
@@ -239,14 +238,16 @@ document.addEventListener('DOMContentLoaded', function() {
             .map(cb => cb.value);
         
         if (selected.length === 0) {
-            alert('Pilih minimal satu materi!');
+            showError('Pilih minimal satu materi!');
             return;
         }
 
-        if (confirm(`Share ${selected.length} materi ke semua kelas?`)) {
-            postIdsInput.value = JSON.stringify(selected);
-            bulkShareForm.submit();
-        }
+        showConfirm('Konfirmasi Share', `Share ${selected.length} materi ke semua kelas?`, 'Ya, Lanjutkan').then((result) => {
+            if (result.isConfirmed) {
+                postIdsInput.value = JSON.stringify(selected);
+                bulkShareForm.submit();
+            }
+        });
     });
 });
 </script>

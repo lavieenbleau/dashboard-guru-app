@@ -116,23 +116,22 @@
                                 </div>
 
                                 <div class="row">
-                                    <!-- Jenis Soal -->
+                                    <!-- Tipe Soal -->
                                     <div class="col-md-6 mb-4">
-                                        <label for="exercise_model_id" class="form-label fw-bold">
-                                            <i class='bx bx-list-check me-1'></i>Jenis Soal <span class="text-danger">*</span>
+                                        <label for="exercise_type_id" class="form-label fw-bold">
+                                            <i class='bx bx-category me-1'></i>Tipe Soal <span class="text-danger">*</span>
                                         </label>
-                                        <select class="form-select @error('exercise_model_id') is-invalid @enderror" id="exercise_model_id" name="exercise_model_id" required>
-                                            <option value="">-- Pilih Jenis Soal --</option>
-                                            @foreach($exerciseModels as $model)
-                                                <option value="{{ $model->id }}" {{ old('exercise_model_id') == $model->id ? 'selected' : '' }}>
-                                                    {{ $model->name }}
+                                        <select class="form-select @error('exercise_type_id') is-invalid @enderror" id="exercise_type_id" name="exercise_type_id" required>
+                                            <option value="">-- Pilih Tipe Soal --</option>
+                                            @foreach($exerciseTypes as $type)
+                                                <option value="{{ $type->id }}" data-kode="{{ $type->kode }}" {{ old('exercise_type_id') == $type->id ? 'selected' : '' }}>
+                                                    {{ $type->name }}
                                                 </option>
                                             @endforeach
                                         </select>
-                                        @error('exercise_model_id')
+                                        @error('exercise_type_id')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
-                                        <small class="text-muted">Pilih dari berbagai jenis soal yang tersedia</small>
                                     </div>
 
                                     <!-- Tingkat Kesulitan -->
@@ -186,22 +185,23 @@
                                 </div>
 
                                 <div class="row">
-                                    <!-- Tipe Soal -->
+                                    <!-- Jenis Soal -->
                                     <div class="col-md-6 mb-4">
-                                        <label for="exercise_type_id" class="form-label fw-bold">
-                                            <i class='bx bx-category me-1'></i>Tipe Soal <span class="text-danger">*</span>
+                                        <label for="exercise_model_id" class="form-label fw-bold">
+                                            <i class='bx bx-list-check me-1'></i>Jenis Soal <span class="text-danger">*</span>
                                         </label>
-                                        <select class="form-select @error('exercise_type_id') is-invalid @enderror" id="exercise_type_id" name="exercise_type_id" required>
-                                            <option value="">-- Pilih Tipe Soal --</option>
-                                            @foreach($exerciseTypes as $type)
-                                                <option value="{{ $type->id }}" data-kode="{{ $type->kode }}" {{ old('exercise_type_id') == $type->id ? 'selected' : '' }}>
-                                                    {{ $type->name }}
+                                        <select class="form-select @error('exercise_model_id') is-invalid @enderror" id="exercise_model_id" name="exercise_model_id" required>
+                                            <option value="">-- Pilih Jenis Soal --</option>
+                                            @foreach($exerciseModels as $model)
+                                                <option value="{{ $model->id }}" {{ old('exercise_model_id') == $model->id ? 'selected' : '' }}>
+                                                    {{ $model->name }}
                                                 </option>
                                             @endforeach
                                         </select>
-                                        @error('exercise_type_id')
+                                        @error('exercise_model_id')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
+                                        <small class="text-muted">Pilih dari berbagai jenis soal yang tersedia</small>
                                     </div>
 
                                     <!-- Waktu Pengerjaan -->

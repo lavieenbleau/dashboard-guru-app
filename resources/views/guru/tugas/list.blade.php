@@ -84,7 +84,7 @@
                                 </li>
 
                                 <li>
-                                    <form action="{{ route('guru.tugas.destroy', [$serial->id, $lesson->id, $task->id]) }}" method="POST" onsubmit="return confirm('Hapus tugas ini?')">
+                                    <form action="{{ route('guru.tugas.destroy', [$serial->id, $lesson->id, $task->id]) }}" method="POST" onsubmit="confirmSubmit(event, 'Konfirmasi Hapus', 'Hapus tugas ini?', 'Ya, Hapus', true)">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="dropdown-item text-danger">

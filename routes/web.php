@@ -25,6 +25,13 @@ Route::middleware('auth')->get('/', function () {
 
 /*
 |--------------------------------------------------------------------------
+| Upload Image Global (Soal, Materi, Tugas)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->post('/upload/image', [\App\Http\Controllers\ImageUploadController::class, 'upload'])->name('upload.image');
+
+/*
+|--------------------------------------------------------------------------
 | MAIN GURU ROUTES (Tanpa prefix /guru)
 |--------------------------------------------------------------------------
 */
@@ -240,6 +247,11 @@ Route::prefix('aplikasi/{serial}/soal')->group(function() {
     
     // View exercise (read-only)
     Route::get('/lesson/{lesson}/view/{exerciseId}', [SoalController::class, 'viewExercise'])->name('guru.soal.view-exercise');
+    
+    // Hasil Pengerjaan Siswa
+    Route::get('/lesson/{lesson}/view/{exerciseId}/results', [SoalController::class, 'studentResults'])->name('guru.soal.student-results');
+    Route::get('/lesson/{lesson}/view/{exerciseId}/results/{studentId}', [SoalController::class, 'studentAnswerDetail'])->name('guru.soal.student-answer-detail');
+    Route::post('/lesson/{lesson}/view/{exerciseId}/results/{studentId}', [SoalController::class, 'saveManualGrade'])->name('guru.soal.save-manual-grade');
     
     // Grading route
     Route::post('/lesson/{lesson}/grade/{taskId}', [SoalController::class, 'grade'])->name('guru.soal.grade');

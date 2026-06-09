@@ -58,8 +58,12 @@ class KelasController extends Controller
     private function generateClassroomCode()
     {
         do {
-            // Generate random code: format CLS-XXXXXX (CLS + 6 random chars)
-            $code = 'CLS-' . strtoupper(\Illuminate\Support\Str::random(6));
+            $code = strtoupper(
+                \Illuminate\Support\Str::random(4) . '-' .
+                \Illuminate\Support\Str::random(4) . '-' .
+                \Illuminate\Support\Str::random(4) . '-' .
+                \Illuminate\Support\Str::random(4)
+            );
         } while (Classroom::where('code', $code)->exists());
 
         return $code;

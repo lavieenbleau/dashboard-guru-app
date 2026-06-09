@@ -61,7 +61,7 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <form action="{{ route('guru.onlineclass.destroy', [$serial->id, $meeting->id]) }}" method="POST" onsubmit="return confirm('Hapus jadwal ini?')">
+                                        <form action="{{ route('guru.onlineclass.destroy', [$serial->id, $meeting->id]) }}" method="POST" onsubmit="confirmSubmit(event, 'Konfirmasi Hapus', 'Hapus jadwal ini?', 'Ya, Hapus', true)">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="dropdown-item text-danger">
@@ -140,7 +140,7 @@
 <script>
 function copyCode(code) {
     navigator.clipboard.writeText(code);
-    alert('Kode berhasil disalin: ' + code);
+    showSuccess('Kode berhasil disalin: ' + code);
 }
 </script>
 @endsection

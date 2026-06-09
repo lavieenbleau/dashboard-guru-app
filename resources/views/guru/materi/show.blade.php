@@ -29,7 +29,7 @@
             <form action="{{ route('guru.materi.delete', [$serial->id, $lesson->id, $item->id]) }}" method="POST"
                 class="d-inline">
                 @csrf @method('DELETE')
-                <button onclick="return confirm('Hapus materi ini?')" class="btn btn-sm btn-danger">
+                <button onclick="confirmClick(event, 'Konfirmasi Hapus', 'Hapus materi ini?', 'Ya, Hapus', true)" class="btn btn-sm btn-danger">
                     Hapus
                 </button>
             </form>

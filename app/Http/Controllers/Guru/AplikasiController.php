@@ -10,10 +10,15 @@ class AplikasiController extends Controller
 {
     public function index()
     {
-        // daftar aplikasi (serials)
+        // daftar aplikasi (serials) dikelompokkan per produk dan ambil expired_at terjauh
         $serials = Serial::with('product')
             ->where('user_id', auth()->id())
-            ->get();
+            ->get()
+            ->groupBy('product_id')
+            ->map(function ($group) {
+                return $group->sortByDesc('expired_at')->first();
+            })
+            ->values();
 
         if ($serials->isEmpty()) {
             return view('guru.aplikasi.empty-state');
@@ -46,7 +51,7 @@ class AplikasiController extends Controller
 
         // 3. Validasi Kuota (Sudah dipakai oleh user lain)
         if (!is_null($serial->user_id)) {
-            return back()->with('error', 'Kuota serial telah habis digunakan.');
+            return back()->with('error', 'Kode serial sudah digunakan.');
         }
 
         // 4. Validasi Kedaluwarsa
@@ -54,18 +59,49 @@ class AplikasiController extends Controller
             return back()->with('error', 'Kode serial telah kedaluwarsa.');
         }
 
-        // Proses Aktivasi
-        $serial->user_id = auth()->id();
-        $serial->save();
+        // Cek apakah guru sudah punya serial untuk product_id ini
+        $existingSerial = Serial::where('user_id', auth()->id())
+                                ->where('product_id', $serial->product_id)
+                                ->orderByDesc('expired_at')
+                                ->first();
 
-        // Pencatatan Log
-        \App\Models\SerialLog::create([
-            'serial_id' => $serial->id,
-            'active' => $serial->active,
-            'status' => 'ACTIVATED BY USER ' . auth()->id(),
-        ]);
+        if ($existingSerial) {
+            // KASUS 2: PERPANJANGAN
+            // Tambahkan masa aktif ke serial lama
+            $baseDate = $existingSerial->expired_at && \Carbon\Carbon::parse($existingSerial->expired_at)->isFuture() 
+                        ? \Carbon\Carbon::parse($existingSerial->expired_at) 
+                        : now();
+            
+            $existingSerial->expired_at = $baseDate->addMonths((int)$serial->active);
+            $existingSerial->save();
 
-        return back()->with('success', 'Aplikasi berhasil ditambahkan ke akun Anda.');
+            // Catat log perpanjangan untuk serial lama
+            \App\Models\SerialLog::create([
+                'serial_id' => $existingSerial->id,
+                'active' => $serial->active,
+                'status' => 'Perpanjang',
+            ]);
+
+            // Konsumsi serial baru sebagai voucher
+            $serial->user_id = auth()->id();
+            $serial->expired_at = now();
+            $serial->save();
+
+            return back()->with('success', 'Masa aktif produk berhasil diperpanjang.');
+        } else {
+            // KASUS 1: PRODUK BARU
+            $serial->user_id = auth()->id();
+            $serial->expired_at = now()->addMonths((int)$serial->active);
+            $serial->save();
+
+            \App\Models\SerialLog::create([
+                'serial_id' => $serial->id,
+                'active' => $serial->active,
+                'status' => 'Baru',
+            ]);
+
+            return back()->with('success', 'Produk berhasil ditambahkan ke akun Anda.');
+        }
     }
 
     public function dashboard($serial)

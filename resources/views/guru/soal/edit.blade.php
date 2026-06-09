@@ -182,7 +182,12 @@ document.getElementById('addQuestion').addEventListener('click', function() {
             ['para', ['ul', 'ol', 'paragraph']],
             ['insert', ['picture', 'link']],
             ['view', ['fullscreen', 'codeview']]
-        ]
+        ],
+        callbacks: {
+            onImageUpload: function(files) {
+                uploadImage(files[0], 'soal', this);
+            }
+        }
     });
     
     updateRemoveButtons();
@@ -225,7 +230,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 ['para', ['ul', 'ol', 'paragraph']],
                 ['insert', ['picture', 'link']],
                 ['view', ['fullscreen', 'codeview']]
-            ]
+            ],
+            callbacks: {
+                onImageUpload: function(files) {
+                    uploadImage(files[0], 'soal', this);
+                }
+            }
         });
     }
 });

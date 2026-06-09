@@ -82,7 +82,7 @@
                             <a href="{{ route('guru.kelas.dashboard', [$serial->id, $classroom->id]) }}" class="btn btn-sm btn-info flex-grow-1">
                                 <i class='bx bx-user-circle me-1'></i>Kelola Siswa
                             </a>
-                            <form method="POST" action="{{ route('guru.kelas.destroy', [$serial->id, $classroom->id]) }}" onsubmit="return confirm('Hapus kelas ini?')" class="d-inline">
+                            <form method="POST" action="{{ route('guru.kelas.destroy', [$serial->id, $classroom->id]) }}" onsubmit="confirmSubmit(event, 'Konfirmasi Hapus', 'Hapus kelas ini?', 'Ya, Hapus', true)" class="d-inline">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-outline-danger">

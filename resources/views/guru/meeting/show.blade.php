@@ -73,7 +73,7 @@
                                     <form action="{{ route('guru.meeting.destroy', [$serial->id, $meeting->id]) }}" method="POST">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Hapus meeting ini?')">
+                                        <button type="submit" class="dropdown-item text-danger" onclick="confirmClick(event, 'Konfirmasi Hapus', 'Hapus meeting ini?', 'Ya, Hapus', true)">
                                             <i class='bx bx-trash me-2'></i>Hapus
                                         </button>
                                     </form>
@@ -195,7 +195,7 @@
                     <h6 class="mb-3"><i class='bx bx-stop-circle me-2'></i>Kontrol Meeting</h6>
                     <form action="{{ route('guru.meeting.end', [$serial->id, $meeting->id]) }}" method="POST">
                         @csrf
-                        <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Akhiri meeting ini?')">
+                        <button type="submit" class="btn btn-danger w-100" onclick="confirmClick(event, 'Konfirmasi Akhiri', 'Akhiri meeting ini?', 'Ya, Akhiri', true)">
                             <i class='bx bx-stop-circle me-1'></i>Akhiri Meeting
                         </button>
                     </form>
@@ -214,7 +214,7 @@ function copyLink() {
     linkInput.select();
     document.execCommand('copy');
     
-    alert('Link berhasil disalin!');
+    showSuccess('Link berhasil disalin!');
 }
 
 function copyCode(code) {
@@ -225,7 +225,7 @@ function copyCode(code) {
     document.execCommand('copy');
     document.body.removeChild(textarea);
     
-    alert('Kode meeting berhasil disalin!');
+    showSuccess('Kode meeting berhasil disalin!');
 }
 </script>
 @endpush
