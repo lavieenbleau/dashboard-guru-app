@@ -68,6 +68,22 @@
                                     @endif
                                 </div>
                                 
+                                @php
+                                    $competences = collect();
+                                    if($exercise->exerciseItems) {
+                                        $competences = $exercise->exerciseItems->pluck('competence')->filter()->unique('id');
+                                    }
+                                @endphp
+                                <div class="mb-2">
+                                    @if($competences->count() > 0)
+                                        @foreach($competences as $kd)
+                                            <span class="badge bg-label-info me-1 mb-1" title="{{ $kd->description }}">[KD {{ $kd->point }}{{ $kd->description ? ' - ' . \Illuminate\Support\Str::limit($kd->description, 30) : '' }}]</span>
+                                        @endforeach
+                                    @else
+                                        <span class="badge bg-label-warning me-1 mb-1">[Belum Memiliki KD]</span>
+                                    @endif
+                                </div>
+                                
                                 @if($exercise->lesson)
                                 <p class="text-muted mb-2">
                                     <i class='bx bx-book me-1'></i>{{ $exercise->lesson->name ?? 'No lesson' }}

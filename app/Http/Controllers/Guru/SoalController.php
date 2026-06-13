@@ -102,7 +102,7 @@ class SoalController extends Controller
             $exercises = Exercise::where('serial_id', $serial->id)
                 ->where('lesson_id', $lesson->id)
                 ->where('is_admin', 0)
-                ->with(['lesson.mapel', 'exerciseItems', 'exerciseType'])
+                ->with(['lesson.mapel', 'exerciseItems.competence', 'exerciseType'])
                 ->orderBy('created_at', 'desc')
                 ->get();
         } else {
@@ -129,7 +129,7 @@ class SoalController extends Controller
                 $query->where('exercise_type_id', $exerciseTypeId);
             }
             
-            $exercises = $query->with(['lesson.mapel', 'exerciseItems', 'exerciseType', 'sharedSerials'])
+            $exercises = $query->with(['lesson.mapel', 'exerciseItems.competence', 'exerciseType', 'sharedSerials'])
                 ->orderBy('created_at', 'desc')
                 ->get();
         }
@@ -662,7 +662,7 @@ class SoalController extends Controller
         $exercises = Exercise::where('serial_id', $serial->id)
             ->where('exercise_type_id', $exerciseTypeId)
             ->where('is_admin', $type === 'admin' ? 1 : 0)
-            ->with('lesson')
+            ->with(['lesson', 'exerciseItems.competence'])
             ->orderBy('created_at', 'desc')
             ->get();
         
