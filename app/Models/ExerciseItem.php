@@ -16,13 +16,13 @@ class ExerciseItem extends Model
         'exercise_choice',
         'exercise_number',
         'question',
-        'options',
+        'selection',
         'answer',
         'is_user'
     ];
 
     protected $casts = [
-        'options' => 'array',
+        'selection' => 'array',
         'answer' => 'array',
     ];
 

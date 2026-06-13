@@ -126,7 +126,7 @@
                                                 <textarea class="form-control" name="questions[{{ $index }}][question]" rows="4" required>{{ $question['question'] ?? '' }}</textarea>
                                             </div>
 
-                                            @if(in_array($aiData['exercise_model_id'], [1, 2]) && isset($question['options']))
+                                            @if(in_array($aiData['exercise_model_id'], [1, 2]) && isset($question['selection']))
                                                 <!-- Pilihan Ganda Options (Model ID 1: Pilihan Ganda, Model ID 2: Pilihan Ganda Banyak) -->
                                                 <div class="mb-3">
                                                     <label class="form-label fw-bold">Pilihan Jawaban</label>
@@ -134,7 +134,7 @@
                                                         @foreach(['A', 'B', 'C', 'D'] as $optIndex => $optLabel)
                                                             <div class="input-group mb-2">
                                                                 <span class="input-group-text">{{ $optLabel }}</span>
-                                                                <input type="text" class="form-control" name="questions[{{ $index }}][options][]" value="{{ $question['options'][$optIndex] ?? '' }}" placeholder="Opsi {{ $optLabel }}">
+                                                                <input type="text" class="form-control" name="questions[{{ $index }}][selection][]" value="{{ $question['selection'][$optIndex] ?? '' }}" placeholder="Opsi {{ $optLabel }}">
                                                             </div>
                                                         @endforeach
                                                     </div>

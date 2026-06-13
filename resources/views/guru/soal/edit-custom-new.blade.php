@@ -82,7 +82,7 @@
                         <div id="multiple-choice-options" style="{{ $currentQuestionType == 'pilihan_ganda' ? '' : 'display:none;' }}">
                             @php
                                 $firstItem = $exercise->exerciseItems->first();
-                                $options = [
+                                $selection = [
                                     $firstItem->option_a ?? '',
                                     $firstItem->option_b ?? '',
                                     $firstItem->option_c ?? '',
@@ -93,7 +93,7 @@
                             @foreach(['A', 'B', 'C', 'D', 'E'] as $index => $letter)
                             <div class="mb-3">
                                 <label for="option_{{ strtolower($letter) }}" class="form-label">Pilihan {{ $letter }}</label>
-                                <input type="text" class="form-control" id="option_{{ strtolower($letter) }}" name="options[]" value="{{ old('options.' . $index, $options[$index]) }}" placeholder="Pilihan {{ $letter }}">
+                                <input type="text" class="form-control" id="option_{{ strtolower($letter) }}" name="selection[]" value="{{ old('selection.' . $index, $selection[$index]) }}" placeholder="Pilihan {{ $letter }}">
                             </div>
                             @endforeach
                         </div>

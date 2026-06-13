@@ -90,28 +90,34 @@
 
                             <!-- Options (if multiple choice) -->
                             @if($item->exerciseModel && $item->exerciseModel->name && str_contains($item->exerciseModel->name, 'Pilihan'))
-                                @if($item->options)
+                                @php
+                                    $answers = is_array($item->answer) ? $item->answer : json_decode($item->answer, true) ?? [];
+                                    if(!is_array($answers)) $answers = [$answers];
+                                @endphp
+                                @if($item->selection)
                                     <div class="mb-3">
                                         <h6 class="fw-bold mb-2">Pilihan Jawaban:</h6>
-                                        <div class="options-list">
-                                            @php
-                                                $options = json_decode($item->options, true) ?? [];
-                                                $letters = ['A', 'B', 'C', 'D', 'E'];
-                                            @endphp
-                                            @foreach($letters as $index => $letter)
-                                                @if(isset($options[$index]) && $options[$index])
-                                                    <div class="option-item p-2 mb-2 border rounded bg-light">
-                                                        <strong>{{ $letter }}.</strong> {!! $options[$index] !!}
-                                                    </div>
-                                                @elseif(isset($options[$letter]) && $options[$letter])
-                                                    <div class="option-item p-2 mb-2 border rounded bg-light">
-                                                        <strong>{{ $letter }}.</strong> {!! $options[$letter] !!}
-                                                    </div>
-                                                @endif
-                                            @endforeach
-                                        </div>
+                                        @php
+                                            $letters = ['A', 'B', 'C', 'D', 'E'];
+                                            $selection = is_array($item->selection) ? $item->selection : json_decode($item->selection, true) ?? [];
+                                        @endphp
+                                        @if(!empty($selection))
+                                            <div class="options-list">
+                                                @foreach($letters as $index => $letter)
+                                                    @if(isset($selection[$index]) && $selection[$index])
+                                                        <div class="option-item mb-2 {{ in_array($letter, $answers) || in_array((string)$index, $answers) ? 'text-success fw-bold' : '' }}">
+                                                            <strong>{{ $letter }}.</strong> {!! $selection[$index] !!}
+                                                        </div>
+                                                    @elseif(isset($selection[$letter]) && $selection[$letter])
+                                                        <div class="option-item mb-2 {{ in_array($letter, $answers) || in_array((string)$index, $answers) ? 'text-success fw-bold' : '' }}">
+                                                            <strong>{{ $letter }}.</strong> {!! $selection[$letter] !!}
+                                                        </div>
+                                                    @endif
+                                                @endforeach
+                                            </div>
+                                        @endif
                                     </div>
-                            @endif
+                                @endif
                             @endif
 
                             <!-- Answer Key -->

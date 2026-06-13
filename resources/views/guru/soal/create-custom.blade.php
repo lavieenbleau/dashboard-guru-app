@@ -363,10 +363,10 @@ document.addEventListener('DOMContentLoaded', function() {
             html = `
                 <div class="mb-3">
                     <h6 class="mb-3 fw-bold text-dark">Pilihan Jawaban</h6>
-                    <div class="mb-3"><label class="fw-bold">Pilihan A</label><textarea class="form-control summernote-option" name="questions[${idx}][options][]"></textarea></div>
-                    <div class="mb-3"><label class="fw-bold">Pilihan B</label><textarea class="form-control summernote-option" name="questions[${idx}][options][]"></textarea></div>
-                    <div class="mb-3"><label class="fw-bold">Pilihan C</label><textarea class="form-control summernote-option" name="questions[${idx}][options][]"></textarea></div>
-                    <div class="mb-3"><label class="fw-bold">Pilihan D</label><textarea class="form-control summernote-option" name="questions[${idx}][options][]"></textarea></div>
+                    <div class="mb-3"><label class="fw-bold">Pilihan A</label><textarea class="form-control summernote-option" name="questions[${idx}][selection][]"></textarea></div>
+                    <div class="mb-3"><label class="fw-bold">Pilihan B</label><textarea class="form-control summernote-option" name="questions[${idx}][selection][]"></textarea></div>
+                    <div class="mb-3"><label class="fw-bold">Pilihan C</label><textarea class="form-control summernote-option" name="questions[${idx}][selection][]"></textarea></div>
+                    <div class="mb-3"><label class="fw-bold">Pilihan D</label><textarea class="form-control summernote-option" name="questions[${idx}][selection][]"></textarea></div>
                     <div class="mt-4 pt-3 border-top">
                         <label class="form-label fw-bold text-primary">Jawaban Benar</label>
                         <select name="questions[${idx}][answer]" class="form-select border-primary" required>
@@ -380,10 +380,10 @@ document.addEventListener('DOMContentLoaded', function() {
             html = `
                 <div class="mb-3">
                     <h6 class="mb-3 fw-bold text-dark">Pilihan Jawaban (Pilihan Ganda Banyak)</h6>
-                    <div class="mb-3"><label class="fw-bold">Pilihan A</label><textarea class="form-control summernote-option" name="questions[${idx}][options][]"></textarea></div>
-                    <div class="mb-3"><label class="fw-bold">Pilihan B</label><textarea class="form-control summernote-option" name="questions[${idx}][options][]"></textarea></div>
-                    <div class="mb-3"><label class="fw-bold">Pilihan C</label><textarea class="form-control summernote-option" name="questions[${idx}][options][]"></textarea></div>
-                    <div class="mb-3"><label class="fw-bold">Pilihan D</label><textarea class="form-control summernote-option" name="questions[${idx}][options][]"></textarea></div>
+                    <div class="mb-3"><label class="fw-bold">Pilihan A</label><textarea class="form-control summernote-option" name="questions[${idx}][selection][]"></textarea></div>
+                    <div class="mb-3"><label class="fw-bold">Pilihan B</label><textarea class="form-control summernote-option" name="questions[${idx}][selection][]"></textarea></div>
+                    <div class="mb-3"><label class="fw-bold">Pilihan C</label><textarea class="form-control summernote-option" name="questions[${idx}][selection][]"></textarea></div>
+                    <div class="mb-3"><label class="fw-bold">Pilihan D</label><textarea class="form-control summernote-option" name="questions[${idx}][selection][]"></textarea></div>
                     <div class="mt-4 pt-3 border-top">
                         <label class="form-label fw-bold text-primary">Jawaban Benar (Bisa lebih dari satu)</label>
                         <div class="d-flex gap-4 p-3 bg-light border border-primary rounded">

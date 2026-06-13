@@ -175,7 +175,7 @@ class SoalController extends Controller
             'questions' => 'required|array|min:1',
             'questions.*.question' => 'required',
             'questions.*.answer' => 'nullable',
-            'questions.*.options' => 'nullable|array',
+            'questions.*.selection' => 'nullable|array',
             'classrooms' => 'nullable|array',
         ]);
 
@@ -213,14 +213,14 @@ class SoalController extends Controller
         foreach ($request->questions as $index => $questionData) {
             
             // Format Options / Selection (seperti Admin: flat array, tanpa key A/B/C)
-            $options = [];
-            if (in_array($exerciseModelId, [1, 2]) && isset($questionData['options'])) {
+            $selection = [];
+            if (in_array($exerciseModelId, [1, 2]) && isset($questionData['selection'])) {
                 // Ambil semua opsi yang tidak kosong
-                $options = array_values(array_filter($questionData['options'], function($opt) {
+                $selection = array_values(array_filter($questionData['selection'], function($opt) {
                     return trim(strip_tags($opt)) !== '';
                 }));
             }
-            $selectionJson = empty($options) ? json_encode([]) : json_encode($options);
+            $selectionJson = empty($selection) ? json_encode([]) : json_encode($selection);
 
             // Format Answer (seperti Admin: selalu JSON Array)
             $answerJson = json_encode([]);
@@ -249,10 +249,10 @@ class SoalController extends Controller
                 'exercise_type_id' => $request->exercise_type_id,
                 'exercise_model_id' => $exerciseModelId,
                 'competence_id' => null,
-                'exercise_choice' => empty($options) ? 0 : 1, // 1 jika ada opsi
+                'exercise_choice' => empty($selection) ? 0 : 1, // 1 jika ada opsi
                 'exercise_number' => $index + 1,
                 'question' => $questionData['question'],
-                'options' => $selectionJson, // Menggunakan JSON Array murni
+                'selection' => $selectionJson, // Menggunakan JSON Array murni
                 'answer' => $answerJson, // Menggunakan JSON Array murni
                 'is_user' => 1, // Created by user (guru)
             ];
@@ -303,7 +303,7 @@ class SoalController extends Controller
             'items.*.question_type' => 'required|in:pilihan_ganda,essai,jawaban_singkat,1,2,3,4,5',
             'items.*.question' => 'required',
             'items.*.answer' => 'nullable',
-            'items.*.options' => 'nullable|array',
+            'items.*.selection' => 'nullable|array',
             'classrooms' => 'nullable|array',
         ]);
 
@@ -320,14 +320,14 @@ class SoalController extends Controller
             $exerciseItem = ExerciseItem::findOrFail($itemData['id']);
             
             // Format Options / Selection (seperti Admin: flat array)
-            $options = [];
-            if (in_array($itemData['question_type'], [1, 2, 'pilihan_ganda']) && isset($itemData['options'])) {
+            $selection = [];
+            if (in_array($itemData['question_type'], [1, 2, 'pilihan_ganda']) && isset($itemData['selection'])) {
                 // Ambil semua opsi yang tidak kosong
-                $options = array_values(array_filter($itemData['options'], function($opt) {
+                $selection = array_values(array_filter($itemData['selection'], function($opt) {
                     return trim(strip_tags($opt)) !== '';
                 }));
             }
-            $selectionJson = empty($options) ? json_encode([]) : json_encode($options);
+            $selectionJson = empty($selection) ? json_encode([]) : json_encode($selection);
 
             // Format Answer (seperti Admin: selalu JSON Array)
             $answerJson = json_encode([]);
@@ -362,9 +362,9 @@ class SoalController extends Controller
                 'exercise_type_id' => $request->exercise_type_id,
                 'exercise_model_id' => $exerciseModelId,
                 'question' => $itemData['question'],
-                'options' => $selectionJson,
+                'selection' => $selectionJson,
                 'answer' => $answerJson,
-                'exercise_choice' => empty($options) ? 0 : 1,
+                'exercise_choice' => empty($selection) ? 0 : 1,
             ];
 
             $exerciseItem->update($updateData);
@@ -1029,7 +1029,7 @@ class SoalController extends Controller
             'questions.*.title' => 'required|max:255',
             'questions.*.question' => 'required',
             'questions.*.answer' => 'nullable',
-            'questions.*.options' => 'nullable|array',
+            'questions.*.selection' => 'nullable|array',
             'classrooms' => 'nullable|array',
         ]);
 
@@ -1075,17 +1075,17 @@ class SoalController extends Controller
             // Create exercise items (questions) for this single exercise
             foreach ($validQuestions as $index => $questionData) {
                 // Format Options / Selection
-                $options = [];
-                if (in_array($exerciseModel->id, [1, 2]) && isset($questionData['options'])) {
-                    $options = array_values(array_filter($questionData['options'], function($opt) {
+                $selection = [];
+                if (in_array($exerciseModel->id, [1, 2]) && isset($questionData['selection'])) {
+                    $selection = array_values(array_filter($questionData['selection'], function($opt) {
                         return trim(strip_tags(is_array($opt) ? ($opt['text'] ?? '') : $opt)) !== '';
                     }));
                     // AI sometimes returns {"key": "A", "text": "value"}, let's extract text if so
-                    $options = array_map(function($opt) {
+                    $selection = array_map(function($opt) {
                         return is_array($opt) ? ($opt['text'] ?? '') : $opt;
-                    }, $options);
+                    }, $selection);
                 }
-                $selectionJson = empty($options) ? json_encode([]) : json_encode($options);
+                $selectionJson = empty($selection) ? json_encode([]) : json_encode($selection);
 
                 // Format Answer
                 $answerJson = json_encode([]);
@@ -1113,10 +1113,10 @@ class SoalController extends Controller
                     'exercise_type_id' => $request->exercise_type_id,
                     'exercise_model_id' => $request->exercise_model_id,
                     'competence_id' => null,
-                    'exercise_choice' => empty($options) ? 0 : 1,
+                    'exercise_choice' => empty($selection) ? 0 : 1,
                     'exercise_number' => $index + 1,
                     'question' => $questionData['question'],
-                    'options' => $selectionJson,
+                    'selection' => $selectionJson,
                     'answer' => $answerJson,
                     'is_user' => 1,
                 ];
