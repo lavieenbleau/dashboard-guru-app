@@ -309,8 +309,8 @@ class SoalController extends Controller
             'title' => 'required|max:255',
             'time_limit' => 'required|integer|min:1|max:480',
             'items' => 'required|array|min:1',
-            'items.*.id' => 'required|exists:exercise_items,id',
-            'items.*.question_type' => 'required|in:pilihan_ganda,essai,jawaban_singkat,1,2,3,4,5',
+            'items.*.id' => 'required',
+            'items.*.question_type' => 'required|in:pilihan_ganda,essai,jawaban_singkat,1,2,3,4,5,6,7',
             'items.*.question' => 'required',
             'items.*.answer' => 'nullable',
             'items.*.selection' => 'nullable|array',
@@ -327,7 +327,6 @@ class SoalController extends Controller
 
         // Update each exercise item
         foreach ($request->items as $itemData) {
-            $exerciseItem = ExerciseItem::findOrFail($itemData['id']);
             
             // Format Options / Selection (seperti Admin: flat array)
             $selection = [];
@@ -377,7 +376,22 @@ class SoalController extends Controller
                 'exercise_choice' => empty($selection) ? 0 : 1,
             ];
 
-            $exerciseItem->update($updateData);
+            if (str_starts_with((string)$itemData['id'], 'new_')) {
+                // Get the current max exercise_number for this exercise
+                $maxNumber = ExerciseItem::where('exercise_id', $exercise->id)->max('exercise_number') ?? 0;
+                
+                $newData = array_merge($updateData, [
+                    'admin_id' => null,
+                    'user_id' => auth()->id() ?? 1,
+                    'lesson_id' => $lesson->id,
+                    'exercise_id' => $exercise->id,
+                    'exercise_number' => $maxNumber + 1,
+                ]);
+                ExerciseItem::create($newData);
+            } else {
+                $exerciseItem = ExerciseItem::findOrFail($itemData['id']);
+                $exerciseItem->update($updateData);
+            }
         }
 
         // Share to classrooms
@@ -398,6 +412,71 @@ class SoalController extends Controller
 
         return redirect()->route('guru.soal.list-direct', [$serial->id, $lesson->id, $category])
             ->with('success', 'Soal tambahan berhasil diupdate!');
+    }
+
+    public function storeCustomItem(Request $request, $serial, $lesson, $id)
+    {
+        $serial = Serial::findOrFail($serial);
+        $lesson = Lesson::findOrFail($lesson);
+        $exercise = Exercise::findOrFail($id);
+
+        if ($exercise->is_admin == 1) {
+            return back()->with('swal_error', 'Soal Admin tidak dapat ditambah soal baru.');
+        }
+
+        $request->validate([
+            'question_type' => 'required|exists:exercise_models,id',
+            'question' => 'required',
+            'answer' => 'nullable',
+            'selection' => 'nullable|array',
+        ]);
+
+        $exerciseModelId = (int) $request->question_type;
+
+        // Format Options / Selection
+        $selection = [];
+        if (in_array($exerciseModelId, [1, 2]) && $request->has('selection')) {
+            $selection = array_values(array_filter($request->selection, function($opt) {
+                return trim(strip_tags($opt)) !== '';
+            }));
+        }
+        $selectionJson = empty($selection) ? json_encode([]) : json_encode($selection);
+
+        // Format Answer
+        $answerJson = json_encode([]);
+        if ($request->has('answer')) {
+            if (is_array($request->answer)) {
+                $answerJson = json_encode($request->answer);
+            } else {
+                $answerVal = trim($request->answer);
+                if ($answerVal !== '') {
+                    if (str_contains($answerVal, ',')) {
+                        $ansArr = array_values(array_filter(array_map('trim', explode(',', $answerVal))));
+                        $answerJson = json_encode($ansArr);
+                    } else {
+                        $answerJson = json_encode([$answerVal]);
+                    }
+                }
+            }
+        }
+
+        $maxNumber = ExerciseItem::where('exercise_id', $exercise->id)->max('exercise_number') ?? 0;
+
+        ExerciseItem::create([
+            'admin_id' => null,
+            'user_id' => auth()->id() ?? 1,
+            'lesson_id' => $lesson->id,
+            'exercise_id' => $exercise->id,
+            'exercise_type_id' => $exercise->exercise_type_id,
+            'exercise_model_id' => $exerciseModelId,
+            'exercise_number' => $maxNumber + 1,
+            'question' => $request->question,
+            'selection' => $selectionJson,
+            'answer' => $answerJson,
+            'exercise_choice' => empty($selection) ? 0 : 1,
+        ]);
+
+        return back()->with('success', 'Soal berhasil ditambahkan.');
     }
 
     public function destroyCustom($serial, $lesson, $id)

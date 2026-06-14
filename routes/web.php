@@ -236,6 +236,7 @@ Route::prefix('aplikasi/{serial}/soal')->group(function() {
     Route::post('/lesson/{lesson}/tambahan', [SoalController::class, 'storeCustom'])->name('guru.soal.store-custom');
     Route::get('/lesson/{lesson}/tambahan/{id}/edit', [SoalController::class, 'editCustom'])->name('guru.soal.edit-custom');
     Route::put('/lesson/{lesson}/tambahan/{id}', [SoalController::class, 'updateCustom'])->name('guru.soal.update-custom');
+    Route::post('/lesson/{lesson}/tambahan/{id}/add-item', [SoalController::class, 'storeCustomItem'])->name('guru.soal.store-custom-item');
     Route::delete('/lesson/{lesson}/tambahan/{id}', [SoalController::class, 'destroyCustom'])->name('guru.soal.destroy-custom');
     
     // AI Question Generator Routes

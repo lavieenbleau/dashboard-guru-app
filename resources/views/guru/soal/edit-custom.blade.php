@@ -75,7 +75,12 @@
 
                         <!-- Tabs untuk semua soal items -->
                         <div class="mb-4">
-                            <h6 class="mb-3"><i class='bx bx-list-check me-2'></i>Soal-soal dalam Paket ({{ count($exercise->exerciseItems) }} soal)</h6>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0"><i class='bx bx-list-check me-2'></i>Soal-soal dalam Paket ({{ count($exercise->exerciseItems) }} soal)</h6>
+                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addSoalModal">
+                                    <i class='bx bx-plus me-1'></i>Tambah Soal
+                                </button>
+                            </div>
                             
                             @if($exercise->exerciseItems->count() > 0)
                                 <!-- Nav Tabs -->
@@ -300,6 +305,44 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Tambah Soal -->
+<div class="modal fade" id="addSoalModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <form action="{{ route('guru.soal.store-custom-item', [$serial->id, $lesson->id, $exercise->id]) }}" method="POST">
+                @csrf
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold text-primary"><i class='bx bx-plus-circle me-2'></i>Tambah Soal Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-4">
+                        <label for="new_question_type" class="form-label fw-bold text-dark">Model Soal <span class="text-danger">*</span></label>
+                        <select class="form-select border-primary" id="new_question_type" name="question_type" required>
+                            <option value="">-- Pilih Model Soal --</option>
+                            @foreach($exerciseModels as $model)
+                                <option value="{{ $model->id }}">{{ $model->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div id="newQuestionSection" style="display: none;">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark">Pertanyaan/Soal <span class="text-danger">*</span></label>
+                            <textarea class="form-control summernote-modal" name="question" required></textarea>
+                        </div>
+                        <div id="dynamicInputsContainerModal" class="bg-light p-4 rounded border border-primary"></div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-top">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary fw-bold" id="btnSimpanSoal" style="display: none;">Simpan Soal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
@@ -352,6 +395,159 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // JS for Modal Tambah Soal
+    const newQuestionType = document.getElementById('new_question_type');
+    const newQuestionSection = document.getElementById('newQuestionSection');
+    const dynamicInputsContainerModal = document.getElementById('dynamicInputsContainerModal');
+    const btnSimpanSoal = document.getElementById('btnSimpanSoal');
+
+    newQuestionType.addEventListener('change', function() {
+        if (this.value) {
+            newQuestionSection.style.display = 'block';
+            btnSimpanSoal.style.display = 'inline-block';
+            renderDynamicInputsModal();
+        } else {
+            newQuestionSection.style.display = 'none';
+            btnSimpanSoal.style.display = 'none';
+        }
+    });
+
+    function renderDynamicInputsModal() {
+        const modelId = newQuestionType.value;
+        const modelText = (newQuestionType.options[newQuestionType.selectedIndex].text || '').trim().toLowerCase();
+        
+        let html = '';
+        if (modelId == 1 || modelText === 'pilihan ganda') { // PG
+            html = `
+                <div class="mb-3">
+                    <h6 class="mb-3 fw-bold text-dark">Pilihan Jawaban</h6>
+                    <div class="mb-3"><label class="fw-bold">Pilihan A</label><textarea class="form-control summernote-modal-option" name="selection[]"></textarea></div>
+                    <div class="mb-3"><label class="fw-bold">Pilihan B</label><textarea class="form-control summernote-modal-option" name="selection[]"></textarea></div>
+                    <div class="mb-3"><label class="fw-bold">Pilihan C</label><textarea class="form-control summernote-modal-option" name="selection[]"></textarea></div>
+                    <div class="mb-3"><label class="fw-bold">Pilihan D</label><textarea class="form-control summernote-modal-option" name="selection[]"></textarea></div>
+                    <div class="mt-4 pt-3 border-top border-primary">
+                        <label class="form-label fw-bold text-primary">Jawaban Benar</label>
+                        <select name="answer" class="form-select border-primary" required>
+                            <option value="">-- Pilih Kunci Jawaban --</option>
+                            <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+        } else if (modelId == 2 || modelText === 'pilihan ganda banyak') { // PG Banyak
+            html = `
+                <div class="mb-3">
+                    <h6 class="mb-3 fw-bold text-dark">Pilihan Jawaban (Pilihan Ganda Banyak)</h6>
+                    <div class="mb-3"><label class="fw-bold">Pilihan A</label><textarea class="form-control summernote-modal-option" name="selection[]"></textarea></div>
+                    <div class="mb-3"><label class="fw-bold">Pilihan B</label><textarea class="form-control summernote-modal-option" name="selection[]"></textarea></div>
+                    <div class="mb-3"><label class="fw-bold">Pilihan C</label><textarea class="form-control summernote-modal-option" name="selection[]"></textarea></div>
+                    <div class="mb-3"><label class="fw-bold">Pilihan D</label><textarea class="form-control summernote-modal-option" name="selection[]"></textarea></div>
+                    <div class="mt-4 pt-3 border-top border-primary">
+                        <label class="form-label fw-bold text-primary">Jawaban Benar (Bisa lebih dari satu)</label>
+                        <div class="d-flex gap-4 p-3 bg-white border border-primary rounded">
+                            <div class="form-check"><input type="checkbox" class="form-check-input" name="answer[]" value="A" id="modalAnsA"><label for="modalAnsA" class="form-check-label fw-bold">A</label></div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" name="answer[]" value="B" id="modalAnsB"><label for="modalAnsB" class="form-check-label fw-bold">B</label></div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" name="answer[]" value="C" id="modalAnsC"><label for="modalAnsC" class="form-check-label fw-bold">C</label></div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" name="answer[]" value="D" id="modalAnsD"><label for="modalAnsD" class="form-check-label fw-bold">D</label></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (modelId == 3 || modelText === 'pernyataan') { // Benar Salah
+            html = `
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-primary">Kunci Jawaban</label>
+                    <select name="answer" class="form-select border-primary" required>
+                        <option value="">-- Pilih Benar/Salah --</option>
+                        <option value="Benar">Benar</option>
+                        <option value="Salah">Salah</option>
+                    </select>
+                </div>
+            `;
+        } else if (modelId == 4 || modelText === 'isian') { // Isian
+            html = `
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-primary">Kunci Jawaban</label>
+                    <input type="text" name="answer" class="form-control border-primary" placeholder="Isi jawaban benar..." required autocomplete="off" spellcheck="false">
+                </div>
+            `;
+        } else if (modelId == 5 || modelId == 7 || modelText === 'uraian' || modelText === 'argumen') { // Uraian / Argumen
+            html = `
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-primary">Panduan / Referensi Jawaban</label>
+                    <div class="border border-primary rounded overflow-hidden">
+                        <textarea class="form-control summernote-modal-answer border-0" name="answer" required></textarea>
+                    </div>
+                </div>
+            `;
+        } else if (modelId == 6 || modelText === 'iya tidak') { // Iya Tidak
+            html = `
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-primary">Kunci Jawaban</label>
+                    <select name="answer" class="form-select border-primary" required>
+                        <option value="">-- Pilih Iya/Tidak --</option>
+                        <option value="Iya">Iya</option>
+                        <option value="Tidak">Tidak</option>
+                    </select>
+                </div>
+            `;
+        }
+
+        // Destroy old summernotes
+        const oldSummernotes = dynamicInputsContainerModal.querySelectorAll('.summernote-modal-option, .summernote-modal-answer');
+        if (oldSummernotes.length > 0 && typeof $ !== 'undefined' && $.fn.summernote) {
+            try {
+                $(oldSummernotes).summernote('destroy');
+            } catch(e) {}
+        }
+
+        dynamicInputsContainerModal.innerHTML = html;
+
+        // Init new summernotes
+        if (typeof $ !== 'undefined' && $.fn.summernote) {
+            $(dynamicInputsContainerModal.querySelectorAll('.summernote-modal-option, .summernote-modal-answer')).summernote({
+                height: 100,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'italic', 'underline', 'clear']],
+                    ['para', ['ul', 'ol']],
+                    ['insert', ['picture', 'link']],
+                    ['view', ['fullscreen', 'codeview']]
+                ],
+                callbacks: {
+                    onImageUpload: function(files) {
+                        uploadImage(files[0], 'soal', this);
+                    }
+                }
+            });
+        }
+    }
+
+    // Modal shown event
+    const addSoalModal = document.getElementById('addSoalModal');
+    addSoalModal.addEventListener('shown.bs.modal', function () {
+        if (typeof $ !== 'undefined' && $.fn.summernote) {
+            if (!$('.summernote-modal').data('summernote')) {
+                $('.summernote-modal').summernote({
+                    height: 150,
+                    toolbar: [
+                        ['style', ['style']],
+                        ['font', ['bold', 'italic', 'underline', 'clear']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['insert', ['picture', 'link']],
+                        ['view', ['fullscreen', 'codeview']]
+                    ],
+                    callbacks: {
+                        onImageUpload: function(files) {
+                            uploadImage(files[0], 'soal', this);
+                        }
+                    }
+                });
+            }
+        }
+    });
+
 });
 </script>
 @endsection
