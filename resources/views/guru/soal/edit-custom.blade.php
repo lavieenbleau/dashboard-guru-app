@@ -3,57 +3,9 @@
 @section('styles')
 <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
 <style>
-    /* Typography & Color System Fix */
-    /* Headings */
-    h5, h6, .card-header h5, .card-header h6 {
-        color: #1e293b !important;
-        font-weight: 700 !important;
-    }
-    
-    /* Labels */
-    label, .form-label, .fw-bold {
-        color: #334155 !important;
-        font-weight: 600 !important;
-    }
-
-    /* Inputs */
-    .form-control, .form-select {
-        color: #1e293b !important;
-    }
-
-    /* Placeholders */
-    .form-control::placeholder {
-        color: #94a3b8 !important;
-        opacity: 1 !important;
-    }
-
-    /* Text Helpers */
-    .text-muted, small.text-muted {
-        color: #64748b !important;
-        font-size: 0.875rem !important;
-    }
-
-    /* Checkbox Labels */
-    .form-check-label {
-        color: #334155 !important;
-        font-weight: 500 !important;
-    }
-
-    /* Summernote Editor */
-    .note-editor .note-toolbar, .note-editor .note-btn {
-        color: #334155 !important;
-    }
-    .note-editor .note-editable {
-        color: #1e293b !important;
-        background-color: #ffffff !important;
-    }
-
-    /* Existing Summernote constraints */
     .note-editor .note-editing-area { min-height: 150px; max-height: 300px; overflow-y: auto; }
     .summernote-option-container .note-editor .note-editing-area { max-height: 150px; }
     .note-editor .note-dropzone { opacity: 0 !important; }
-    
-    /* Sticky Footer */
     .sticky-footer {
         position: sticky;
         bottom: 0;
@@ -185,15 +137,15 @@
                                                 <div class="card-body mt-3">
                                                     <div class="row">
                                                         <div class="col-md-4 mb-3">
-                                                            <label class="form-label">Nomor Soal</label>
+                                                            <label class="form-label text-muted">Nomor Soal</label>
                                                             <input type="text" class="form-control bg-light" value="{{ $index + 1 }}" readonly>
                                                         </div>
                                                         <div class="col-md-4 mb-3">
-                                                            <label class="form-label">Tipe Soal</label>
+                                                            <label class="form-label text-muted">Tipe Soal</label>
                                                             <input type="text" class="form-control bg-light" value="{{ $item->exerciseModel->name ?? 'Tipe Soal' }}" readonly>
                                                         </div>
                                                         <div class="col-md-4 mb-3">
-                                                            <label class="form-label">Kompetensi Dasar</label>
+                                                            <label class="form-label text-muted">Kompetensi Dasar</label>
                                                             <input type="text" class="form-control bg-light" value="{{ !empty($item->competence_id) && $item->competence ? 'KD ' . $item->competence->point : 'Tidak Ada' }}" readonly>
                                                         </div>
                                                     </div>
