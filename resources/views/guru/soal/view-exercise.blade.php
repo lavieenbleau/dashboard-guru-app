@@ -17,8 +17,8 @@
             <!-- Exercise Header -->
             <div class="card mb-4">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div>
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+                        <div class="flex-grow-1">
                             <h4 class="mb-2">{{ $exercise->title }}</h4>
                             <div class="d-flex gap-2 flex-wrap">
                                 @if($exercise->lesson && $exercise->lesson->mapel)
@@ -45,8 +45,25 @@
                                 @endif
                             </div>
                         </div>
-                        <div>
-                            <small class="text-muted d-block text-end">Dibuat: {{ $exercise->created_at->format('d M Y H:i') }}</small>
+                        <div class="d-flex flex-column align-items-start align-items-md-end gap-2">
+                            <div class="d-flex gap-2 flex-wrap">
+                                <a href="{{ route('guru.soal.list-direct', [$serial->id, $lesson->id, 'tambahan']) }}" class="btn btn-sm btn-outline-secondary">
+                                    <i class='bx bx-arrow-back me-1'></i>Kembali
+                                </a>
+                                @if($exercise->is_admin != 1)
+                                <a href="{{ route('guru.soal.edit-custom', [$serial->id, $lesson->id, $exercise->id]) }}" class="btn btn-sm btn-primary">
+                                    <i class='bx bx-edit me-1'></i>Edit Soal
+                                </a>
+                                <form method="POST" action="{{ route('guru.soal.destroy-custom', [$serial->id, $lesson->id, $exercise->id]) }}" class="d-inline" onsubmit="confirmSubmit(event, 'Konfirmasi Hapus', 'Apakah Anda yakin ingin menghapus soal ini?', 'Ya, Hapus', true);">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class='bx bx-trash me-1'></i>Hapus
+                                    </button>
+                                </form>
+                                @endif
+                            </div>
+                            <small class="text-muted mt-1">Dibuat: {{ $exercise->created_at->format('d M Y H:i') }}</small>
                         </div>
                     </div>
                 </div>
@@ -166,24 +183,7 @@
                 </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="card">
-                <div class="card-body d-flex gap-2">
-                    <a href="{{ route('guru.soal.list-direct', [$serial->id, $lesson->id, 'tambahan']) }}" class="btn btn-secondary">
-                        <i class='bx bx-arrow-back me-1'></i>Kembali
-                    </a>
-                    <a href="{{ route('guru.soal.edit-custom', [$serial->id, $lesson->id, $exercise->id]) }}" class="btn btn-primary">
-                        <i class='bx bx-edit me-1'></i>Edit Soal
-                    </a>
-                    <form method="POST" action="{{ route('guru.soal.destroy-custom', [$serial->id, $lesson->id, $exercise->id]) }}" style="display: inline;" onsubmit="confirmSubmit(event, 'Konfirmasi Hapus', 'Apakah Anda yakin ingin menghapus soal ini?', 'Ya, Hapus', true);">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger">
-                            <i class='bx bx-trash me-1'></i>Hapus
-                        </button>
-                    </form>
-                </div>
-            </div>
+
         </div>
     </div>
 </div>
