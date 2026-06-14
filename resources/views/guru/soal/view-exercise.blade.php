@@ -86,7 +86,7 @@
                             <div class="mb-3">
                                 @if(!empty($item->competence_id) && $item->competence)
                                     <div class="mb-2">
-                                        <span class="badge bg-label-info">
+                                        <span class="badge bg-label-warning">
                                             KD: {{ $item->competence->point }}{{ $item->competence->description ? ' - ' . \Illuminate\Support\Str::limit($item->competence->description, 30) : '' }}
                                         </span>
                                     </div>

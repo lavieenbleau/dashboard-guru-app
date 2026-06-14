@@ -129,7 +129,7 @@
                                             @endphp
                                             @if($kompetensi)
                                                 <div class="mb-3">
-                                                    <span class="badge bg-label-info">
+                                                    <span class="badge bg-label-warning">
                                                         KD: {{ $kompetensi->point }}{{ $kompetensi->description ? ' - ' . \Illuminate\Support\Str::limit($kompetensi->description, 30) : '' }}
                                                     </span>
                                                 </div>
