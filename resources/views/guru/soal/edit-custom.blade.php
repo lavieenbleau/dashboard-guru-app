@@ -3,9 +3,74 @@
 @section('styles')
 <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
 <style>
-    /* Summernote constraints */
-    .note-editor .note-editing-area { min-height: 250px; max-height: 400px; overflow-y: auto; }
-    .summernote-option-container .note-editor .note-editing-area { min-height: 120px; max-height: 150px; }
+    /* Typography & Color System Fix */
+    /* Headings */
+    h5, h6, .card-header h5, .card-header h6 {
+        color: #1e293b !important;
+        font-weight: 700 !important;
+    }
+    
+    /* Labels */
+    label, .form-label, .fw-bold, .card-body label, .card-body .fw-bold {
+        color: #334155 !important;
+        font-weight: 600 !important;
+    }
+
+    /* Inputs */
+    .form-control, .form-select, .form-control[readonly] {
+        color: #1e293b !important;
+    }
+
+    /* Placeholders */
+    .form-control::placeholder {
+        color: #94a3b8 !important;
+        opacity: 1 !important;
+    }
+
+    /* Text Helpers */
+    .text-muted, small.text-muted {
+        color: #64748b !important;
+        font-size: 0.875rem !important;
+    }
+
+    /* Checkbox Labels */
+    .form-check-label {
+        color: #334155 !important;
+        font-weight: 500 !important;
+    }
+
+    /* Summernote Editor */
+    .note-editor .note-toolbar, .note-editor .note-statusbar, .note-editor .note-btn {
+        color: #334155 !important;
+        background-color: #ffffff !important;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .note-editor, .note-editor.note-frame, .note-editor .note-editing-area, .note-editor .note-editable {
+        color: #1e293b !important;
+        background-color: #ffffff !important;
+    }
+    .note-editor.note-frame {
+        border-color: #cbd5e1 !important;
+        box-shadow: none !important;
+    }
+    .note-editor.note-frame .note-statusbar {
+        background-color: #ffffff !important;
+        border-top: 1px solid #e2e8f0;
+    }
+    
+    /* Ultimate fallback for modal */
+    .modal-content .note-editor.note-frame, 
+    .modal-content .note-editor .note-toolbar,
+    .modal-content .note-editor .note-statusbar {
+        background-color: #ffffff !important;
+    }
+    .modal-content label {
+        color: #334155 !important;
+    }
+
+    /* Existing Summernote constraints */
+    .note-editor .note-editing-area { min-height: 150px; max-height: 300px; overflow-y: auto; }
+    .summernote-option-container .note-editor .note-editing-area { max-height: 150px; }
     .note-editor .note-dropzone { opacity: 0 !important; }
     
     /* Sticky Footer */
@@ -18,17 +83,6 @@
         padding: 1rem;
         box-shadow: 0 -0.125rem 0.25rem rgba(161, 172, 184, 0.075);
     }
-
-    /* Navigator */
-    .question-navigator {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-        margin-bottom: 1.5rem;
-    }
-    .btn-nav-soal {
-        min-width: 80px;
-    }
 </style>
 @endsection
 
@@ -39,460 +93,599 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('guru.soal', $serial->id) }}">Bank Soal</a></li>
             <li class="breadcrumb-item"><a href="{{ route('guru.soal.lesson', [$serial->id, $lesson->id]) }}">{{ $lesson->name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.soal.list-direct', [$serial->id, $lesson->id, $category]) }}">{{ $categoryInfo['name'] }}</a></li>
             <li class="breadcrumb-item active">Edit Soal</li>
         </ol>
     </nav>
 
-    <form id="mainForm" action="{{ route('guru.soal.update-custom', [$serial->id, $lesson->id, $exercise->id]) }}" method="POST">
+    <form action="{{ route('guru.soal.update-custom', [$serial->id, $lesson->id, $exercise->id]) }}" method="POST">
         @csrf
         @method('PUT')
         
-        <!-- Hidden fields for package level data to satisfy validation -->
-        <input type="hidden" name="lesson_id" value="{{ $exercise->lesson_id ?? $lesson->id }}">
-        <input type="hidden" name="exercise_type_id" value="{{ $exercise->exercise_type_id }}">
-        <input type="hidden" name="title" value="{{ $exercise->title }}">
-        <input type="hidden" name="time_limit" value="{{ $exercise->time_limit }}">
-
-        <!-- Navigator Horizontal -->
-        <div class="question-navigator" id="questionNavigator">
-            @foreach($exercise->exerciseItems as $index => $item)
-                <button type="button" class="btn btn-nav-soal {{ $index === 0 ? 'btn-primary' : 'btn-outline-primary' }}" data-index="{{ $index }}">
-                    Soal {{ $index + 1 }}
-                </button>
-            @endforeach
-            <button type="button" class="btn btn-outline-success" id="btnTambahSoal">
-                <i class='bx bx-plus me-1'></i>Tambah Soal
-            </button>
-        </div>
-
-        <!-- Panels Container -->
-        <div id="panelsContainer">
-            @foreach($exercise->exerciseItems as $index => $item)
-                <div class="question-panel" id="panel-{{ $index }}" style="{{ $index === 0 ? '' : 'display:none;' }}">
-                    <input type="hidden" name="items[{{ $index }}][id]" value="{{ $item->id }}" class="item-id-input">
-                    <input type="hidden" name="items[{{ $index }}][question_type]" value="{{ $item->exercise_model_id }}" class="item-type-input">
-
-                    <!-- Card Informasi -->
-                    <div class="card shadow-none border mb-4">
-                        <div class="card-body pb-0">
-                            <h5 class="mb-2">Soal #<span class="soal-number-display">{{ $index + 1 }}</span></h5>
-                            <div class="d-flex gap-2 flex-wrap mb-3">
-                                @if(!empty($item->competence_id) && $item->competence)
-                                    <span class="badge bg-label-warning">KD {{ $item->competence->point }}</span>
-                                @endif
-                                <span class="badge bg-label-info">{{ $item->exerciseModel->name ?? 'Tipe Soal' }}</span>
-                                <span class="badge bg-label-primary">Dibuat Guru</span>
-                            </div>
-                        </div>
+        <div class="row">
+            <div class="col-lg-8 col-xl-8 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Edit {{ $categoryInfo['name'] }}</h5>
                     </div>
+                    <div class="card-body">
 
-                    <!-- Card Pertanyaan -->
-                    <div class="card shadow-none border mb-4">
-                        <div class="card-header pb-0"><h6 class="mb-0">Pertanyaan</h6></div>
-                        <div class="card-body mt-3">
-                            <textarea class="form-control summernote-question" name="items[{{ $index }}][question]" required>{!! old("items.{$index}.question", $item->question ?? '') !!}</textarea>
+                        <!-- Pilih Paket Materi -->
+                        <div class="mb-3">
+                            <label class="form-label">Paket Materi</label>
+                            <input type="text" class="form-control" value="{{ $lesson->name }} (Mapel: {{ $lesson->mapel->name ?? '-' }})" disabled>
+                            <input type="hidden" name="lesson_id" value="{{ $lesson->id }}">
                         </div>
-                    </div>
 
-                    <!-- Opsi & Jawaban berdasarkan Model -->
-                    @php
-                        $modelId = $item->exercise_model_id;
-                        $selection = is_array($item->selection) ? $item->selection : json_decode($item->selection, true) ?? [];
-                        $answers = is_array($item->answer) ? $item->answer : json_decode($item->answer, true) ?? [];
-                    @endphp
+                        <!-- Tipe Soal -->
+                        <div class="mb-3">
+                            <label for="exercise_type_id" class="form-label">Tipe Soal <span class="text-danger">*</span></label>
+                            <select class="form-select @error('exercise_type_id') is-invalid @enderror" id="exercise_type_id" name="exercise_type_id" required>
+                                <option value="">-- Pilih Tipe --</option>
+                                @foreach($exerciseTypes as $type)
+                                    <option value="{{ $type->id }}" {{ (old('exercise_type_id', $exercise->exercise_type_id) == $type->id) ? 'selected' : '' }}>
+                                        {{ $type->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('exercise_type_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
 
-                    @if($modelId == 1) {{-- Pilihan Ganda --}}
-                        <div class="card shadow-none border mb-4 summernote-option-container">
-                            <div class="card-header pb-0"><h6 class="mb-0">Pilihan Jawaban</h6></div>
-                            <div class="card-body mt-3">
-                                <div class="row">
-                                    @foreach(['A', 'B', 'C', 'D'] as $i => $abjad)
-                                    <div class="col-md-6 mb-3">
-                                        <label class="fw-bold text-dark">Pilihan {{ $abjad }}</label>
-                                        <textarea class="form-control summernote-selection" name="items[{{ $index }}][selection][]">{!! $selection[$i] ?? '' !!}</textarea>
-                                    </div>
-                                    @endforeach
-                                </div>
+                        <!-- Judul Soal -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Judul Paket Soal <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('title') is-invalid @enderror" id="title" name="title" value="{{ old('title', $exercise->title) }}" placeholder="Contoh: Latihan Perkalian" required>
+                            @error('title')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Waktu Pengerjaan -->
+                        <div class="mb-3">
+                            <label for="time_limit" class="form-label">Waktu Pengerjaan (Menit) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control @error('time_limit') is-invalid @enderror" id="time_limit" name="time_limit" min="1" max="480" value="{{ old('time_limit', $exercise->time_limit) }}" placeholder="Contoh: 45" required>
+                            @error('time_limit')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">Masukkan durasi pengerjaan soal dalam menit (1-480 menit / 1 menit hingga 8 jam)</small>
+                        </div>
+
+                        <!-- Tabs untuk semua soal items -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0"><i class='bx bx-list-check me-2'></i>Soal-soal dalam Paket ({{ count($exercise->exerciseItems) }} soal)</h6>
+                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addSoalModal">
+                                    <i class='bx bx-plus me-1'></i>Tambah Soal
+                                </button>
                             </div>
-                        </div>
-                        <div class="card shadow-none border mb-4">
-                            <div class="card-header pb-0"><h6 class="mb-0">Kunci Jawaban</h6></div>
-                            <div class="card-body mt-3">
-                                <select name="items[{{ $index }}][answer]" class="form-select answer-select" required>
-                                    <option value="">-- Pilih Kunci Jawaban --</option>
-                                    @foreach(['A', 'B', 'C', 'D'] as $abjad)
-                                        <option value="{{ $abjad }}" {{ in_array($abjad, $answers) ? 'selected' : '' }}>{{ $abjad }}</option>
+                            
+                            @if($exercise->exerciseItems->count() > 0)
+                                <!-- Nav Tabs -->
+                                <ul class="nav nav-tabs mb-3" role="tablist">
+                                    @foreach($exercise->exerciseItems as $index => $item)
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link {{ $index === 0 ? 'active' : '' }}" 
+                                                    id="tab-soal-{{ $item->id }}" 
+                                                    data-bs-toggle="tab" 
+                                                    data-bs-target="#content-soal-{{ $item->id }}" 
+                                                    type="button" role="tab">
+                                                Soal #{{ $index + 1 }}
+                                            </button>
+                                        </li>
                                     @endforeach
-                                </select>
-                            </div>
-                        </div>
+                                </ul>
 
-                    @elseif($modelId == 2) {{-- Pilihan Ganda Kompleks --}}
-                        <div class="card shadow-none border mb-4 summernote-option-container">
-                            <div class="card-header pb-0"><h6 class="mb-0">Pilihan Jawaban</h6></div>
-                            <div class="card-body mt-3">
-                                <div class="row">
-                                    @foreach(['A', 'B', 'C', 'D'] as $i => $abjad)
-                                    <div class="col-md-6 mb-3">
-                                        <label class="fw-bold text-dark">Pilihan {{ $abjad }}</label>
-                                        <textarea class="form-control summernote-selection" name="items[{{ $index }}][selection][]">{!! $selection[$i] ?? '' !!}</textarea>
-                                    </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card shadow-none border mb-4">
-                            <div class="card-header pb-0"><h6 class="mb-0">Kunci Jawaban (Bisa lebih dari satu)</h6></div>
-                            <div class="card-body mt-3">
-                                <div class="d-flex gap-4 p-3 bg-light border rounded flex-wrap">
-                                    @foreach(['A', 'B', 'C', 'D'] as $abjad)
-                                        <div class="form-check">
-                                            <input type="checkbox" class="form-check-input answer-checkbox" name="items[{{ $index }}][answer][]" value="{{ $abjad }}" id="q{{$index}}ans{{$abjad}}" {{ in_array($abjad, $answers) ? 'checked' : '' }}>
-                                            <label for="q{{$index}}ans{{$abjad}}" class="form-check-label fw-bold">{{ $abjad }}</label>
+                                <!-- Tab Content -->
+                                <div class="tab-content border rounded p-3">
+                                    @foreach($exercise->exerciseItems as $index => $item)
+                                        <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}" 
+                                             id="content-soal-{{ $item->id }}" role="tabpanel">
+                                            
+                                            <input type="hidden" name="items[{{ $index }}][id]" value="{{ $item->id }}">
+                                            <input type="hidden" name="items[{{ $index }}][question_type]" value="{{ $item->exercise_model_id }}">
+
+                                            <!-- Header Card -->
+                                            <div class="card shadow-none border mb-4">
+                                                <div class="card-body pb-0">
+                                                    <h5 class="mb-2">Soal #{{ $index + 1 }}</h5>
+                                                    <div class="d-flex gap-2 flex-wrap mb-3">
+                                                        @if(!empty($item->competence_id) && $item->competence)
+                                                            <span class="badge bg-label-warning">KD {{ $item->competence->point }}{{ $item->competence->description ? ' - ' . \Illuminate\Support\Str::limit($item->competence->description, 30) : '' }}</span>
+                                                        @endif
+                                                        <span class="badge bg-label-info">{{ $item->exerciseModel->name ?? 'Tipe Soal' }}</span>
+                                                        <span class="badge bg-label-primary">Dibuat Guru</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Section 1: Informasi Soal -->
+                                            <div class="card shadow-none border mb-4">
+                                                <div class="card-header pb-0"><h6 class="mb-0">Informasi Soal</h6></div>
+                                                <div class="card-body mt-3">
+                                                    <div class="row">
+                                                        <div class="col-md-4 mb-3">
+                                                            <label class="form-label">Nomor Soal</label>
+                                                            <input type="text" class="form-control bg-light" value="{{ $index + 1 }}" readonly>
+                                                        </div>
+                                                        <div class="col-md-4 mb-3">
+                                                            <label class="form-label">Tipe Soal</label>
+                                                            <input type="text" class="form-control bg-light" value="{{ $item->exerciseModel->name ?? 'Tipe Soal' }}" readonly>
+                                                        </div>
+                                                        <div class="col-md-4 mb-3">
+                                                            <label class="form-label">Kompetensi Dasar</label>
+                                                            <input type="text" class="form-control bg-light" value="{{ !empty($item->competence_id) && $item->competence ? 'KD ' . $item->competence->point : 'Tidak Ada' }}" readonly>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Section 2: Pertanyaan -->
+                                            <div class="card shadow-none border mb-4">
+                                                <div class="card-header pb-0"><h6 class="mb-0">Pertanyaan</h6></div>
+                                                <div class="card-body mt-3">
+                                                    <textarea class="form-control summernote" name="items[{{ $index }}][question]" required>{!! old("items.{$index}.question", $item->question ?? '') !!}</textarea>
+                                                </div>
+                                            </div>
+
+                                            <!-- Opsi & Jawaban berdasarkan Model -->
+                                            @php
+                                                $modelId = $item->exercise_model_id;
+                                                $selection = is_array($item->selection) ? $item->selection : json_decode($item->selection, true) ?? [];
+                                                $answers = is_array($item->answer) ? $item->answer : json_decode($item->answer, true) ?? [];
+                                            @endphp
+
+                                            @if($modelId == 1) {{-- Pilihan Ganda --}}
+                                                <div class="card shadow-none border mb-4">
+                                                    <div class="card-header pb-0"><h6 class="mb-0">Jawaban Benar</h6></div>
+                                                    <div class="card-body mt-3">
+                                                        <select name="items[{{ $index }}][answer]" class="form-select" required>
+                                                            <option value="">-- Pilih Kunci Jawaban --</option>
+                                                            @foreach(['A', 'B', 'C', 'D'] as $abjad)
+                                                                <option value="{{ $abjad }}" {{ in_array($abjad, $answers) ? 'selected' : '' }}>{{ $abjad }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="card shadow-none border mb-4">
+                                                    <div class="card-header pb-0"><h6 class="mb-0">Pilihan Jawaban</h6></div>
+                                                    <div class="card-body mt-3">
+                                                        <div class="row">
+                                                            @foreach(['A', 'B', 'C', 'D'] as $i => $abjad)
+                                                            <div class="col-md-6 mb-3">
+                                                                <label class="fw-bold">Pilihan {{ $abjad }}</label>
+                                                                <textarea class="form-control summernote" name="items[{{ $index }}][selection][]">{!! $selection[$i] ?? '' !!}</textarea>
+                                                            </div>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            @elseif($modelId == 2) {{-- Pilihan Ganda Banyak --}}
+                                                <div class="card shadow-none border mb-4">
+                                                    <div class="card-header pb-0"><h6 class="mb-0">Jawaban Benar (Bisa lebih dari satu)</h6></div>
+                                                    <div class="card-body mt-3">
+                                                        <div class="d-flex gap-4 p-3 bg-light border rounded flex-wrap">
+                                                            @foreach(['A', 'B', 'C', 'D'] as $abjad)
+                                                                <div class="form-check">
+                                                                    <input type="checkbox" class="form-check-input" name="items[{{ $index }}][answer][]" value="{{ $abjad }}" id="q{{$index}}ans{{$abjad}}" {{ in_array($abjad, $answers) ? 'checked' : '' }}>
+                                                                    <label for="q{{$index}}ans{{$abjad}}" class="form-check-label fw-bold">{{ $abjad }}</label>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="card shadow-none border mb-4">
+                                                    <div class="card-header pb-0"><h6 class="mb-0">Pilihan Jawaban (Pilihan Ganda Banyak)</h6></div>
+                                                    <div class="card-body mt-3">
+                                                        <div class="row">
+                                                            @foreach(['A', 'B', 'C', 'D'] as $i => $abjad)
+                                                            <div class="col-md-6 mb-3">
+                                                                <label class="fw-bold">Pilihan {{ $abjad }}</label>
+                                                                <textarea class="form-control summernote" name="items[{{ $index }}][selection][]">{!! $selection[$i] ?? '' !!}</textarea>
+                                                            </div>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            @elseif($modelId == 3) {{-- Benar Salah --}}
+                                                <div class="card shadow-none border mb-4">
+                                                    <div class="card-header pb-0"><h6 class="mb-0">Kunci Jawaban</h6></div>
+                                                    <div class="card-body mt-3">
+                                                        <select name="items[{{ $index }}][answer]" class="form-select" required>
+                                                            <option value="">-- Pilih Benar/Salah --</option>
+                                                            <option value="Benar" {{ in_array('Benar', $answers) ? 'selected' : '' }}>Benar</option>
+                                                            <option value="Salah" {{ in_array('Salah', $answers) ? 'selected' : '' }}>Salah</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                            @elseif($modelId == 4) {{-- Isian --}}
+                                                <div class="card shadow-none border mb-4">
+                                                    <div class="card-header pb-0"><h6 class="mb-0">Kunci Jawaban</h6></div>
+                                                    <div class="card-body mt-3">
+                                                        <input type="text" name="items[{{ $index }}][answer]" class="form-control" value="{{ $answers[0] ?? '' }}" placeholder="Isi jawaban benar..." required autocomplete="off" spellcheck="false">
+                                                    </div>
+                                                </div>
+
+                                            @elseif($modelId == 5 || $modelId == 7) {{-- Uraian / Argumen --}}
+                                                <div class="card shadow-none border mb-4">
+                                                    <div class="card-header pb-0"><h6 class="mb-0">Panduan / Referensi Jawaban</h6></div>
+                                                    <div class="card-body mt-3">
+                                                        <textarea class="form-control summernote" name="items[{{ $index }}][answer]" required>{!! $answers[0] ?? '' !!}</textarea>
+                                                    </div>
+                                                </div>
+
+                                            @elseif($modelId == 6) {{-- Iya Tidak --}}
+                                                <div class="card shadow-none border mb-4">
+                                                    <div class="card-header pb-0"><h6 class="mb-0">Kunci Jawaban</h6></div>
+                                                    <div class="card-body mt-3">
+                                                        <select name="items[{{ $index }}][answer]" class="form-select" required>
+                                                            <option value="">-- Pilih Iya/Tidak --</option>
+                                                            <option value="Iya" {{ in_array('Iya', $answers) ? 'selected' : '' }}>Iya</option>
+                                                            <option value="Tidak" {{ in_array('Tidak', $answers) ? 'selected' : '' }}>Tidak</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                            
                                         </div>
                                     @endforeach
                                 </div>
-                            </div>
+                            @else
+                                <div class="alert alert-warning">Tidak ada soal items</div>
+                            @endif
                         </div>
-
-                    @elseif($modelId == 3) {{-- Benar Salah --}}
-                        <div class="card shadow-none border mb-4">
-                            <div class="card-header pb-0"><h6 class="mb-0">Kunci Jawaban</h6></div>
-                            <div class="card-body mt-3">
-                                <select name="items[{{ $index }}][answer]" class="form-select answer-select" required>
-                                    <option value="">-- Pilih Benar/Salah --</option>
-                                    <option value="Benar" {{ in_array('Benar', $answers) ? 'selected' : '' }}>Benar</option>
-                                    <option value="Salah" {{ in_array('Salah', $answers) ? 'selected' : '' }}>Salah</option>
-                                </select>
-                            </div>
-                        </div>
-
-                    @else {{-- Essai / Singkat --}}
-                        <div class="card shadow-none border mb-4">
-                            <div class="card-header pb-0"><h6 class="mb-0">Kunci Jawaban / Kata Kunci</h6></div>
-                            <div class="card-body mt-3">
-                                <textarea class="form-control summernote-answer answer-textarea" name="items[{{ $index }}][answer]">{!! $item->answer !!}</textarea>
-                                <small class="text-muted mt-2 d-block">Biarkan kosong jika akan diperiksa manual oleh guru.</small>
-                            </div>
-                        </div>
-                    @endif
+                    </div>
                 </div>
-            @endforeach
-        </div>
+            </div>
 
+            <div class="col-lg-4 col-xl-4">
+                <!-- Bagikan ke Kelas Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class='bx bx-share-alt me-2'></i>Bagikan ke Kelas</h6>
+                    </div>
+                    <div class="card-body">
+                            <input type="hidden" name="mapel_id" value="{{ $exercise->lesson->mapel_id }}">
+                            <input type="hidden" name="exercise_type_id" value="{{ $exercise->exercise_type_id }}">
+                            <input type="hidden" name="title" value="{{ $exercise->title }}">
+                            <input type="hidden" name="time_limit" value="{{ $exercise->time_limit }}">
+                            
+                            {{-- Hidden inputs for the rest of items so they don't get deleted --}}
+                            @foreach($exercise->exerciseItems as $index => $item)
+                                <input type="hidden" name="items[{{ $index }}][id]" value="{{ $item->id }}">
+                                <input type="hidden" name="items[{{ $index }}][question_type]" value="{{ $item->exercise_model_id }}">
+                                <input type="hidden" name="items[{{ $index }}][question]" value="{{ strip_tags($item->question) }}">
+                            @endforeach
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="selectAllClassrooms">
+                            <label class="form-check-label fw-bold" for="selectAllClassrooms">
+                                Pilih Semua Kelas
+                            </label>
+                        </div>
+                        <hr>
+
+                        @php
+                            $sharedClasses = is_array($exercise->shared_to_classes) ? $exercise->shared_to_classes : (json_decode($exercise->shared_to_classes, true) ?? []);
+                        @endphp
+
+                            @if($classrooms->count() > 0)
+                                <div class="classroom-list" style="max-height: 300px; overflow-y: auto;">
+                                    @foreach($classrooms as $classroom)
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input classroom-checkbox" type="checkbox" name="classrooms[]" 
+                                               value="{{ $classroom->id }}" id="classroom{{ $classroom->id }}"
+                                               {{ in_array($classroom->id, old('classrooms', $sharedClasses)) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="classroom{{ $classroom->id }}">
+                                            <span class="badge bg-info me-1">{{ $classroom->name }}</span>
+                                        </label>
+                                    </div>
+                                    @endforeach
+                                </div>
+                                <hr>
+                                <small class="text-muted d-block mb-3">Pilih kelas yang akan dapat mengakses soal ini</small>
+                            @else
+                                <div class="alert alert-warning mb-0" role="alert">
+                                    <small>Tidak ada kelas yang tersedia</small>
+                                </div>
+                            @endif
+                    </div>
+                </div>
+
+                <!-- Informasi Card -->
+                <div class="card shadow-sm mt-3 mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class='bx bx-info-circle me-2'></i>Petunjuk</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="mb-0 small text-muted">
+                            <li class="mb-1">✓ Isi semua field yang diperlukan</li>
+                            <li class="mb-1">✓ Setiap tab adalah satu soal terpisah</li>
+                            <li>✓ Kunci jawaban disesuaikan dengan tipe soal</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Sticky Footer -->
         <div class="sticky-footer d-flex justify-content-end gap-2 mt-4 rounded">
-            <a href="{{ route('guru.soal.list-direct', [$serial->id, $lesson->id, $category]) }}" class="btn btn-secondary">
+            <a href="{{ route('guru.soal.list-direct', [$serial->id, $lesson->id, $category]) }}" class="btn btn-label-secondary">
                 Batal
             </a>
-            <button type="button" class="btn btn-primary" id="btnSimpan">
-                <i class='bx bx-save me-1'></i> Simpan Perubahan
-            </button>
-            <button type="button" class="btn btn-success" id="btnSimpanLanjut">
-                <i class='bx bx-check-double me-1'></i> Simpan & Lanjut
+            <button type="submit" class="btn btn-primary">
+                Simpan Soal
             </button>
         </div>
     </form>
 </div>
 
-<!-- Template for New Panel -->
-<template id="newPanelTemplate">
-    <div class="question-panel is-new" style="display:none;">
-        <input type="hidden" name="question_type" value="{{ $exercise->exerciseItems->first()->exercise_model_id ?? 1 }}" class="item-type-input">
-        
-        <!-- Card Informasi -->
-        <div class="card shadow-none border mb-4">
-            <div class="card-body pb-0">
-                <h5 class="mb-2">Soal #<span class="soal-number-display">NEW</span></h5>
-                <div class="d-flex gap-2 flex-wrap mb-3">
-                    <span class="badge bg-label-info">{{ $exercise->exerciseItems->first()->exerciseModel->name ?? 'Pilihan Ganda' }}</span>
-                    <span class="badge bg-label-primary">Dibuat Guru</span>
+<!-- Modal Tambah Soal -->
+<div class="modal fade" id="addSoalModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <form action="{{ route('guru.soal.store-custom-item', [$serial->id, $lesson->id, $exercise->id]) }}" method="POST">
+                @csrf
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold text-primary"><i class='bx bx-plus-circle me-2'></i>Tambah Soal Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-            </div>
-        </div>
+                <div class="modal-body p-4">
+                    <div class="mb-4">
+                        <label for="new_question_type" class="form-label fw-bold text-dark">Model Soal <span class="text-danger">*</span></label>
+                        <select class="form-select border-primary" id="new_question_type" name="question_type" required>
+                            <option value="">-- Pilih Model Soal --</option>
+                            @foreach($exerciseModels as $model)
+                                <option value="{{ $model->id }}">{{ $model->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-        <!-- Card Pertanyaan -->
-        <div class="card shadow-none border mb-4">
-            <div class="card-header pb-0"><h6 class="mb-0">Pertanyaan</h6></div>
-            <div class="card-body mt-3">
-                <textarea class="form-control summernote-question" name="question" required></textarea>
-            </div>
-        </div>
-
-        @php
-            $templateModelId = $exercise->exerciseItems->first()->exercise_model_id ?? 1;
-        @endphp
-
-        @if($templateModelId == 1)
-            <div class="card shadow-none border mb-4 summernote-option-container">
-                <div class="card-header pb-0"><h6 class="mb-0">Pilihan Jawaban</h6></div>
-                <div class="card-body mt-3">
-                    <div class="row">
-                        @foreach(['A', 'B', 'C', 'D'] as $abjad)
-                        <div class="col-md-6 mb-3">
-                            <label class="fw-bold text-dark">Pilihan {{ $abjad }}</label>
-                            <textarea class="form-control summernote-selection" name="selection[]"></textarea>
+                    <div id="newQuestionSection" style="display: none;">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark">Pertanyaan/Soal <span class="text-danger">*</span></label>
+                            <textarea class="form-control summernote-modal" name="question" required></textarea>
                         </div>
-                        @endforeach
+                        <div id="dynamicInputsContainerModal" class="bg-light p-4 rounded border border-primary"></div>
                     </div>
                 </div>
-            </div>
-            <div class="card shadow-none border mb-4">
-                <div class="card-header pb-0"><h6 class="mb-0">Kunci Jawaban</h6></div>
-                <div class="card-body mt-3">
-                    <select name="answer" class="form-select answer-select" required>
-                        <option value="">-- Pilih Kunci Jawaban --</option>
-                        @foreach(['A', 'B', 'C', 'D'] as $abjad)
-                            <option value="{{ $abjad }}">{{ $abjad }}</option>
-                        @endforeach
-                    </select>
+                <div class="modal-footer bg-light border-top">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary fw-bold" id="btnSimpanSoal" style="display: none;">Simpan Soal</button>
                 </div>
-            </div>
-        @elseif($templateModelId == 2)
-            <div class="card shadow-none border mb-4 summernote-option-container">
-                <div class="card-header pb-0"><h6 class="mb-0">Pilihan Jawaban</h6></div>
-                <div class="card-body mt-3">
-                    <div class="row">
-                        @foreach(['A', 'B', 'C', 'D'] as $abjad)
-                        <div class="col-md-6 mb-3">
-                            <label class="fw-bold text-dark">Pilihan {{ $abjad }}</label>
-                            <textarea class="form-control summernote-selection" name="selection[]"></textarea>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-            <div class="card shadow-none border mb-4">
-                <div class="card-header pb-0"><h6 class="mb-0">Kunci Jawaban (Bisa lebih dari satu)</h6></div>
-                <div class="card-body mt-3">
-                    <div class="d-flex gap-4 p-3 bg-light border rounded flex-wrap">
-                        @foreach(['A', 'B', 'C', 'D'] as $abjad)
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input answer-checkbox" name="answer[]" value="{{ $abjad }}" id="new_ans_{{ $abjad }}">
-                                <label for="new_ans_{{ $abjad }}" class="form-check-label fw-bold">{{ $abjad }}</label>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-        @elseif($templateModelId == 3)
-            <div class="card shadow-none border mb-4">
-                <div class="card-header pb-0"><h6 class="mb-0">Kunci Jawaban</h6></div>
-                <div class="card-body mt-3">
-                    <select name="answer" class="form-select answer-select" required>
-                        <option value="">-- Pilih Benar/Salah --</option>
-                        <option value="Benar">Benar</option>
-                        <option value="Salah">Salah</option>
-                    </select>
-                </div>
-            </div>
-        @else
-            <div class="card shadow-none border mb-4">
-                <div class="card-header pb-0"><h6 class="mb-0">Kunci Jawaban / Kata Kunci</h6></div>
-                <div class="card-body mt-3">
-                    <textarea class="form-control summernote-answer answer-textarea" name="answer"></textarea>
-                </div>
-            </div>
-        @endif
+            </form>
+        </div>
     </div>
-</template>
+</div>
 @endsection
 
 @section('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    let currentPanelIndex = 0;
-    const navigatorContainer = document.getElementById('questionNavigator');
-    const panelsContainer = document.getElementById('panelsContainer');
-    const template = document.getElementById('newPanelTemplate');
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('selectAllClassrooms');
+    const classroomCheckboxes = document.querySelectorAll('.classroom-checkbox');
 
-    // Initialize Summernote
-    function initSummernote(element) {
-        $(element).summernote({
-            height: 250,
+    // Select all classrooms
+    selectAllCheckbox.addEventListener('change', function() {
+        classroomCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+    });
+
+    // Update select all checkbox state
+    classroomCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const allChecked = Array.from(classroomCheckboxes).every(cb => cb.checked);
+            const someChecked = Array.from(classroomCheckboxes).some(cb => cb.checked);
+            
+            selectAllCheckbox.checked = allChecked;
+            selectAllCheckbox.indeterminate = someChecked && !allChecked;
+        });
+    });
+
+    // Initial state for select all
+    const initialAllChecked = Array.from(classroomCheckboxes).every(cb => cb.checked);
+    const initialSomeChecked = Array.from(classroomCheckboxes).some(cb => cb.checked);
+    selectAllCheckbox.checked = initialAllChecked;
+    selectAllCheckbox.indeterminate = initialSomeChecked && !initialAllChecked;
+
+    // Initialize Summernote editors
+    if (typeof $ !== 'undefined' && $.fn.summernote) {
+        $('.summernote').summernote({
+            height: 150,
             toolbar: [
                 ['style', ['style']],
                 ['font', ['bold', 'italic', 'underline', 'clear']],
                 ['para', ['ul', 'ol', 'paragraph']],
-                ['table', ['table']],
-                ['insert', ['link', 'picture', 'video']],
-                ['view', ['codeview']]
-            ]
-        });
-    }
-
-    function initSummernoteOption(element) {
-        $(element).summernote({
-            height: 120,
-            toolbar: [
-                ['font', ['bold', 'italic', 'underline', 'clear']],
-                ['insert', ['link', 'picture']]
-            ]
-        });
-    }
-
-    // Initialize existing Summernotes
-    $('.summernote-question, .summernote-answer').each(function() { initSummernote(this); });
-    $('.summernote-selection').each(function() { initSummernoteOption(this); });
-
-    // Handle Navigation Click
-    navigatorContainer.addEventListener('click', function(e) {
-        if (e.target.classList.contains('btn-nav-soal')) {
-            const index = parseInt(e.target.getAttribute('data-index'));
-            switchPanel(index);
-        }
-    });
-
-    function switchPanel(index) {
-        // Update Buttons
-        document.querySelectorAll('.btn-nav-soal').forEach(btn => {
-            if(parseInt(btn.getAttribute('data-index')) === index) {
-                btn.classList.remove('btn-outline-primary');
-                btn.classList.add('btn-primary');
-            } else {
-                btn.classList.remove('btn-primary');
-                btn.classList.add('btn-outline-primary');
-            }
-        });
-
-        // Show/Hide Panels
-        document.querySelectorAll('.question-panel').forEach((panel, i) => {
-            if (i === index) {
-                panel.style.display = 'block';
-            } else {
-                panel.style.display = 'none';
-            }
-        });
-        currentPanelIndex = index;
-    }
-
-    // Handle Tambah Soal
-    document.getElementById('btnTambahSoal').addEventListener('click', function() {
-        const newIndex = document.querySelectorAll('.question-panel').length;
-        
-        // 1. Create Nav Button
-        const newBtn = document.createElement('button');
-        newBtn.type = 'button';
-        newBtn.className = 'btn btn-outline-primary btn-nav-soal';
-        newBtn.setAttribute('data-index', newIndex);
-        newBtn.innerText = 'Soal ' + (newIndex + 1);
-        
-        navigatorContainer.insertBefore(newBtn, this);
-
-        // 2. Clone Panel
-        const clone = template.content.cloneNode(true);
-        const newPanel = clone.querySelector('.question-panel');
-        newPanel.id = 'panel-' + newIndex;
-        newPanel.querySelector('.soal-number-display').innerText = (newIndex + 1);
-        
-        // Fix Checkbox IDs to avoid conflicts
-        newPanel.querySelectorAll('.answer-checkbox').forEach(cb => {
-            const oldId = cb.id;
-            const newId = oldId + '_' + newIndex;
-            cb.id = newId;
-            const label = cb.nextElementSibling;
-            if(label && label.tagName === 'LABEL') label.setAttribute('for', newId);
-        });
-
-        panelsContainer.appendChild(newPanel);
-
-        // 3. Initialize Summernotes
-        const panelEl = document.getElementById('panel-' + newIndex);
-        $(panelEl.querySelectorAll('.summernote-question, .summernote-answer')).each(function() { initSummernote(this); });
-        $(panelEl.querySelectorAll('.summernote-selection')).each(function() { initSummernoteOption(this); });
-
-        // 4. Switch to new panel
-        switchPanel(newIndex);
-    });
-
-    // Handle Simpan Action
-    async function processSimpan(redirectListDirect) {
-        const btnSimpan = document.getElementById('btnSimpan');
-        const btnSimpanLanjut = document.getElementById('btnSimpanLanjut');
-        
-        btnSimpan.disabled = true;
-        btnSimpanLanjut.disabled = true;
-        btnSimpan.innerHTML = '<i class="bx bx-loader bx-spin me-1"></i>Menyimpan...';
-
-        const newPanels = document.querySelectorAll('.question-panel.is-new');
-        
-        try {
-            // Process new items via storeCustomItem
-            for (const panel of newPanels) {
-                const formData = new FormData();
-                formData.append('_token', '{{ csrf_token() }}');
-                
-                const qType = panel.querySelector('.item-type-input').value;
-                formData.append('question_type', qType);
-                
-                const qContent = panel.querySelector('.summernote-question').value;
-                formData.append('question', qContent);
-                
-                if (qType == 1 || qType == 2) {
-                    const selections = panel.querySelectorAll('.summernote-selection');
-                    selections.forEach(sel => formData.append('selection[]', sel.value));
-                    
-                    if (qType == 1) {
-                        const ansSelect = panel.querySelector('.answer-select');
-                        if (ansSelect) formData.append('answer', ansSelect.value);
-                    } else {
-                        const ansCheckboxes = panel.querySelectorAll('.answer-checkbox:checked');
-                        ansCheckboxes.forEach(cb => formData.append('answer[]', cb.value));
-                    }
-                } else if (qType == 3) {
-                    const ansSelect = panel.querySelector('.answer-select');
-                    if (ansSelect) formData.append('answer', ansSelect.value);
-                } else {
-                    const ansTextarea = panel.querySelector('.answer-textarea');
-                    if (ansTextarea) formData.append('answer', ansTextarea.value);
+                ['insert', ['picture', 'link']],
+                ['view', ['fullscreen', 'codeview']]
+            ],
+            callbacks: {
+                onImageUpload: function(files) {
+                    uploadImage(files[0], 'soal', this);
                 }
-                
-                await fetch('{{ route("guru.soal.store-custom-item", [$serial->id, $lesson->id, $exercise->id]) }}', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                // Remove the panel so updateCustom doesn't try to process it
-                panel.remove();
             }
+        });
+    }
 
-            // After all new items are saved via AJAX, we submit the main form to update existing items
-            if (redirectListDirect) {
-                document.getElementById('mainForm').submit();
-            } else {
-                // If "Simpan & Lanjut", we can just submit but wait, standard submit redirects to list.
-                // We should append a query param or hidden input to let controller know? 
-                // Unfortunately controller hardcodes redirect to list-direct.
-                // To force stay, we can either submit via fetch or just let it redirect.
-                // The user's specification didn't mention modifying controller.
-                // If they click "Simpan & Lanjut", we can't change controller's redirect.
-                // We will submit via fetch and then reload the page!
-                const mainFormData = new FormData(document.getElementById('mainForm'));
-                await fetch('{{ route("guru.soal.update-custom", [$serial->id, $lesson->id, $exercise->id]) }}', {
-                    method: 'POST',
-                    body: mainFormData
-                });
-                window.location.reload();
-            }
-        } catch (e) {
-            console.error(e);
-            alert('Terjadi kesalahan saat menyimpan data.');
-            btnSimpan.disabled = false;
-            btnSimpanLanjut.disabled = false;
-            btnSimpan.innerHTML = '<i class="bx bx-save me-1"></i> Simpan Perubahan';
+    // JS for Modal Tambah Soal
+    const newQuestionType = document.getElementById('new_question_type');
+    const newQuestionSection = document.getElementById('newQuestionSection');
+    const dynamicInputsContainerModal = document.getElementById('dynamicInputsContainerModal');
+    const btnSimpanSoal = document.getElementById('btnSimpanSoal');
+
+    newQuestionType.addEventListener('change', function() {
+        if (this.value) {
+            newQuestionSection.style.display = 'block';
+            btnSimpanSoal.style.display = 'inline-block';
+            renderDynamicInputsModal();
+        } else {
+            newQuestionSection.style.display = 'none';
+            btnSimpanSoal.style.display = 'none';
+        }
+    });
+
+    function renderDynamicInputsModal() {
+        const modelId = newQuestionType.value;
+        const modelText = (newQuestionType.options[newQuestionType.selectedIndex].text || '').trim().toLowerCase();
+        
+        let html = '';
+        if (modelId == 1 || modelText === 'pilihan ganda') { // PG
+            html = `
+                <div class="card shadow-none border mb-4">
+                    <div class="card-header pb-0"><h6 class="mb-0">Jawaban Benar <span class="text-danger">*</span></h6></div>
+                    <div class="card-body mt-3">
+                        <select name="answer" class="form-select" required>
+                            <option value="">-- Pilih Kunci Jawaban --</option>
+                            <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card shadow-none border mb-4">
+                    <div class="card-header pb-0"><h6 class="mb-0">Pilihan Jawaban</h6></div>
+                    <div class="card-body mt-3">
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label class="fw-bold">Pilihan A</label><textarea class="form-control summernote-modal-option" name="selection[]"></textarea></div>
+                            <div class="col-md-6 mb-3"><label class="fw-bold">Pilihan B</label><textarea class="form-control summernote-modal-option" name="selection[]"></textarea></div>
+                            <div class="col-md-6 mb-3"><label class="fw-bold">Pilihan C</label><textarea class="form-control summernote-modal-option" name="selection[]"></textarea></div>
+                            <div class="col-md-6 mb-3"><label class="fw-bold">Pilihan D</label><textarea class="form-control summernote-modal-option" name="selection[]"></textarea></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (modelId == 2 || modelText === 'pilihan ganda banyak') { // PG Banyak
+            html = `
+                <div class="card shadow-none border mb-4">
+                    <div class="card-header pb-0"><h6 class="mb-0">Jawaban Benar (Bisa lebih dari satu) <span class="text-danger">*</span></h6></div>
+                    <div class="card-body mt-3">
+                        <div class="d-flex gap-4 p-3 bg-light border rounded flex-wrap">
+                            <div class="form-check"><input type="checkbox" class="form-check-input" name="answer[]" value="A" id="modalAnsA"><label for="modalAnsA" class="form-check-label fw-bold">A</label></div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" name="answer[]" value="B" id="modalAnsB"><label for="modalAnsB" class="form-check-label fw-bold">B</label></div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" name="answer[]" value="C" id="modalAnsC"><label for="modalAnsC" class="form-check-label fw-bold">C</label></div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" name="answer[]" value="D" id="modalAnsD"><label for="modalAnsD" class="form-check-label fw-bold">D</label></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card shadow-none border mb-4">
+                    <div class="card-header pb-0"><h6 class="mb-0">Pilihan Jawaban (Pilihan Ganda Banyak)</h6></div>
+                    <div class="card-body mt-3">
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label class="fw-bold">Pilihan A</label><textarea class="form-control summernote-modal-option" name="selection[]"></textarea></div>
+                            <div class="col-md-6 mb-3"><label class="fw-bold">Pilihan B</label><textarea class="form-control summernote-modal-option" name="selection[]"></textarea></div>
+                            <div class="col-md-6 mb-3"><label class="fw-bold">Pilihan C</label><textarea class="form-control summernote-modal-option" name="selection[]"></textarea></div>
+                            <div class="col-md-6 mb-3"><label class="fw-bold">Pilihan D</label><textarea class="form-control summernote-modal-option" name="selection[]"></textarea></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (modelId == 3 || modelText === 'pernyataan') { // Benar Salah
+            html = `
+                <div class="card shadow-none border mb-4">
+                    <div class="card-header pb-0"><h6 class="mb-0">Kunci Jawaban <span class="text-danger">*</span></h6></div>
+                    <div class="card-body mt-3">
+                        <select name="answer" class="form-select" required>
+                            <option value="">-- Pilih Benar/Salah --</option>
+                            <option value="Benar">Benar</option>
+                            <option value="Salah">Salah</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+        } else if (modelId == 4 || modelText === 'isian') { // Isian
+            html = `
+                <div class="card shadow-none border mb-4">
+                    <div class="card-header pb-0"><h6 class="mb-0">Kunci Jawaban <span class="text-danger">*</span></h6></div>
+                    <div class="card-body mt-3">
+                        <input type="text" name="answer" class="form-control" placeholder="Isi jawaban benar..." required autocomplete="off" spellcheck="false">
+                    </div>
+                </div>
+            `;
+        } else if (modelId == 5 || modelId == 7 || modelText === 'uraian' || modelText === 'argumen') { // Uraian / Argumen
+            html = `
+                <div class="card shadow-none border mb-4">
+                    <div class="card-header pb-0"><h6 class="mb-0">Panduan / Referensi Jawaban <span class="text-danger">*</span></h6></div>
+                    <div class="card-body mt-3">
+                        <textarea class="form-control summernote-modal-answer" name="answer" required></textarea>
+                    </div>
+                </div>
+            `;
+        } else if (modelId == 6 || modelText === 'iya tidak') { // Iya Tidak
+            html = `
+                <div class="card shadow-none border mb-4">
+                    <div class="card-header pb-0"><h6 class="mb-0">Kunci Jawaban <span class="text-danger">*</span></h6></div>
+                    <div class="card-body mt-3">
+                        <select name="answer" class="form-select" required>
+                            <option value="">-- Pilih Iya/Tidak --</option>
+                            <option value="Iya">Iya</option>
+                            <option value="Tidak">Tidak</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Destroy old summernotes
+        const oldSummernotes = dynamicInputsContainerModal.querySelectorAll('.summernote-modal-option, .summernote-modal-answer');
+        if (oldSummernotes.length > 0 && typeof $ !== 'undefined' && $.fn.summernote) {
+            try {
+                $(oldSummernotes).summernote('destroy');
+            } catch(e) {}
+        }
+
+        dynamicInputsContainerModal.innerHTML = html;
+
+        // Init new summernotes
+        if (typeof $ !== 'undefined' && $.fn.summernote) {
+            $(dynamicInputsContainerModal.querySelectorAll('.summernote-modal-option, .summernote-modal-answer')).summernote({
+                height: 100,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'italic', 'underline', 'clear']],
+                    ['para', ['ul', 'ol']],
+                    ['insert', ['picture', 'link']],
+                    ['view', ['fullscreen', 'codeview']]
+                ],
+                callbacks: {
+                    onImageUpload: function(files) {
+                        uploadImage(files[0], 'soal', this);
+                    }
+                }
+            });
         }
     }
 
-    document.getElementById('btnSimpan').addEventListener('click', function(e) {
-        e.preventDefault();
-        processSimpan(true); // Redirects back to list
+    // Modal shown event
+    const addSoalModal = document.getElementById('addSoalModal');
+    addSoalModal.addEventListener('shown.bs.modal', function () {
+        if (typeof $ !== 'undefined' && $.fn.summernote) {
+            if (!$('.summernote-modal').data('summernote')) {
+                $('.summernote-modal').summernote({
+                    height: 150,
+                    toolbar: [
+                        ['style', ['style']],
+                        ['font', ['bold', 'italic', 'underline', 'clear']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['insert', ['picture', 'link']],
+                        ['view', ['fullscreen', 'codeview']]
+                    ],
+                    callbacks: {
+                        onImageUpload: function(files) {
+                            uploadImage(files[0], 'soal', this);
+                        }
+                    }
+                });
+            }
+        }
     });
 
-    document.getElementById('btnSimpanLanjut').addEventListener('click', function(e) {
-        e.preventDefault();
-        processSimpan(false); // Stays on page (reloads)
-    });
 });
 </script>
 @endsection
