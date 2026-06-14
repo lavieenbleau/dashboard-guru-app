@@ -64,7 +64,9 @@
                                 <div class="d-flex align-items-center gap-2 mb-2">
                                     <h5 class="mb-0">{{ $exercise->title }}</h5>
                                     @if($type === 'admin')
-                                    <span class="badge bg-label-primary">Dari Admin</span>
+                                        <span class="badge bg-primary ms-2" style="font-size: 0.75em; vertical-align: middle;">Soal Admin</span>
+                                    @else
+                                        <span class="badge bg-success ms-2" style="font-size: 0.75em; vertical-align: middle;">Soal Guru</span>
                                     @endif
                                 </div>
                                 
@@ -113,7 +115,11 @@
 
                         @if($type === 'admin')
                         <!-- Tombol Share Individual untuk Soal Admin -->
-                        <form action="{{ route('guru.soal.share-single', [$serial->id, $type, $exerciseType->id, $exercise->id]) }}" method="POST" style="display: inline;">
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="{{ route('guru.soal.view-exercise', ['serial' => $serial->id, 'lesson' => $exercise->lesson_id, 'exerciseId' => $exercise->id]) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bx bx-show me-1"></i> Detail Soal
+                            </a>
+                            <form action="{{ route('guru.soal.share-single', [$serial->id, $type, $exerciseType->id, $exercise->id]) }}" method="POST" style="display: inline;">
                             @csrf
                             <button type="submit" class="btn btn-sm {{ $exercise->shared_to_classes ? 'btn-success' : 'btn-primary' }}" 
                                     onclick="confirmClick(event, 'Konfirmasi', '{{ $exercise->shared_to_classes ? 'Batalkan share soal ini?' : 'Share soal ke semua kelas?' }}')">
@@ -121,6 +127,7 @@
                                 {{ $exercise->shared_to_classes ? 'Shared' : 'Share' }}
                             </button>
                         </form>
+                        </div>
                         @else
                         <!-- Edit/Delete untuk Soal Custom Guru -->
                         <x-action-dropdown>

@@ -273,6 +273,11 @@ class SoalController extends Controller
         $category = 'tambahan';
         $exercise = Exercise::with(['exerciseItems.competence'])->findOrFail($id);
         
+        if ($exercise->is_admin == 1) {
+            return redirect()->route('guru.soal.list-direct', [$serial->id, $lesson->id, $category])
+                ->with('swal_error', 'Soal Admin tidak dapat diedit. Silakan duplikat terlebih dahulu jika ingin melakukan modifikasi.');
+        }
+        
         // Get all mapels
         $mapels = Mapel::all();
         // Get all lessons (Paket Materi)
@@ -292,6 +297,11 @@ class SoalController extends Controller
         $lesson = Lesson::findOrFail($lesson);
         $exercise = Exercise::findOrFail($id);
         $category = 'tambahan';
+        
+        if ($exercise->is_admin == 1) {
+            return redirect()->route('guru.soal.list-direct', [$serial->id, $lesson->id, $category])
+                ->with('swal_error', 'Soal Admin tidak dapat diedit. Silakan duplikat terlebih dahulu jika ingin melakukan modifikasi.');
+        }
         
         $request->validate([
             'lesson_id' => 'required|exists:lessons,id',
@@ -399,7 +409,7 @@ class SoalController extends Controller
         
         // Only allow delete if not admin exercise
         if ($exercise->is_admin == 1) {
-            return back()->with('error', 'Tidak dapat menghapus soal dari admin!');
+            return back()->with('swal_error', 'Soal Admin tidak dapat dihapus. Silakan duplikat terlebih dahulu jika ingin melakukan modifikasi.');
         }
         
         $exercise->delete();

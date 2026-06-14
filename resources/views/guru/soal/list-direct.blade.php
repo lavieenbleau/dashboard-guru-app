@@ -53,7 +53,14 @@
                                 </span>
                             </div>
                             <div>
-                                <h6 class="mb-0">{{ $exercise->title }}</h6>
+                                <h6 class="mb-0">
+                                    {{ $exercise->title }}
+                                    @if($exercise->is_admin == 1)
+                                        <span class="badge bg-primary ms-2" style="font-size: 0.75em; vertical-align: middle;">Soal Admin</span>
+                                    @else
+                                        <span class="badge bg-success ms-2" style="font-size: 0.75em; vertical-align: middle;">Soal Guru</span>
+                                    @endif
+                                </h6>
                                 
                                 @php
                                     $competences = collect();
@@ -115,7 +122,7 @@
                                 <i class="bx bx-show me-1"></i> Detail Soal
                             </a>
                             <x-action-dropdown>
-                                @if($category === 'tambahan')
+                                @if($category === 'tambahan' && $exercise->is_admin != 1)
                                     <li>
                                         <a class="dropdown-item" href="{{ route('guru.soal.edit-custom', [$serial->id, $lesson->id, $exercise->id]) }}">
                                             <i class="bx bx-edit-alt me-1"></i> Edit
@@ -129,7 +136,7 @@
                                 </button>
                             </li>
 
-                            @if($category === 'tambahan')
+                            @if($category === 'tambahan' && $exercise->is_admin != 1)
                                 <li>
                                     <form action="{{ route('guru.soal.destroy-custom', [$serial->id, $lesson->id, $exercise->id]) }}" method="POST" class="d-inline">
                                         @csrf

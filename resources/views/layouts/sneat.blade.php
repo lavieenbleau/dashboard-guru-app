@@ -695,6 +695,16 @@
     }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    @if(session('swal_error'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                showError("{{ session('swal_error') }}");
+            }, 500);
+        });
+    </script>
+    @endif
 
     @yield('scripts')
 </body>
