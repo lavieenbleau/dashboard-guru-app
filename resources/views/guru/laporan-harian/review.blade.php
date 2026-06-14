@@ -104,16 +104,9 @@
                     @if($task->attachment)
                         <div class="mt-4 border-top pt-3">
                             <h6 class="mb-3">Lampiran:</h6>
-                            <div class="alert alert-light d-flex align-items-center mb-0 border">
-                                <i class='bx bx-file text-primary me-3' style="font-size: 2rem;"></i>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">File Terlampir</h6>
-                                    <small class="text-muted">{{ basename($task->attachment) }}</small>
-                                </div>
-                                <a href="{{ asset('storage/' . $task->attachment) }}" target="_blank" class="btn btn-sm btn-primary" download>
-                                    <i class='bx bx-download me-1'></i>Download
-                                </a>
-                            </div>
+                            <a href="{{ $task->attachment }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class='bx bx-link-external me-1'></i>Lihat Lampiran
+                            </a>
                         </div>
                     @endif
                 </div>
