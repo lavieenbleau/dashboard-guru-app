@@ -77,6 +77,8 @@ Route::middleware(['auth'])->group(function () {
         ->name('guru.laporanharian');
     Route::get('/aplikasi/{serial}/laporan-harian/{date}', [LaporanHarianController::class, 'show'])
         ->name('guru.laporanharian.show');
+    Route::get('/aplikasi/{serial}/laporan-harian/review/{task}', [LaporanHarianController::class, 'review'])
+        ->name('guru.laporanharian.review');
     Route::post('/aplikasi/{serial}/laporan-harian/grade/{taskId}', [LaporanHarianController::class, 'grade'])
         ->name('guru.laporan.grade');
 

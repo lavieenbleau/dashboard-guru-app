@@ -59,6 +59,9 @@ class LaporanHarianController extends Controller
                 DB::raw("'Jawaban soal' as submission_description"),
                 DB::raw("NULL as attachment"),
                 'exercise_points.exercise_point as point',
+                'exercises.id as exercise_id',
+                'lessons.id as lesson_id',
+                'exercise_points.exercise_point as point',
                 'students.name as student_name',
                 'students.nis as student_nis',
                 'classrooms.name as classroom_name',
@@ -189,6 +192,9 @@ class LaporanHarianController extends Controller
                 DB::raw("'Jawaban soal' as submission_description"),
                 DB::raw("NULL as attachment"),
                 'exercise_points.exercise_point as point',
+                'exercises.id as exercise_id',
+                'lessons.id as lesson_id',
+                'exercise_points.exercise_point as point',
                 'students.name as student_name',
                 'students.nis as student_nis',
                 'classrooms.name as classroom_name',
@@ -262,6 +268,61 @@ class LaporanHarianController extends Controller
         }
 
         return back()->with('success', 'Nilai berhasil disimpan!');
+    }
+
+    public function review(Request $request, $serial, $taskId)
+    {
+        $serialModel = Serial::findOrFail($serial);
+        
+        $task = DB::table('tasks')
+            ->join('students', 'tasks.student_id', '=', 'students.id')
+            ->join('posts', 'tasks.post_id', '=', 'posts.id')
+            ->leftJoin('lessons', function($join) {
+                $join->whereRaw('JSON_EXTRACT(posts.category, "$.lesson_id") = lessons.id');
+            })
+            ->leftJoin('classrooms', 'students.classroom_id', '=', 'classrooms.id')
+            ->select(
+                'tasks.id',
+                'tasks.student_id',
+                'tasks.created_at',
+                'tasks.description',
+                'tasks.attachment',
+                'tasks.point',
+                'students.name as student_name',
+                'students.nis as student_nis',
+                'classrooms.name as classroom_name',
+                'posts.title as task_title',
+                'posts.user_id as teacher_id',
+                'posts.created_at as post_created_at',
+                'lessons.name as lesson_name'
+            )
+            ->where('tasks.id', $taskId)
+            ->where('tasks.serial_id', $serialModel->id)
+            ->first();
+
+        if (!$task) {
+            abort(404, 'Tugas tidak ditemukan');
+        }
+
+        // Get teacher name
+        $teacher = DB::table('users')->where('id', $task->teacher_id)->first();
+        $teacher_name = $teacher ? $teacher->name : 'Guru';
+
+        // Navigation (Prev/Next) based on the same day tasks
+        $date = \Carbon\Carbon::parse($task->created_at)->format('Y-m-d');
+        
+        $dayTasks = DB::table('tasks')
+            ->where('serial_id', $serialModel->id)
+            ->whereDate('created_at', $date)
+            ->orderBy('created_at', 'desc')
+            ->pluck('id')
+            ->toArray();
+            
+        $currentIndex = array_search($task->id, $dayTasks);
+        $prevTaskId = ($currentIndex !== false && $currentIndex > 0) ? $dayTasks[$currentIndex - 1] : null;
+        $nextTaskId = ($currentIndex !== false && $currentIndex < count($dayTasks) - 1) ? $dayTasks[$currentIndex + 1] : null;
+
+        return view('guru.laporan-harian.review', compact('serialModel', 'task', 'teacher_name', 'prevTaskId', 'nextTaskId', 'date'));
     }
 
 }
