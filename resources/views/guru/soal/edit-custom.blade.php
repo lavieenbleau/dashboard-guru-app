@@ -57,6 +57,16 @@
         background-color: #ffffff !important;
         border-top: 1px solid #e2e8f0;
     }
+    
+    /* Ultimate fallback for modal */
+    .modal-content .note-editor.note-frame, 
+    .modal-content .note-editor .note-toolbar,
+    .modal-content .note-editor .note-statusbar {
+        background-color: #ffffff !important;
+    }
+    .modal-content label {
+        color: #334155 !important;
+    }
 
     /* Existing Summernote constraints */
     .note-editor .note-editing-area { min-height: 150px; max-height: 300px; overflow-y: auto; }
