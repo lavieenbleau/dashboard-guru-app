@@ -102,6 +102,15 @@
                                             <input type="hidden" name="items[{{ $index }}][id]" value="{{ $item->id }}">
                                             <input type="hidden" name="items[{{ $index }}][question_type]" value="{{ $item->exercise_model_id }}">
 
+                                            <!-- KD Badge -->
+                                            @if(!empty($item->competence_id) && $item->competence)
+                                                <div class="mb-3">
+                                                    <span class="badge bg-label-info">
+                                                        KD: {{ $item->competence->point }}{{ $item->competence->description ? ' - ' . \Illuminate\Support\Str::limit($item->competence->description, 30) : '' }}
+                                                    </span>
+                                                </div>
+                                            @endif
+
                                             <!-- Pertanyaan -->
                                             <div class="mb-3">
                                                 <label class="form-label">Pertanyaan <span class="text-danger">*</span></label>

@@ -71,6 +71,16 @@
 
                         <!-- Pertanyaan -->
                         <div class="mb-3">
+                            @php
+                                $firstItem = $exercise->exerciseItems->first();
+                            @endphp
+                            @if(!empty($firstItem->competence_id) && $firstItem->competence)
+                                <div class="mb-3">
+                                    <span class="badge bg-label-info">
+                                        KD: {{ $firstItem->competence->point }}{{ $firstItem->competence->description ? ' - ' . \Illuminate\Support\Str::limit($firstItem->competence->description, 30) : '' }}
+                                    </span>
+                                </div>
+                            @endif
                             <label for="question" class="form-label">Pertanyaan/Soal <span class="text-danger">*</span></label>
                             <textarea class="form-control @error('question') is-invalid @enderror" id="question" name="question" rows="5" placeholder="Tulis pertanyaan atau soal di sini..." required>{{ old('question', $exercise->exerciseItems->first()->question ?? '') }}</textarea>
                             @error('question')

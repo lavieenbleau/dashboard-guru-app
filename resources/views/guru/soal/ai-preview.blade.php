@@ -120,6 +120,21 @@
                                                 <input type="text" class="form-control" name="questions[{{ $index }}][title]" value="{{ $question['title'] ?? '' }}" required>
                                             </div>
 
+                                            <!-- KD Badge -->
+                                            @php
+                                                $kompetensi = null;
+                                                if (isset($question['competence_id']) && $question['competence_id']) {
+                                                    $kompetensi = \App\Models\Competence::find($question['competence_id']);
+                                                }
+                                            @endphp
+                                            @if($kompetensi)
+                                                <div class="mb-3">
+                                                    <span class="badge bg-label-info">
+                                                        KD: {{ $kompetensi->point }}{{ $kompetensi->description ? ' - ' . \Illuminate\Support\Str::limit($kompetensi->description, 30) : '' }}
+                                                    </span>
+                                                </div>
+                                            @endif
+
                                             <!-- Pertanyaan -->
                                             <div class="mb-3">
                                                 <label class="form-label fw-bold">Pertanyaan/Soal <span class="text-danger">*</span></label>

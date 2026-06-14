@@ -84,6 +84,13 @@
 
                             <!-- Question Text -->
                             <div class="mb-3">
+                                @if(!empty($item->competence_id) && $item->competence)
+                                    <div class="mb-2">
+                                        <span class="badge bg-label-info">
+                                            KD: {{ $item->competence->point }}{{ $item->competence->description ? ' - ' . \Illuminate\Support\Str::limit($item->competence->description, 30) : '' }}
+                                        </span>
+                                    </div>
+                                @endif
                                 <h6 class="fw-bold mb-2">Pertanyaan:</h6>
                                 <div class="text-dark">{!! $item->question !!}</div>
                             </div>

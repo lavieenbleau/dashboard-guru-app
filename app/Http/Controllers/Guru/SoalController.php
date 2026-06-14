@@ -271,7 +271,7 @@ class SoalController extends Controller
         $serial = Serial::findOrFail($serial);
         $lesson = Lesson::findOrFail($lesson);
         $category = 'tambahan';
-        $exercise = Exercise::with('exerciseItems')->findOrFail($id);
+        $exercise = Exercise::with(['exerciseItems.competence'])->findOrFail($id);
         
         // Get all mapels
         $mapels = Mapel::all();
@@ -1149,7 +1149,7 @@ class SoalController extends Controller
         $lesson = Lesson::findOrFail($lesson);
         $exercise = Exercise::findOrFail($exerciseId);
 
-        $exercise->load(['lesson.mapel', 'exerciseItems', 'exerciseType']);
+        $exercise->load(['lesson.mapel', 'exerciseItems.competence', 'exerciseType']);
 
         return view('guru.soal.view-exercise', compact('serial', 'lesson', 'exercise'));
     }
