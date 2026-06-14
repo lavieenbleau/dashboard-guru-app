@@ -30,16 +30,17 @@
         </ol>
     </nav>
 
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Edit {{ $categoryInfo['name'] }}</h5>
-                </div>
-                <div class="card-body">
-                    <form action="{{ route('guru.soal.update-custom', [$serial->id, $lesson->id, $exercise->id]) }}" method="POST">
-                        @csrf
-                        @method('PUT')
+    <form action="{{ route('guru.soal.update-custom', [$serial->id, $lesson->id, $exercise->id]) }}" method="POST">
+        @csrf
+        @method('PUT')
+        
+        <div class="row">
+            <div class="col-lg-8 col-xl-8 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Edit {{ $categoryInfo['name'] }}</h5>
+                    </div>
+                    <div class="card-body">
 
                         <!-- Pilih Paket Materi -->
                         <div class="mb-3">
@@ -275,7 +276,7 @@
                 </div>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-lg-4 col-xl-4">
                 <!-- Bagikan ke Kelas Card -->
                 <div class="card shadow-sm mb-4">
                     <div class="card-header">
@@ -354,9 +355,7 @@
                 Simpan Soal
             </button>
         </div>
-        </form>
-    </div>
-</div>
+    </form>
 </div>
 
 <!-- Modal Tambah Soal -->
