@@ -40,13 +40,22 @@
     }
 
     /* Summernote Editor */
-    .note-editor .note-toolbar, .note-editor .note-btn {
+    .note-editor .note-toolbar, .note-editor .note-statusbar, .note-editor .note-btn {
         color: #334155 !important;
         background-color: #ffffff !important;
+        border-bottom: 1px solid #e2e8f0;
     }
     .note-editor, .note-editor.note-frame, .note-editor .note-editing-area, .note-editor .note-editable {
         color: #1e293b !important;
         background-color: #ffffff !important;
+    }
+    .note-editor.note-frame {
+        border-color: #cbd5e1 !important;
+        box-shadow: none !important;
+    }
+    .note-editor.note-frame .note-statusbar {
+        background-color: #ffffff !important;
+        border-top: 1px solid #e2e8f0;
     }
 
     /* Existing Summernote constraints */
