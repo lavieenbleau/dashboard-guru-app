@@ -11,13 +11,13 @@
     }
     
     /* Labels */
-    label, .form-label, .fw-bold {
+    label, .form-label, .fw-bold, .card-body label, .card-body .fw-bold {
         color: #334155 !important;
         font-weight: 600 !important;
     }
 
     /* Inputs */
-    .form-control, .form-select {
+    .form-control, .form-select, .form-control[readonly] {
         color: #1e293b !important;
     }
 
@@ -42,8 +42,9 @@
     /* Summernote Editor */
     .note-editor .note-toolbar, .note-editor .note-btn {
         color: #334155 !important;
+        background-color: #ffffff !important;
     }
-    .note-editor .note-editable {
+    .note-editor, .note-editor.note-frame, .note-editor .note-editing-area, .note-editor .note-editable {
         color: #1e293b !important;
         background-color: #ffffff !important;
     }
