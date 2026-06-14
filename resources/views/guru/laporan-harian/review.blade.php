@@ -105,7 +105,9 @@
                         @php
                             $ext = strtolower(pathinfo($task->attachment, PATHINFO_EXTENSION));
                             $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif']);
-                            $attachmentUrl = Storage::url('tugas/' . $task->attachment);
+                            
+                            // The file is located in Backend_Siswa/storage/app/public/tasks/
+                            $attachmentUrl = Storage::url('tasks/' . $task->attachment);
                         @endphp
                         <div class="mt-4 border-top pt-3">
                             <h6 class="mb-3">Lampiran:</h6>
