@@ -107,7 +107,8 @@
                             $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif']);
                             
                             // The file is located in Backend_Siswa/storage/app/public/tasks/
-                            $attachmentUrl = Storage::url('tasks/' . $task->attachment);
+                            $lmsUrl = env('LMS_URL', 'https://db.tak-scimediaonline.my.id');
+                            $attachmentUrl = rtrim($lmsUrl, '/') . '/storage/tasks/' . $task->attachment;
                         @endphp
                         <div class="mt-4 border-top pt-3">
                             <h6 class="mb-3">Lampiran:</h6>
