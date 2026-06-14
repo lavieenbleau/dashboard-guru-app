@@ -104,27 +104,16 @@
                     @if($task->attachment)
                         <div class="mt-4 border-top pt-3">
                             <h6 class="mb-3">Lampiran:</h6>
-                            @php
-                                $ext = strtolower(pathinfo($task->attachment, PATHINFO_EXTENSION));
-                                $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
-                                $isPdf = $ext === 'pdf';
-                            @endphp
-                            
-                            @if($isImage)
-                                <img src="{{ $task->attachment }}" class="img-fluid rounded" alt="Lampiran Tugas" style="max-height: 400px;">
-                            @elseif($isPdf)
-                                <iframe src="{{ $task->attachment }}" width="100%" height="500px" class="border rounded"></iframe>
-                            @else
-                                <div class="d-flex align-items-center p-3 border rounded bg-lighter">
-                                    <i class='bx bxs-file-archive fs-1 text-primary me-3'></i>
-                                    <div>
-                                        <h6 class="mb-1">File Terlampir</h6>
-                                        <a href="{{ $task->attachment }}" target="_blank" class="btn btn-sm btn-primary">
-                                            <i class='bx bx-download me-1'></i> Unduh Lampiran
-                                        </a>
-                                    </div>
+                            <div class="alert alert-light d-flex align-items-center mb-0 border">
+                                <i class='bx bx-file text-primary me-3' style="font-size: 2rem;"></i>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">File Terlampir</h6>
+                                    <small class="text-muted">{{ basename($task->attachment) }}</small>
                                 </div>
-                            @endif
+                                <a href="{{ asset('storage/' . $task->attachment) }}" target="_blank" class="btn btn-sm btn-primary" download>
+                                    <i class='bx bx-download me-1'></i>Download
+                                </a>
+                            </div>
                         </div>
                     @endif
                 </div>
