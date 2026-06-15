@@ -59,8 +59,11 @@ class RekapNilaiController extends Controller
             ->get();
 
         $validPostIds = Post::where('serial_id', $serial->id)
-                ->where('category', 'like', '%"lesson_id":' . $selectedLesson->id . '%')
                 ->where('is_task', 1)
+                ->where(function($q) use ($selectedLesson) {
+                    $q->where('category', 'like', '%"lesson_id":' . $selectedLesson->id . '%')
+                      ->orWhere('category', 'like', '%"lesson_id":"' . $selectedLesson->id . '"%');
+                })
                 ->where(function($q) use ($classroom) {
                     $q->whereNull('classroom_id')
                       ->orWhere('classroom_id', $classroom->id);
