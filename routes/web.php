@@ -87,6 +87,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/monitoring-quiz', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'indexClasses'])->name('guru.monitoring-quiz');
     Route::get('/monitoring-quiz/{kelas_name}', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'indexProducts'])->name('guru.monitoring-quiz.products');
     Route::get('/monitoring-quiz/{kelas_name}/{serial_id}', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'monitoringStudent'])->name('guru.monitoring-quiz.students');
+    Route::get('/monitoring-quiz/{kelas_name}/{serial_id}/kuis/{exercise_id}', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'monitoringStudentDetail'])->name('guru.monitoring-quiz.kuis-detail');
     Route::get('/monitoring-quiz/{kelas_name}/{serial_id}/data', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'dataTable'])->name('guru.monitoring-quiz.data');
     Route::get('/monitoring-quiz/{kelas_name}/{serial_id}/detail/{student_id}/{exercise_id}', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'detail'])->name('guru.monitoring-quiz.detail');
     Route::post('/monitoring-quiz/{kelas_name}/{serial_id}/reminder', [\App\Http\Controllers\Guru\QuizMonitoringController::class, 'sendReminder'])->name('guru.monitoring-quiz.reminder');

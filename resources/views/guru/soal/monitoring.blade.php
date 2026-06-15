@@ -8,15 +8,32 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('guru.monitoring-quiz') }}">Monitoring Kuis</a></li>
             <li class="breadcrumb-item"><a href="{{ route('guru.monitoring-quiz.products', $kelasName) }}">{{ $kelasName }}</a></li>
-            <li class="breadcrumb-item active">{{ $productName }}</li>
+            <li class="breadcrumb-item"><a href="{{ route('guru.monitoring-quiz.students', [$kelasName, $serialModel->id]) }}{!! $lessonIdParam !!}">{{ $productName }}</a></li>
+            <li class="breadcrumb-item active">{{ $exercise->title }}</li>
         </ol>
     </nav>
 
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 class="mb-1"><i class='bx bx-desktop text-primary me-2'></i>Monitoring Aktivitas Siswa</h3>
-            <p class="text-muted mb-0">Memantau aktivitas <strong>{{ $kelasName }}</strong> pada aplikasi <strong>{{ $productName }}</strong>.</p>
+            <div class="d-flex align-items-center mb-1">
+                <span class="badge bg-{{ $exercise->badge_color }} me-3" style="font-size: 1rem;">{{ $exercise->category_name }}</span>
+                <h3 class="mb-0">{{ $exercise->title }}</h3>
+            </div>
+            <div class="d-flex flex-wrap gap-3 mt-2 text-muted">
+                <span><i class="bx bx-group"></i> {{ $classroom->students->count() }} Siswa</span>
+                @if($exercise->exerciseItems)
+                <span><i class="bx bx-list-ol"></i> {{ $exercise->exerciseItems->count() }} Soal</span>
+                @endif
+                @if($exercise->kd_list && $exercise->kd_list->count() > 0)
+                <span class="d-flex align-items-center gap-1">
+                    <i class="bx bx-purchase-tag"></i> 
+                    @foreach($exercise->kd_list as $kd)
+                        <span class="badge bg-label-dark" style="font-size: 0.7rem;">{{ $kd }}</span>
+                    @endforeach
+                </span>
+                @endif
+            </div>
         </div>
         <div>
             <button class="btn btn-warning" id="btnBulkReminder" onclick="sendReminderBulk()">
@@ -107,17 +124,8 @@
         </div>
         <div class="card-body mt-3">
             <div class="row mb-4">
-                <div class="col-md-4">
-                    <label class="form-label">Filter Kuis</label>
-                    <select id="filter_exercise" class="form-select">
-                        <option value="">Semua Kuis</option>
-                        @foreach($exercises as $ex)
-                            <option value="{{ $ex->id }}">{{ $ex->title }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Status</label>
+                <div class="col-md-8">
+                    <label class="form-label">Filter Status</label>
                     <select id="filter_status" class="form-select">
                         <option value="">Semua Status</option>
                         <option value="Selesai">Selesai</option>
@@ -199,7 +207,7 @@ $(document).ready(function() {
         ajax: {
             url: "{{ route('guru.monitoring-quiz.data', [$kelasName, $serialModel->id]) }}{!! $lessonIdParam !!}",
             data: function (d) {
-                d.exercise_id = $('#filter_exercise').val();
+                d.exercise_id = '{{ $exercise->id }}';
             },
             dataSrc: function (json) {
                 // Client side filtering for Status
@@ -287,7 +295,7 @@ $(document).ready(function() {
     $('#btnFilter').click(function() {
         dataTableInstance.ajax.reload();
         
-        let exId = $('#filter_exercise').val();
+        let exId = '{{ $exercise->id }}';
         let csvUrl = "{{ route('guru.monitoring-quiz.export-csv', [$kelasName, $serialModel->id]) }}{!! $lessonIdParam !!}";
         let pdfUrl = "{{ route('guru.monitoring-quiz.export-pdf', [$kelasName, $serialModel->id]) }}{!! $lessonIdParam !!}";
         

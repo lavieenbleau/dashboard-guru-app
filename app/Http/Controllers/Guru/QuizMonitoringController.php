@@ -198,30 +198,35 @@ class QuizMonitoringController extends Controller
      */
     public function monitoringStudent($kelasName, $serialId)
     {
-        $serialModel = Serial::findOrFail($serialId);
+        $serialModel = \App\Models\Serial::findOrFail($serialId);
         
         // Pastikan kelas ini milik user
-        $classroom = Classroom::where('serial_id', $serialId)
+        $classroom = \App\Models\Classroom::where('serial_id', $serialId)
             ->where('name', $kelasName)
             ->firstOrFail();
             
         $lessonId = request()->query('lesson_id');
         
-        $exercisesQuery = Exercise::where('serial_id', $serialId);
+        $exercisesQuery = \App\Models\Exercise::with(['exerciseType', 'exerciseItems.competence', 'serial.classrooms', 'sharedSerials.classrooms'])
+            ->where('serial_id', $serialId);
+            
         if ($lessonId) {
             $exercisesQuery->where('lesson_id', $lessonId);
         }
-        $exercises = $exercisesQuery->get();
+        
+        // Urutan: Terbaru -> Terlama
+        $exercises = $exercisesQuery->orderBy('created_at', 'desc')->get();
         $exerciseIds = $exercises->pluck('id');
         
-        $studentIds = Student::where('classroom_id', $classroom->id)->pluck('id');
+        $studentIds = \App\Models\Student::where('classroom_id', $classroom->id)->pluck('id');
+        $totalStudents = $studentIds->count();
         
         try {
             $latestEvents = collect();
             if (!$studentIds->isEmpty() && !$exerciseIds->isEmpty()) {
-                $latestEvents = DB::connection('log_db')->table('quiz_activity_logs as q1')
+                $latestEvents = \Illuminate\Support\Facades\DB::connection('log_db')->table('quiz_activity_logs as q1')
                     ->select('q1.student_id', 'q1.exercise_id', 'q1.event_type', 'q1.suspicious_flag')
-                    ->join(DB::raw('(SELECT student_id, exercise_id, MAX(created_at) as max_time FROM quiz_activity_logs WHERE student_id IN ('.implode(',', $studentIds->toArray()).') AND exercise_id IN ('.implode(',', $exerciseIds->toArray()).') GROUP BY student_id, exercise_id) as q2'), function($join) {
+                    ->join(\Illuminate\Support\Facades\DB::raw('(SELECT student_id, exercise_id, MAX(created_at) as max_time FROM quiz_activity_logs WHERE student_id IN ('.implode(',', $studentIds->toArray()).') AND exercise_id IN ('.implode(',', $exerciseIds->toArray()).') GROUP BY student_id, exercise_id) as q2'), function($join) {
                         $join->on('q1.student_id', '=', 'q2.student_id')
                              ->on('q1.exercise_id', '=', 'q2.exercise_id')
                              ->on('q1.created_at', '=', 'q2.max_time');
@@ -229,16 +234,87 @@ class QuizMonitoringController extends Controller
                     ->get();
             }
             
-            $finishedCount = $latestEvents->whereIn('event_type', ['SUBMIT', 'AUTO_SUBMIT'])->count();
-            $activeCount = $latestEvents->whereNotIn('event_type', ['SUBMIT', 'AUTO_SUBMIT'])->count();
+            // Load average scores
+            $exercisePoints = \App\Models\ExercisePoint::whereIn('exercise_id', $exerciseIds)
+                                ->whereIn('student_id', $studentIds)
+                                ->selectRaw('exercise_id, AVG(exercise_point) as avg_score')
+                                ->groupBy('exercise_id')
+                                ->pluck('avg_score', 'exercise_id');
+
+            $totalSubmission = $latestEvents->whereIn('event_type', ['SUBMIT', 'AUTO_SUBMIT'])->count();
+            // Total submission as requested: Total Kuis * Total Siswa? Wait, "Total Submission" might be total submissions across all.
+            // But if it means "Total yang sudah submit", it's the finished count. The example has Selesai = 350, Sedang Mengerjakan = 20, Belum = 50. Total Submission = 420. Which is exactly Selesai + Sedang + Belum. So Total Submission = Total Assignments.
+            $totalFinishedCount = $latestEvents->whereIn('event_type', ['SUBMIT', 'AUTO_SUBMIT'])->count();
+            $totalActiveCount = $latestEvents->whereNotIn('event_type', ['SUBMIT', 'AUTO_SUBMIT'])->count();
+            $totalAssignments = $totalStudents * $exercises->count();
+            $totalNotStartedCount = max(0, $totalAssignments - $totalFinishedCount - $totalActiveCount);
             
-            $totalAssignments = $studentIds->count() * $exercises->count();
-            $notStartedCount = max(0, $totalAssignments - $finishedCount - $activeCount);
+            $totalSubmission = $totalAssignments; 
+            
+            // Populate stats per exercise
+            foreach ($exercises as $ex) {
+                $exEvents = $latestEvents->where('exercise_id', $ex->id);
+                $finished = $exEvents->whereIn('event_type', ['SUBMIT', 'AUTO_SUBMIT'])->count();
+                $active = $exEvents->whereNotIn('event_type', ['SUBMIT', 'AUTO_SUBMIT'])->count();
+                $notStarted = max(0, $totalStudents - $finished - $active);
+                
+                $ex->stat_finished = $finished;
+                $ex->stat_active = $active;
+                $ex->stat_not_started = $notStarted;
+                $ex->stat_avg_score = round($exercisePoints->get($ex->id, 0));
+                $ex->stat_total_students = $totalStudents;
+                
+                $kds = collect();
+                if ($ex->exerciseItems) {
+                    foreach ($ex->exerciseItems as $item) {
+                        if ($item->competence && $item->competence->point) {
+                            $kds->push($item->competence->point);
+                        }
+                    }
+                }
+                $ex->kd_list = $kds->unique()->values();
+                $ex->total_soal = $ex->exerciseItems ? $ex->exerciseItems->count() : 0;
+                
+                // Collect shared classes
+                $sharedClasses = collect();
+                if ($ex->serial && $ex->serial->classrooms) {
+                    $sharedClasses = $sharedClasses->merge($ex->serial->classrooms->pluck('name'));
+                }
+                if ($ex->sharedSerials) {
+                    foreach ($ex->sharedSerials as $ss) {
+                        if ($ss->classrooms) {
+                            $sharedClasses = $sharedClasses->merge($ss->classrooms->pluck('name'));
+                        }
+                    }
+                }
+                $ex->shared_classes = $sharedClasses->unique()->values();
+                
+                $catName = $ex->exerciseType ? $ex->exerciseType->name : 'Lainnya';
+                $ex->category_name = $catName;
+                
+                if (stripos($catName, 'akm') !== false) {
+                    $ex->badge_color = 'success';
+                } elseif (stripos($catName, 'ulangan harian') !== false || stripos($catName, 'uh') !== false) {
+                    $ex->badge_color = 'primary';
+                } elseif (stripos($catName, 'quiz') !== false || stripos($catName, 'kuis') !== false) {
+                    $ex->badge_color = 'info';
+                } elseif (stripos($catName, 'pts') !== false) {
+                    $ex->badge_color = 'warning';
+                } elseif (stripos($catName, 'pas') !== false || stripos($catName, 'pat') !== false) {
+                    $ex->badge_color = 'danger';
+                } elseif (stripos($catName, 'asesmen') !== false) {
+                    $ex->badge_color = 'dark';
+                } else {
+                    $ex->badge_color = 'secondary';
+                }
+            }
+            
+            $overallAvgScore = $exercisePoints->count() > 0 ? round($exercisePoints->avg()) : 0;
             
             $dbError = null;
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Database Log Error (Monitoring): ' . $e->getMessage());
-            $activeCount = $finishedCount = $notStartedCount = 0;
+            $totalActiveCount = $totalFinishedCount = $totalNotStartedCount = $totalSubmission = $overallAvgScore = 0;
             $dbError = "Gagal terhubung ke Database Log. Pemantauan sedang tidak aktif.";
         }
         
@@ -254,11 +330,118 @@ class QuizMonitoringController extends Controller
         
         $lessonIdParam = $lessonId ? '?lesson_id=' . $lessonId : '';
 
+        // Grouping
+        $groupedExercises = collect($exercises)->groupBy('category_name');
+
+        return view('guru.soal.monitoring_kuis_list', compact(
+            'kelasName',
+            'serialModel',
+            'productName',
+            'groupedExercises',
+            'exercises',
+            'totalActiveCount',
+            'totalFinishedCount',
+            'totalNotStartedCount',
+            'totalSubmission',
+            'overallAvgScore',
+            'dbError',
+            'classroom',
+            'lessonId',
+            'lessonIdParam'
+        ));
+    }
+
+    /**
+     * LEVEL 4: Detail Monitoring Siswa per Kuis
+     */
+    public function monitoringStudentDetail($kelasName, $serialId, $exerciseId)
+    {
+        $serialModel = \App\Models\Serial::findOrFail($serialId);
+        
+        $classroom = \App\Models\Classroom::where('serial_id', $serialId)
+            ->where('name', $kelasName)
+            ->firstOrFail();
+            
+        $lessonId = request()->query('lesson_id');
+        
+        $exercise = \App\Models\Exercise::with(['exerciseType', 'exerciseItems.competence'])->findOrFail($exerciseId);
+        $exercises = collect([$exercise]); // for the view compatibility
+        
+        $studentIds = \App\Models\Student::where('classroom_id', $classroom->id)->pluck('id');
+        
+        try {
+            $latestEvents = collect();
+            if (!$studentIds->isEmpty()) {
+                $latestEvents = \Illuminate\Support\Facades\DB::connection('log_db')->table('quiz_activity_logs as q1')
+                    ->select('q1.student_id', 'q1.exercise_id', 'q1.event_type', 'q1.suspicious_flag')
+                    ->join(\Illuminate\Support\Facades\DB::raw('(SELECT student_id, exercise_id, MAX(created_at) as max_time FROM quiz_activity_logs WHERE student_id IN ('.implode(',', $studentIds->toArray()).') AND exercise_id = '.$exerciseId.' GROUP BY student_id, exercise_id) as q2'), function($join) {
+                        $join->on('q1.student_id', '=', 'q2.student_id')
+                             ->on('q1.exercise_id', '=', 'q2.exercise_id')
+                             ->on('q1.created_at', '=', 'q2.max_time');
+                    })
+                    ->get();
+            }
+            
+            $finishedCount = $latestEvents->whereIn('event_type', ['SUBMIT', 'AUTO_SUBMIT'])->count();
+            $activeCount = $latestEvents->whereNotIn('event_type', ['SUBMIT', 'AUTO_SUBMIT'])->count();
+            
+            $totalAssignments = $studentIds->count();
+            $notStartedCount = max(0, $totalAssignments - $finishedCount - $activeCount);
+            
+            $dbError = null;
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Database Log Error (Monitoring Detail): ' . $e->getMessage());
+            $activeCount = $finishedCount = $notStartedCount = 0;
+            $dbError = "Gagal terhubung ke Database Log. Pemantauan sedang tidak aktif.";
+        }
+        
+        $productName = $serialModel->paket;
+        if ($lessonId) {
+            $lesson = \App\Models\Lesson::find($lessonId);
+            if ($lesson) {
+                $productName = $lesson->name;
+            }
+        } else if ($serialModel->product) {
+            $productName = $serialModel->product->name;
+        }
+        
+        $lessonIdParam = $lessonId ? '?lesson_id=' . $lessonId : '';
+        
+        $catName = $exercise->exerciseType ? $exercise->exerciseType->name : 'Lainnya';
+        if (stripos($catName, 'akm') !== false) {
+            $exercise->badge_color = 'success';
+        } elseif (stripos($catName, 'ulangan harian') !== false || stripos($catName, 'uh') !== false) {
+            $exercise->badge_color = 'primary';
+        } elseif (stripos($catName, 'quiz') !== false || stripos($catName, 'kuis') !== false) {
+            $exercise->badge_color = 'info';
+        } elseif (stripos($catName, 'pts') !== false) {
+            $exercise->badge_color = 'warning';
+        } elseif (stripos($catName, 'pas') !== false || stripos($catName, 'pat') !== false) {
+            $exercise->badge_color = 'danger';
+        } elseif (stripos($catName, 'asesmen') !== false) {
+            $exercise->badge_color = 'dark';
+        } else {
+            $exercise->badge_color = 'secondary';
+        }
+        
+        $exercise->category_name = $catName;
+        
+        $kds = collect();
+        if ($exercise->exerciseItems) {
+            foreach ($exercise->exerciseItems as $item) {
+                if ($item->competence && $item->competence->point) {
+                    $kds->push($item->competence->point);
+                }
+            }
+        }
+        $exercise->kd_list = $kds->unique()->values();
+
         return view('guru.soal.monitoring', compact(
             'kelasName',
             'serialModel',
             'productName',
             'exercises',
+            'exercise',
             'activeCount',
             'finishedCount',
             'notStartedCount',
@@ -271,8 +454,7 @@ class QuizMonitoringController extends Controller
 
     /**
      * Datatables JSON response untuk Level 3
-     */
-    public function dataTable(Request $request, $kelasName, $serialId)
+     */public function dataTable(Request $request, $kelasName, $serialId)
     {
         $serialModel = Serial::findOrFail($serialId);
         $classroom = Classroom::where('serial_id', $serialId)
