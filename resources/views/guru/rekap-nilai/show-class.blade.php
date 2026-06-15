@@ -139,14 +139,9 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-0" id="studentDetailModalBody">
-                <!-- Spinner Loading State -->
-                <div class="d-flex justify-content-center align-items-center py-5 my-5" id="studentDetailLoading">
-                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
+
                 <!-- Content goes here -->
-                <div id="studentDetailContent" style="display: none;"></div>
+                <div id="studentDetailContent"></div>
             </div>
         </div>
     </div>
@@ -160,7 +155,10 @@
     document.addEventListener('DOMContentLoaded', function() {
         const detailButtons = document.querySelectorAll('.btn-detail-siswa');
         const modalBody = document.getElementById('studentDetailContent');
-        const loadingSpinner = document.getElementById('studentDetailLoading');
+
+        // Debug log
+        console.log("Loaded studentDetails:", window.studentDetails);
+        console.log("Loaded uniqueColumns:", window.uniqueColumns);
 
         function getBadgeDetail(val, hero = false) {
             if (val === null || val === undefined) return '<span class="badge bg-label-secondary' + (hero ? ' fs-5' : '') + '">Belum Dinilai</span>';
@@ -178,30 +176,27 @@
             btn.addEventListener('click', function() {
                 const studentId = parseInt(this.getAttribute('data-student-id'));
                 
-                loadingSpinner.style.display = 'flex';
-                modalBody.style.display = 'none';
+                console.log("Clicked student ID:", studentId);
 
                 const studentData = window.studentDetails.find(s => s.student.id === studentId);
                 
+                console.log("Found student data:", studentData);
+
                 if (!studentData) {
                     modalBody.innerHTML = '<div class="alert alert-danger m-4">Data siswa tidak ditemukan.</div>';
-                    loadingSpinner.style.display = 'none';
-                    modalBody.style.display = 'block';
                     return;
                 }
 
                 if (studentData.nilai_akhir === null) {
                     modalBody.innerHTML = `
                         <div class="row"><div class="col-md-12">
-                            <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Siswa /</span> ${studentData.student.name}</h4>
+                            <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Siswa /</span> ${(studentData.student.name || 'Siswa')}</h4>
                             <div class="text-center py-5">
-                                <i class='bx bx-ghost text-muted fs-1 mb-2'></i>
+                                <i class='bx bx-info-circle text-muted fs-1 mb-2'></i>
                                 <p class="text-muted mb-0">Belum terdapat data penilaian untuk siswa ini.</p>
                             </div>
                         </div></div>
                     `;
-                    loadingSpinner.style.display = 'none';
-                    modalBody.style.display = 'block';
                     return;
                 }
 
@@ -218,7 +213,7 @@
                                     <div class="col-md-4 bg-primary text-white d-flex flex-column justify-content-center align-items-center p-4">
                                         <div class="avatar avatar-xl mb-3">
                                             <span class="avatar-initial rounded-circle bg-white text-primary fs-2 fw-bold">
-                                                ${studentData.student.name.substring(0, 2).toUpperCase()}
+                                                ${(studentData.student.name || 'NN').substring(0, 2).toUpperCase()}
                                             </span>
                                         </div>
                                         <h4 class="text-white fw-bold mb-1 text-center">${studentData.student.name}</h4>
@@ -305,8 +300,6 @@
                 `;
 
                 modalBody.innerHTML = html;
-                loadingSpinner.style.display = 'none';
-                modalBody.style.display = 'block';
             });
         });
 
