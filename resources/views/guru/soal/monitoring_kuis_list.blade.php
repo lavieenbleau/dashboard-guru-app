@@ -20,35 +20,7 @@
         </div>
     </div>
 
-    <!-- Summary Statistics -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="row text-center">
-                <div class="col-sm-4 col-md-2 mb-3 mb-md-0 border-end">
-                    <h4 class="mb-1 text-primary">{{ $exercises->count() }}</h4>
-                    <p class="mb-0 text-muted small">Total Kuis</p>
-                </div>
-                <div class="col-sm-4 col-md-2 mb-3 mb-md-0 border-end">
-                    <h4 class="mb-1 text-info">{{ $exercises->first() ? $exercises->first()->stat_total_students : 0 }}</h4>
-                    <p class="mb-0 text-muted small">Total Siswa</p>
-                </div>
-                <div class="col-sm-4 col-md-2 mb-3 mb-md-0 border-end">
-                    <h4 class="mb-1">{{ $totalSubmission }}</h4>
-                    <p class="mb-0 text-muted small">Total Submission</p>
-                </div>
-                <div class="col-sm-4 col-md-2 border-end">
-                    <h4 class="mb-1 text-success">{{ $totalFinishedCount }}</h4>
-                    <p class="mb-0 text-muted small">Total Selesai</p>
-                </div>
-                <div class="col-sm-4 col-md-2 border-end">
-                    <h4 class="mb-1 text-warning">{{ $totalActiveCount }}</h4>
-                    <p class="mb-0 text-muted small">Sedang Mengerjakan</p>
-                </div>
-                <div class="col-sm-4 col-md-2">
-                    <h4 class="mb-1 text-secondary">{{ $totalNotStartedCount }}</h4>
-                    <p class="mb-0 text-muted small">Belum Mengerjakan</p>
-                </div>
-            </div>
+    
             <hr class="my-3">
             <div class="row text-center">
                 <div class="col-12">
@@ -70,7 +42,7 @@
     <div class="card mb-4">
         <div class="card-body">
             <div class="row">
-                <div class="col-md-6 mb-3 mb-md-0">
+                <div class="col-12">
                     <label class="form-label d-block fw-bold"><i class='bx bx-filter-alt'></i> Filter Kategori</label>
                     <div class="d-flex flex-wrap gap-2" id="filterCategoryContainer">
                         <button class="btn btn-primary btn-sm filter-cat" data-cat="all">Semua</button>
@@ -79,15 +51,7 @@
                         @endforeach
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label d-block fw-bold"><i class='bx bx-pulse'></i> Filter Status Kuis</label>
-                    <div class="d-flex flex-wrap gap-2" id="filterStatusContainer">
-                        <button class="btn btn-secondary btn-sm filter-status" data-status="all">Semua</button>
-                        <button class="btn btn-outline-secondary btn-sm filter-status" data-status="aktif">Aktif (Sedang Dikerjakan)</button>
-                        <button class="btn btn-outline-secondary btn-sm filter-status" data-status="selesai">Selesai (Semua Siswa Selesai)</button>
-                        <button class="btn btn-outline-secondary btn-sm filter-status" data-status="belum">Belum Ada Respon</button>
-                    </div>
-                </div>
+                
             </div>
         </div>
     </div>
@@ -95,17 +59,8 @@
     <!-- Quiz Cards List -->
     <div class="row" id="quizContainer">
         @forelse($exercises as $ex)
-            @php
-                $statusType = 'aktif';
-                if ($ex->stat_finished == $ex->stat_total_students && $ex->stat_total_students > 0) {
-                    $statusType = 'selesai';
-                } elseif ($ex->stat_finished == 0 && $ex->stat_active == 0) {
-                    $statusType = 'belum';
-                }
-                
-                $progressPercent = $ex->stat_total_students > 0 ? round(($ex->stat_finished / $ex->stat_total_students) * 100) : 0;
-            @endphp
-            <div class="col-md-6 col-xl-4 mb-4 quiz-card" data-cat="{{ Str::slug($ex->category_name) }}" data-status="{{ $statusType }}">
+
+            <div class="col-md-6 col-xl-4 mb-4 quiz-card" data-cat="{{ Str::slug($ex->category_name) }}" >
                 <div class="card h-100 border border-{{ $ex->badge_color }}">
                     <div class="card-header border-bottom d-flex justify-content-between align-items-center pb-3">
                         <span class="badge bg-{{ $ex->badge_color }}">{{ $ex->category_name }}</span>
@@ -129,40 +84,14 @@
                             <i class='bx bx-list-ol me-1'></i> {{ $ex->total_soal }} Soal
                         </div>
                         
-                        @if($ex->shared_classes->count() > 0)
-                            <div class="mb-3 text-muted small">
-                                <i class='bx bx-share-alt me-1'></i> Shared ke {{ $ex->shared_classes->count() }} Kelas: 
-                                <span class="fst-italic">{{ Str::limit($ex->shared_classes->implode(', '), 30) }}</span>
+                        @if($ex->shared_classes_count > 0)
+                            <div class="mb-2 text-muted small">
+                                <i class='bx bx-share-alt me-1'></i> Dibagikan ke: {{ $ex->shared_classes_count }} Kelas
                             </div>
                         @endif
-
-                        <div class="mb-2">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <small class="fw-bold">Progress Selesai</small>
-                                <small>{{ $ex->stat_finished }} / {{ $ex->stat_total_students }} Siswa</small>
-                            </div>
-                            <div class="progress" style="height: 8px;">
-                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ $progressPercent }}%;" aria-valuenow="{{ $progressPercent }}" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                            <div class="d-flex justify-content-between mt-1">
-                                <small class="text-muted">{{ $progressPercent }}%</small>
-                                <small class="text-muted">Nilai Rata-rata: <strong class="text-primary">{{ $ex->stat_avg_score }}</strong></small>
-                            </div>
-                        </div>
-
-                        <div class="row text-center mt-3 border-top pt-3">
-                            <div class="col-4">
-                                <span class="d-block text-success fw-bold">{{ $ex->stat_finished }}</span>
-                                <small class="text-muted" style="font-size: 0.7rem;">Selesai</small>
-                            </div>
-                            <div class="col-4 border-start border-end">
-                                <span class="d-block text-warning fw-bold">{{ $ex->stat_active }}</span>
-                                <small class="text-muted" style="font-size: 0.7rem;">Mengerjakan</small>
-                            </div>
-                            <div class="col-4">
-                                <span class="d-block text-secondary fw-bold">{{ $ex->stat_not_started }}</span>
-                                <small class="text-muted" style="font-size: 0.7rem;">Belum</small>
-                            </div>
+                        
+                        <div class="mb-2 text-muted small">
+                            <i class='bx bx-calendar me-1'></i> Dibuat: {{ $ex->created_at->format('d M Y') }}
                         </div>
                     </div>
                     <div class="card-footer p-0">
@@ -196,7 +125,7 @@
         function applyFilters() {
             cards.forEach(card => {
                 let showCat = (currentCat === 'all' || card.getAttribute('data-cat') === currentCat);
-                let showStatus = (currentStatus === 'all' || card.getAttribute('data-status') === currentStatus);
+                let showStatus = true;
                 
                 if (showCat && showStatus) {
                     card.style.display = 'block';

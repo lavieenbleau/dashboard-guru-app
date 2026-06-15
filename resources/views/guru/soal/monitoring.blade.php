@@ -123,6 +123,63 @@
             </div>
         </div>
         <div class="card-body mt-3">
+            @php
+                $progressPercent = $totalStudents > 0 ? round(($finishedCount / $totalStudents) * 100) : 0;
+            @endphp
+            
+            <div class="row mb-4">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <div class="card h-100 bg-label-primary shadow-none border border-primary">
+                        <div class="card-body">
+                            <h6 class="mb-3 text-primary">Progress Kuis</h6>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="fw-bold">{{ $finishedCount }} / {{ $totalStudents }} siswa selesai</small>
+                            </div>
+                            <div class="progress mb-3" style="height: 10px;">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $progressPercent }}%;" aria-valuenow="{{ $progressPercent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            
+                            <div class="row text-center mt-3 border-top border-primary pt-3">
+                                <div class="col-4">
+                                    <span class="d-block text-success fw-bold">{{ $finishedCount }}</span>
+                                    <small class="text-primary" style="font-size: 0.75rem;">Selesai</small>
+                                </div>
+                                <div class="col-4 border-start border-end border-primary">
+                                    <span class="d-block text-warning fw-bold">{{ $activeCount }}</span>
+                                    <small class="text-primary" style="font-size: 0.75rem;">Mengerjakan</small>
+                                </div>
+                                <div class="col-4">
+                                    <span class="d-block text-secondary fw-bold">{{ $notStartedCount }}</span>
+                                    <small class="text-primary" style="font-size: 0.75rem;">Belum</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="card h-100 bg-label-info shadow-none border border-info">
+                        <div class="card-body d-flex flex-column justify-content-center">
+                            <h6 class="mb-3 text-info text-center border-bottom border-info pb-2">Statistik Nilai</h6>
+                            <div class="row text-center mt-2">
+                                <div class="col-4">
+                                    <span class="d-block text-info fw-bold fs-4">{{ round($highestScore) }}</span>
+                                    <small class="text-info" style="font-size: 0.75rem;">Tertinggi</small>
+                                </div>
+                                <div class="col-4 border-start border-end border-info">
+                                    <span class="d-block text-primary fw-bold fs-4">{{ round($averageScore) }}</span>
+                                    <small class="text-info" style="font-size: 0.75rem;">Rata-rata</small>
+                                </div>
+                                <div class="col-4">
+                                    <span class="d-block text-danger fw-bold fs-4">{{ round($lowestScore) }}</span>
+                                    <small class="text-info" style="font-size: 0.75rem;">Terendah</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row mb-4">
                 <div class="col-md-8">
                     <label class="form-label">Filter Status</label>

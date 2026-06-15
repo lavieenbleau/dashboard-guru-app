@@ -33,26 +33,7 @@
                         </div>
                     </div>
 
-                    <div class="row g-3 mb-4">
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between align-items-center bg-label-success p-2 rounded">
-                                <span class="fw-semibold text-success"><i class='bx bx-check-circle me-1'></i>Selesai</span>
-                                <span class="badge bg-success">{{ $stat['finished'] }}</span>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between align-items-center bg-label-primary p-2 rounded">
-                                <span class="fw-semibold text-primary"><i class='bx bx-time-five me-1'></i>Sedang Mengerjakan</span>
-                                <span class="badge bg-primary">{{ $stat['in_progress'] }}</span>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between align-items-center bg-label-secondary p-2 rounded">
-                                <span class="fw-semibold text-secondary"><i class='bx bx-minus-circle me-1'></i>Belum Mengerjakan</span>
-                                <span class="badge bg-secondary">{{ $stat['not_started'] }}</span>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
                 <div class="card-footer bg-transparent border-top p-3">
                     <a href="{{ route('guru.monitoring-quiz.products', $stat['name']) }}" class="btn btn-primary w-100">
