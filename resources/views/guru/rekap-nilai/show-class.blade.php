@@ -160,6 +160,7 @@
     </div>
 </div>
 
+@endsection
 @section('scripts')
 <script id="student-data" type="application/json">
 {!! json_encode($cleanStudentDetails) !!}
