@@ -1,4 +1,16 @@
-<div class="row"><div class="col-md-12">
+<?php
+$bladePath = __DIR__ . '/resources/views/guru/rekap-nilai/show-student.blade.php';
+
+$content = <<<'EOD'
+@extends('layouts.sneat')
+
+@section('content')
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row">
+        <div class="col-md-12">
+            <h4 class="fw-bold py-3 mb-4">
+                <span class="text-muted fw-light">{{ $serial->name }} / Rekap Nilai / {{ $classroom->name }} /</span> {{ $student->name }}
+            </h4>
 
             @php
                 if (!function_exists('getBadgeDetail')) {
@@ -16,7 +28,14 @@
                 }
             @endphp
 
-            
+            <div class="d-flex justify-content-between mb-4">
+                <a href="{{ route('guru.rekapnilai.kelas', ['serial' => $serial->id, 'classroom' => $classroom->id]) }}" class="btn btn-secondary shadow-sm">
+                    <i class="bx bx-arrow-back me-1"></i> Kembali ke Kelas
+                </a>
+                <a href="{{ route('guru.rekapnilai.siswa.pdf', ['serial' => $serial->id, 'classroom' => $classroom->id, 'student' => $student->id]) }}" class="btn btn-success shadow-sm">
+                    <i class="bx bxs-file-pdf me-1"></i> Download PDF
+                </a>
+            </div>
 
             <!-- Header Siswa -->
             <div class="card mb-4 shadow-sm border-0">
@@ -279,5 +298,11 @@
                 </div>
 
             </div>
-        
+        </div>
+    </div>
+</div>
+@endsection
+EOD;
 
+file_put_contents($bladePath, $content);
+echo "show-student.blade.php updated.\n";

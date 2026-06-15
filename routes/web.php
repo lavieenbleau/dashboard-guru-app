@@ -103,12 +103,6 @@ Route::middleware(['auth'])->group(function () {
         ->name('guru.rekapnilai.lesson');
     Route::get('/aplikasi/{serial}/rekap-nilai/kelas/{classroom}/lesson/{lesson_id}/download-pdf', [RekapNilaiController::class, 'downloadClassPdf'])
         ->name('guru.rekapnilai.kelas.pdf');
-    Route::get('/aplikasi/{serial}/rekap-nilai/kelas/{classroom}/siswa/{student}', [RekapNilaiController::class, 'showStudent'])
-        ->name('guru.rekapnilai.siswa');
-    Route::get('/aplikasi/{serial}/rekap-nilai/kelas/{classroom}/siswa/{student}/download-pdf', [RekapNilaiController::class, 'downloadStudentPdf'])
-        ->name('guru.rekapnilai.siswa.pdf');
-    Route::get('aplikasi/{serial}/rekap-nilai/kelas/{classroom}/lesson/{lesson_id}/student/{student}/ajax', [RekapNilaiController::class, 'getStudentDetailAjax'])
-        ->name('guru.rekapnilai.siswa.ajax');
 
     // Pengaturan - Profile and account settings
     Route::get('/aplikasi/{serial}/pengaturan', [\App\Http\Controllers\Guru\PengaturanController::class, 'index'])

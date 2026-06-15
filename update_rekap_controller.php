@@ -1,54 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Guru;
+$controllerPath = __DIR__ . '/app/Http/Controllers/Guru/RekapNilaiController.php';
+$content = file_get_contents($controllerPath);
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Serial;
-use App\Models\Classroom;
-use App\Models\Student;
-use App\Models\Mapel;
-use App\Models\Lesson;
-use App\Models\Post;
-use App\Models\Task;
-use App\Models\Exercise;
-use App\Models\ExercisePoint;
-use Illuminate\Support\Facades\DB;
-use Barryvdh\DomPDF\Facade\Pdf;
-
-class RekapNilaiController extends Controller
-{
-    public function index($serial)
-    {
-        $serial = Serial::findOrFail($serial);
-        $classrooms = Classroom::where('serial_id', $serial->id)->get();
-
-        return view('guru.rekap-nilai.index', compact('serial', 'classrooms'));
-    }
-
-    public function showClass($serial, $classroomId)
-    {
-        $serial = Serial::with('product')->findOrFail($serial);
-        $classroom = Classroom::findOrFail($classroomId);
-        
-        // Get all students in this classroom
-        $students = Student::where('classroom_id', $classroom->id)
-            ->orderBy('name')
-            ->get();
-
-        // Get all lessons (Paket Pembelajaran) for this serial product
-        $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
-        $lessonIds = json_decode($serial->product->lesson_id ?? '[]', true) ?? [];
-        $lessons = Lesson::whereIn('id', $lessonIds)
-            ->where('category', Lesson::CATEGORY_MATERI)
-            ->with('mapel')
-            ->orderBy('name')
-            ->get();
-
-        return view('guru.rekap-nilai.lessons', compact('serial', 'classroom', 'lessons'));
-    }
-
-            public function showLesson($serial, $classroomId, $lessonId)
+// Define the new showLesson method
+$newShowLesson = <<<'EOD'
+    public function showLesson($serial, $classroomId, $lessonId)
     {
         $serial = Serial::with('product')->findOrFail($serial);
         $classroom = Classroom::findOrFail($classroomId);
@@ -59,8 +16,8 @@ class RekapNilaiController extends Controller
             ->get();
 
         $validPostIds = Post::where('serial_id', $serial->id)
+                ->where('category', 'like', '%"lesson_id":' . $selectedLesson->id . '%')
                 ->where('is_task', 1)
-                ->whereRaw('IF(JSON_VALID(category) = 1, JSON_UNQUOTE(JSON_EXTRACT(category, "$.lesson_id")), NULL) = ?', [$selectedLesson->id])
                 ->where(function($q) use ($classroom) {
                     $q->whereNull('classroom_id')
                       ->orWhere('classroom_id', $classroom->id);
@@ -78,35 +35,6 @@ class RekapNilaiController extends Controller
                 ->pluck('id');
 
         $validExerciseIds = $guruExerciseIds->concat($adminExerciseIds)->unique();
-
-        // Build unique columns for Detail Penilaian Tab
-        $uniquePosts = Post::whereIn('id', $validPostIds)->orderBy('created_at')->get();
-        $uniqueExercises = Exercise::whereIn('id', $validExerciseIds)->with('exerciseType')->orderBy('created_at')->get();
-
-        $detailColumns = [
-            'tasks' => collect(),
-            'akm' => collect(),
-            'uh' => collect(),
-            'pts' => collect(),
-            'pas' => collect()
-        ];
-
-        foreach ($uniquePosts as $p) {
-            $detailColumns['tasks']->push(['id' => $p->id, 'title' => $p->title]);
-        }
-        foreach ($uniqueExercises as $ex) {
-            $typeName = strtolower($ex->exerciseType->name ?? '');
-            $item = ['id' => $ex->id, 'title' => $ex->title];
-            if (str_contains($typeName, 'akm')) {
-                $detailColumns['akm']->push($item);
-            } elseif (str_contains($typeName, 'ulangan harian')) {
-                $detailColumns['uh']->push($item);
-            } elseif (str_contains($typeName, 'pts')) {
-                $detailColumns['pts']->push($item);
-            } elseif (str_contains($typeName, 'pas')) {
-                $detailColumns['pas']->push($item);
-            }
-        }
 
         $allTasks = Task::whereIn('student_id', $students->pluck('id'))
             ->whereIn('post_id', $validPostIds)
@@ -130,19 +58,10 @@ class RekapNilaiController extends Controller
             $pts = ['sum' => 0, 'count' => 0];
             $pas = ['sum' => 0, 'count' => 0];
 
-            $studentDetails = [
-                'tasks' => [],
-                'akm' => [],
-                'uh' => [],
-                'pts' => [],
-                'pas' => []
-            ];
-
             foreach ($sTasks as $task) {
                 if (!is_null($task->point)) {
                     $tugas['sum'] += $task->point;
                     $tugas['count']++;
-                    $studentDetails['tasks'][$task->post_id] = $task->point;
                 }
             }
 
@@ -152,19 +71,15 @@ class RekapNilaiController extends Controller
                     if (str_contains($typeName, 'akm')) {
                         $akm['sum'] += $ex->exercise_point;
                         $akm['count']++;
-                        $studentDetails['akm'][$ex->exercise_id] = $ex->exercise_point;
                     } elseif (str_contains($typeName, 'ulangan harian')) {
                         $uh['sum'] += $ex->exercise_point;
                         $uh['count']++;
-                        $studentDetails['uh'][$ex->exercise_id] = $ex->exercise_point;
                     } elseif (str_contains($typeName, 'pts')) {
                         $pts['sum'] += $ex->exercise_point;
                         $pts['count']++;
-                        $studentDetails['pts'][$ex->exercise_id] = $ex->exercise_point;
                     } elseif (str_contains($typeName, 'pas')) {
                         $pas['sum'] += $ex->exercise_point;
                         $pas['count']++;
-                        $studentDetails['pas'][$ex->exercise_id] = $ex->exercise_point;
                     }
                 }
             }
@@ -186,8 +101,7 @@ class RekapNilaiController extends Controller
                 'uh' => ['avg' => $rataUH, 'count' => $uh['count']],
                 'pts' => ['avg' => $rataPTS, 'count' => $pts['count']],
                 'pas' => ['avg' => $rataPAS, 'count' => $pas['count']],
-                'nilai_akhir' => $nilaiAkhir,
-                'detail' => $studentDetails
+                'nilai_akhir' => $nilaiAkhir
             ];
         }
 
@@ -207,25 +121,19 @@ class RekapNilaiController extends Controller
             $stats['terendah'] = $validAkhir->min();
         }
 
-        $detailAverages = [
-            'tasks' => [], 'akm' => [], 'uh' => [], 'pts' => [], 'pas' => []
-        ];
-        foreach (['tasks', 'akm', 'uh', 'pts', 'pas'] as $cat) {
-            foreach ($detailColumns[$cat] as $col) {
-                $sum = 0; $count = 0;
-                foreach ($rekapData as $s) {
-                    if (isset($s['detail'][$cat][$col['id']])) {
-                        $sum += $s['detail'][$cat][$col['id']];
-                        $count++;
-                    }
-                }
-                $detailAverages[$cat][$col['id']] = $count > 0 ? round($sum / $count, 1) : null;
-            }
-        }
-
-        return view('guru.rekap-nilai.show-class', compact('serial', 'classroom', 'students', 'selectedLesson', 'rekapData', 'stats', 'detailColumns', 'detailAverages'));
+        return view('guru.rekap-nilai.show-class', compact('serial', 'classroom', 'students', 'selectedLesson', 'rekapData', 'stats'));
     }
+EOD;
 
+// Replace showLesson method (from line 51 to 220 in the original file)
+$startShowLesson = strpos($content, 'public function showLesson');
+$endShowLesson = strpos($content, 'public function downloadClassPdf');
+if ($startShowLesson !== false && $endShowLesson !== false) {
+    $content = substr_replace($content, $newShowLesson . "\n\n    ", $startShowLesson, $endShowLesson - $startShowLesson);
+}
+
+// Define the new downloadClassPdf method
+$newDownloadClassPdf = <<<'EOD'
     public function downloadClassPdf($serial, $classroomId, $lessonId)
     {
         $serial = Serial::findOrFail($serial);
@@ -331,10 +239,14 @@ class RekapNilaiController extends Controller
             
         return $pdf->download('rekap_nilai_'.$classroom->name.'_'.\Str::slug($selectedLesson->name).'.pdf');
     }
+EOD;
 
-        
-
-    
-
-        
+$startDownload = strpos($content, 'public function downloadClassPdf');
+$endDownload = strpos($content, 'public function showStudent');
+if ($startDownload !== false && $endDownload !== false) {
+    $content = substr_replace($content, $newDownloadClassPdf . "\n\n    ", $startDownload, $endDownload - $startDownload);
 }
+
+file_put_contents($controllerPath, $content);
+
+echo "Controller updated successfully.\n";
