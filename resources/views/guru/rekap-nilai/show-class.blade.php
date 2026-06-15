@@ -67,7 +67,7 @@
 
                         <div class="tab-content p-0 shadow-none border-0" id="rekapTabContent">
                           <!-- TAB RINGKASAN -->
-                          <div class="tab-pane fade show active" id="ringkasan" role="tabpanel" aria-labelledby="ringkasan-tab">
+                          
                             <div class="row mb-4">
                                 <div class="col-md-6 mb-3 mb-md-0">
                                     <div class="card h-100 bg-lighter border">
@@ -122,10 +122,7 @@
                                                 <td class="text-center">{!! formatScoreRekap($data['pas']) !!}</td>
                                                 <td class="text-center">{!! getBadgeRekap($data['nilai_akhir']) !!}</td>
                                                 <td class="text-center">
-                                                    <a href="{{ route('guru.rekapnilai.siswa', ['serial' => $serial->id, 'classroom' => $classroom->id, 'student' => $data['student']->id]) }}" 
-                                                       class="btn btn-sm btn-info">
-                                                        Detail
-                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-info rounded-pill px-3 shadow-sm btn-detail-siswa" data-student-id="{{ $data['student']->id }}" data-bs-toggle="modal" data-bs-target="#studentDetailModal"><i class="bx bx-detail me-1"></i>Detail</button>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -236,59 +233,73 @@
     </div>
 </div>
 
+
+<!-- Student Detail Modal -->
+<div class="modal fade" id="studentDetailModal" tabindex="-1" aria-labelledby="studentDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable modal-fullscreen-md-down">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-bottom bg-light">
+                <h5 class="modal-title fw-bold text-primary" id="studentDetailModalLabel">Detail Penilaian Siswa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0" id="studentDetailModalBody">
+                <!-- Spinner Loading State -->
+                <div class="d-flex justify-content-center align-items-center py-5 my-5" id="studentDetailLoading">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <!-- Content goes here -->
+                <div id="studentDetailContent" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section('page-script')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        });
+document.addEventListener('DOMContentLoaded', function() {
+    const detailButtons = document.querySelectorAll('.btn-detail-siswa');
+    const modalBody = document.getElementById('studentDetailContent');
+    const loadingSpinner = document.getElementById('studentDetailLoading');
+    const serialId = '{{ $serial->id }}';
+    const classroomId = '{{ $classroom->id }}';
+    const lessonId = '{{ $selectedLesson->id }}';
 
-        document.querySelectorAll('.filter-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.filter-btn').forEach(function(b) {
-                    b.classList.remove('active');
-                    b.classList.remove('btn-dark');
-                    if (b.classList.contains('btn-outline-secondary')) {
-                        // Keep its own color base
-                    } else if (b.getAttribute('data-filter') === 'all') {
-                        b.classList.add('btn-outline-dark');
-                    }
+    detailButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const studentId = this.getAttribute('data-student-id');
+            
+            // Show loading, hide content
+            loadingSpinner.style.display = 'flex';
+            modalBody.style.display = 'none';
+            modalBody.innerHTML = '';
+
+            const url = `/aplikasi/${serialId}/rekap-nilai/kelas/${classroomId}/lesson/${lessonId}/student/${studentId}/ajax`;
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.text();
+                })
+                .then(html => {
+                    modalBody.innerHTML = html;
+                    loadingSpinner.style.display = 'none';
+                    modalBody.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching student details:', error);
+                    modalBody.innerHTML = `
+                        <div class="alert alert-danger m-4" role="alert">
+                            Gagal memuat detail siswa. Silakan coba lagi.
+                        </div>
+                    `;
+                    loadingSpinner.style.display = 'none';
+                    modalBody.style.display = 'block';
                 });
-
-                this.classList.add('active');
-                if (this.getAttribute('data-filter') === 'all') {
-                    this.classList.remove('btn-outline-dark');
-                    this.classList.add('btn-dark');
-                } else {
-                    let catName = this.getAttribute('data-filter');
-                    this.classList.remove('btn-outline-' + (catName === 'tasks' ? 'secondary' : (catName === 'akm' ? 'primary' : (catName === 'uh' ? 'success' : (catName === 'pts' ? 'warning' : 'danger')))));
-                    this.classList.add('btn-' + (catName === 'tasks' ? 'secondary' : (catName === 'akm' ? 'primary' : (catName === 'uh' ? 'success' : (catName === 'pts' ? 'warning' : 'danger')))));
-                }
-
-                // Restore previous outline buttons
-                document.querySelectorAll('.filter-btn:not(.active)').forEach(function(b) {
-                    let catName = b.getAttribute('data-filter');
-                    if(catName !== 'all') {
-                        b.classList.remove('btn-' + (catName === 'tasks' ? 'secondary' : (catName === 'akm' ? 'primary' : (catName === 'uh' ? 'success' : (catName === 'pts' ? 'warning' : 'danger')))));
-                        b.classList.add('btn-outline-' + (catName === 'tasks' ? 'secondary' : (catName === 'akm' ? 'primary' : (catName === 'uh' ? 'success' : (catName === 'pts' ? 'warning' : 'danger')))));
-                    }
-                });
-
-                let filter = this.getAttribute('data-filter');
-                const categories = ['tasks', 'akm', 'uh', 'pts', 'pas'];
-                
-                categories.forEach(function(cat) {
-                    let cols = document.querySelectorAll('.category-' + cat);
-                    if (filter === 'all' || filter === cat) {
-                        cols.forEach(c => c.style.display = '');
-                    } else {
-                        cols.forEach(c => c.style.display = 'none');
-                    }
-                });
-            });
         });
     });
+});
 </script>
 @endsection
 @endsection
