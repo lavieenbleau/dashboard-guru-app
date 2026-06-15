@@ -102,26 +102,33 @@
                     <div class="p-3 bg-lighter rounded" style="white-space: pre-wrap; font-size: 14px; color: #334155; min-height: 150px;">{{ $task->description ?? 'Tidak ada teks jawaban yang dilampirkan.' }}</div>
                     
                     @if($task->attachment)
-                        @php
-                            $ext = strtolower(pathinfo($task->attachment, PATHINFO_EXTENSION));
-                            $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif']);
-                            
-                            // The file is located in Backend_Siswa/storage/app/public/tasks/
-                            $lmsUrl = env('LMS_URL', 'https://db.tak-scimediaonline.my.id');
-                            $attachmentUrl = rtrim($lmsUrl, '/') . '/storage/tasks/' . $task->attachment;
-                        @endphp
-                        <div class="mt-4 border-top pt-3">
-                            <h6 class="mb-3">Lampiran:</h6>
-                            @if($isImage)
-                                <div class="mb-3">
-                                    <img src="{{ $attachmentUrl }}" alt="Lampiran Siswa" class="img-fluid rounded border shadow-sm" style="max-height: 400px; object-fit: contain;">
-                                </div>
-                            @endif
-                            <a href="{{ $attachmentUrl }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                <i class='bx bx-{{ $isImage ? "link-external" : "download" }} me-1'></i>{{ $isImage ? 'Lihat Penuh / Buka di Tab Baru' : 'Download Lampiran' }}
-                            </a>
-                        </div>
-                    @endif
+                          @php
+                              $ext = strtolower(pathinfo($task->attachment, PATHINFO_EXTENSION));
+                              $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif']);
+                              $isPdf = $ext === 'pdf';
+                              $attachmentUrl = 'http://151.243.222.93:30083/api/files/tasks/' . $task->attachment;
+                          @endphp
+                          <div class="mt-4 border-top pt-3">
+                              <h6 class="mb-3">Lampiran:</h6>
+                              @if($isImage)
+                                  <div class="mb-3">
+                                      <a href="{{ $attachmentUrl }}" target="_blank">
+                                          <img src="{{ $attachmentUrl }}" class="img-fluid rounded border" alt="Lampiran Siswa">
+                                      </a>
+                                  </div>
+                              @elseif($isPdf)
+                                  <div class="mb-3">
+                                      <iframe src="{{ $attachmentUrl }}" width="100%" height="700" class="rounded border"></iframe>
+                                  </div>
+                              @else
+                                  <div class="mb-3">
+                                      <a href="{{ $attachmentUrl }}" target="_blank" class="btn btn-primary">
+                                          Download Lampiran
+                                      </a>
+                                  </div>
+                              @endif
+                          </div>
+                      @endif
                 </div>
             </div>
 
