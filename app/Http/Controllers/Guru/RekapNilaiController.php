@@ -60,10 +60,7 @@ class RekapNilaiController extends Controller
 
         $validPostIds = Post::where('serial_id', $serial->id)
                 ->where('is_task', 1)
-                ->where(function($q) use ($selectedLesson) {
-                    $q->where('category', 'like', '%"lesson_id":' . $selectedLesson->id . '%')
-                      ->orWhere('category', 'like', '%"lesson_id":"' . $selectedLesson->id . '"%');
-                })
+                ->whereRaw('IF(JSON_VALID(category) = 1, JSON_UNQUOTE(JSON_EXTRACT(category, "$.lesson_id")), NULL) = ?', [$selectedLesson->id])
                 ->where(function($q) use ($classroom) {
                     $q->whereNull('classroom_id')
                       ->orWhere('classroom_id', $classroom->id);
