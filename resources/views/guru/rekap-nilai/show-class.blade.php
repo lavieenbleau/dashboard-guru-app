@@ -52,21 +52,10 @@
                             }
                         @endphp
 
-                        <ul class="nav nav-tabs mb-4" id="rekapTab" role="tablist">
-                          <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="ringkasan-tab" data-bs-toggle="tab" data-bs-target="#ringkasan" type="button" role="tab" aria-controls="ringkasan" aria-selected="true">
-                                <i class="bx bx-pie-chart-alt-2 me-1"></i> Ringkasan Nilai
-                            </button>
-                          </li>
-                          <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="detail-tab" data-bs-toggle="tab" data-bs-target="#detail" type="button" role="tab" aria-controls="detail" aria-selected="false">
-                                <i class="bx bx-table me-1"></i> Detail Penilaian
-                            </button>
-                          </li>
-                        </ul>
+                        
 
-                        <div class="tab-content p-0 shadow-none border-0" id="rekapTabContent">
-                          <!-- TAB RINGKASAN -->
+                        
+                          
                           
                             <div class="row mb-4">
                                 <div class="col-md-6 mb-3 mb-md-0">
@@ -131,101 +120,8 @@
                             </div>
                           </div>
 
-                          <!-- TAB DETAIL -->
-                          <div class="tab-pane fade" id="detail" role="tabpanel" aria-labelledby="detail-tab">
-                            <div class="mb-3 d-flex gap-2 flex-wrap">
-                                <button class="btn btn-sm btn-dark filter-btn active" data-filter="all">Semua</button>
-                                @if($detailColumns['tasks']->count() > 0)
-                                <button class="btn btn-sm btn-outline-secondary filter-btn" data-filter="tasks">Tugas</button>
-                                @endif
-                                @if($detailColumns['akm']->count() > 0)
-                                <button class="btn btn-sm btn-outline-primary filter-btn" data-filter="akm">AKM</button>
-                                @endif
-                                @if($detailColumns['uh']->count() > 0)
-                                <button class="btn btn-sm btn-outline-success filter-btn" data-filter="uh">UH</button>
-                                @endif
-                                @if($detailColumns['pts']->count() > 0)
-                                <button class="btn btn-sm btn-outline-warning filter-btn" data-filter="pts">PTS</button>
-                                @endif
-                                @if($detailColumns['pas']->count() > 0)
-                                <button class="btn btn-sm btn-outline-danger filter-btn" data-filter="pas">PAS</button>
-                                @endif
-                            </div>
-
-                            <div class="table-responsive text-nowrap" style="overflow-x: auto; max-height: 600px;">
-                                <table class="table table-bordered table-hover" style="min-width: 100%;">
-                                    <thead class="table-light" style="position: sticky; top: 0; z-index: 20;">
-                                        <tr>
-                                            <th rowspan="2" class="text-center align-middle" style="width: 40px; position: sticky; left: 0; background-color: #f9f9f9; z-index: 30; border-right: 2px solid #ddd;">NO</th>
-                                            <th rowspan="2" class="align-middle" style="min-width: 220px; position: sticky; left: 40px; background-color: #f9f9f9; z-index: 30; border-right: 2px solid #ddd;">NAMA SISWA</th>
-                                            
-                                            @if($detailColumns['tasks']->count() > 0)
-                                                <th colspan="{{ $detailColumns['tasks']->count() }}" class="text-center category-tasks"><span class="badge bg-secondary">TUGAS</span></th>
-                                            @endif
-                                            @if($detailColumns['akm']->count() > 0)
-                                                <th colspan="{{ $detailColumns['akm']->count() }}" class="text-center category-akm"><span class="badge bg-primary">AKM</span></th>
-                                            @endif
-                                            @if($detailColumns['uh']->count() > 0)
-                                                <th colspan="{{ $detailColumns['uh']->count() }}" class="text-center category-uh"><span class="badge bg-success">UH</span></th>
-                                            @endif
-                                            @if($detailColumns['pts']->count() > 0)
-                                                <th colspan="{{ $detailColumns['pts']->count() }}" class="text-center category-pts"><span class="badge bg-warning text-dark">PTS</span></th>
-                                            @endif
-                                            @if($detailColumns['pas']->count() > 0)
-                                                <th colspan="{{ $detailColumns['pas']->count() }}" class="text-center category-pas"><span class="badge bg-danger">PAS</span></th>
-                                            @endif
-                                        </tr>
-                                        <tr>
-                                            @foreach(['tasks', 'akm', 'uh', 'pts', 'pas'] as $cat)
-                                                @foreach($detailColumns[$cat] as $col)
-                                                    <th class="text-center category-{{ $cat }}" title="{{ $col['title'] }}" data-bs-toggle="tooltip">
-                                                        {{ \Illuminate\Support\Str::limit($col['title'], 15) }}
-                                                    </th>
-                                                @endforeach
-                                            @endforeach
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($rekapData as $index => $data)
-                                            <tr>
-                                                <td class="text-center fw-bold" style="position: sticky; left: 0; background-color: #fff; z-index: 10; border-right: 2px solid #ddd;">{{ $index + 1 }}</td>
-                                                <td style="position: sticky; left: 40px; background-color: #fff; z-index: 10; border-right: 2px solid #ddd;"><strong>{{ $data['student']->name }}</strong></td>
-                                                
-                                                @foreach(['tasks', 'akm', 'uh', 'pts', 'pas'] as $cat)
-                                                    @foreach($detailColumns[$cat] as $col)
-                                                        <td class="text-center category-{{ $cat }}">
-                                                            @if(isset($data['detail'][$cat][$col['id']]))
-                                                                {{ $data['detail'][$cat][$col['id']] }}
-                                                            @else
-                                                                <span class="text-muted">-</span>
-                                                            @endif
-                                                        </td>
-                                                    @endforeach
-                                                @endforeach
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                    <tfoot class="table-light" style="position: sticky; bottom: 0; z-index: 20;">
-                                        <tr>
-                                            <td colspan="2" class="text-end fw-bold" style="position: sticky; left: 0; background-color: #f9f9f9; z-index: 30; border-right: 2px solid #ddd;">RATA-RATA KELAS</td>
-                                            
-                                            @foreach(['tasks', 'akm', 'uh', 'pts', 'pas'] as $cat)
-                                                @foreach($detailColumns[$cat] as $col)
-                                                    <td class="text-center fw-bold text-primary category-{{ $cat }}">
-                                                        @if(isset($detailAverages[$cat][$col['id']]))
-                                                            {{ $detailAverages[$cat][$col['id']] }}
-                                                        @else
-                                                            <span class="text-muted">-</span>
-                                                        @endif
-                                                    </td>
-                                                @endforeach
-                                            @endforeach
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
                           </div>
-                        </div>
+
                     @endif
                 </div>
             </div>
@@ -366,9 +262,10 @@
                                 <div class="card-body p-0">
                     `;
 
-                    if (cols && cols.length > 0) {
+                    let colsArray = cols ? Object.values(cols) : [];
+                    if (colsArray.length > 0) {
                         html += '<ul class="list-group list-group-flush">';
-                        cols.forEach((col, idx) => {
+                        colsArray.forEach((col, idx) => {
                             let point = studentData.detail && studentData.detail[cat.id] ? studentData.detail[cat.id][col.id] : null;
                             html += `
                                 <li class="list-group-item d-flex justify-content-between align-items-center px-4 py-3 border-bottom-0 border-light">
@@ -420,5 +317,4 @@
         });
     });
 </script>
-@endsection
 @endsection
