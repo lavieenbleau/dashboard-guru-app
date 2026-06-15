@@ -23,7 +23,8 @@ class LaporanHarianController extends Controller
             ->join('students', 'tasks.student_id', '=', 'students.id')
             ->join('posts', 'tasks.post_id', '=', 'posts.id')
             ->leftJoin('lessons', function($join) {
-                $join->whereRaw('JSON_EXTRACT(posts.category, "$.lesson_id") = lessons.id');
+                $join->whereRaw('JSON_VALID(posts.category) = 1')
+                     ->whereRaw('JSON_EXTRACT(posts.category, "$.lesson_id") = lessons.id');
             })
             ->leftJoin('classrooms', 'students.classroom_id', '=', 'classrooms.id')
             ->select(
@@ -156,7 +157,8 @@ class LaporanHarianController extends Controller
             ->join('students', 'tasks.student_id', '=', 'students.id')
             ->join('posts', 'tasks.post_id', '=', 'posts.id')
             ->leftJoin('lessons', function($join) {
-                $join->whereRaw('JSON_EXTRACT(posts.category, "$.lesson_id") = lessons.id');
+                $join->whereRaw('JSON_VALID(posts.category) = 1')
+                     ->whereRaw('JSON_EXTRACT(posts.category, "$.lesson_id") = lessons.id');
             })
             ->leftJoin('classrooms', 'students.classroom_id', '=', 'classrooms.id')
             ->select(
