@@ -93,7 +93,7 @@
                             if ($activity->source_type === 'task') {
                                 $url = route('guru.laporanharian.review', [$serial->id, $activity->id]);
                             } else {
-                                $url = route('guru.soal.student-answer-detail', [$activity->lesson_id ?? 0, $activity->exercise_id ?? 0, $activity->student_id]);
+                                $url = route('guru.soal.student-answer-detail', [$serial->id, $activity->lesson_id ?? 0, $activity->exercise_id ?? 0, $activity->student_id]);
                             }
                         @endphp
                         <a href="{{ $url }}" class="d-flex mb-3 pb-3 border-bottom text-decoration-none text-dark" style="transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='transparent'">
