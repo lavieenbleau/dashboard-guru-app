@@ -149,16 +149,14 @@
 
 @section('page-script')
 <script>
+    // Tahap 2 - Verifikasi JSON
     window.studentDetails = @json($rekapData);
     window.uniqueColumns = @json($detailColumns);
+    console.log('Student Details Loaded:', window.studentDetails);
 
     document.addEventListener('DOMContentLoaded', function() {
         const detailButtons = document.querySelectorAll('.btn-detail-siswa');
         const modalBody = document.getElementById('studentDetailContent');
-
-        // Debug log
-        console.log("Loaded studentDetails:", window.studentDetails);
-        console.log("Loaded uniqueColumns:", window.uniqueColumns);
 
         function getBadgeDetail(val, hero = false) {
             if (val === null || val === undefined) return '<span class="badge bg-label-secondary' + (hero ? ' fs-5' : '') + '">Belum Dinilai</span>';
@@ -174,19 +172,28 @@
 
         detailButtons.forEach(btn => {
             btn.addEventListener('click', function() {
+                // Tahap 4 - Debug Tombol
                 const studentId = parseInt(this.getAttribute('data-student-id'));
-                
-                console.log("Clicked student ID:", studentId);
+                console.log('Clicked Student ID:', studentId);
 
-                const studentData = window.studentDetails.find(s => s.student.id === studentId);
-                
-                console.log("Found student data:", studentData);
+                // Ensure it's an array
+                let studentArray = Array.isArray(window.studentDetails) ? window.studentDetails : Object.values(window.studentDetails);
 
+                // Tahap 5 - Verifikasi Pencarian Data
+                const studentData = studentArray.find(s => s.student && String(s.student.id) === String(studentId));
+                console.log('Found Student:', studentData);
+
+                // Tahap 6 - Fallback Error
                 if (!studentData) {
-                    modalBody.innerHTML = '<div class="alert alert-danger m-4">Data siswa tidak ditemukan.</div>';
+                    modalBody.innerHTML = `
+                        <div class="alert alert-danger m-4">
+                            Data siswa tidak ditemukan.
+                        </div>
+                    `;
                     return;
                 }
 
+                // Empty State
                 if (studentData.nilai_akhir === null) {
                     modalBody.innerHTML = `
                         <div class="row"><div class="col-md-12">
@@ -200,7 +207,7 @@
                     return;
                 }
 
-                // Build HTML
+                // Render HTML Sederhana ke Kompleks
                 let html = `
                     <div class="row">
                         <div class="col-md-12">
