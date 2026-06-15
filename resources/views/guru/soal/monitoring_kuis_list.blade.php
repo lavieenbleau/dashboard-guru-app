@@ -21,13 +21,6 @@
     </div>
 
     
-            <hr class="my-3">
-            <div class="row text-center">
-                <div class="col-12">
-                    <h5 class="mb-0">Rata-rata Nilai: <span class="text-success">{{ $overallAvgScore }}</span></h5>
-                </div>
-            </div>
-        </div>
     </div>
 
     @if(isset($dbError) && $dbError)
