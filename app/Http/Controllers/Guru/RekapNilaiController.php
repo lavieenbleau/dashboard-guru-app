@@ -69,6 +69,7 @@ class RekapNilaiController extends Controller
         $guruExerciseIds = Exercise::where('lesson_id', $selectedLesson->id)
                 ->where('is_admin', 0)
                 ->pluck('id');
+        file_put_contents('debug_valid_posts.txt', 'Lesson: ' . $lessonId . ', Class: ' . $classroomId . ', Count: ' . $validPostIds->count() . "\n");
 
         $adminExerciseIds = Exercise::whereHas('lesson', function($q) use ($selectedLesson) {
                     $q->where('mapel_id', $selectedLesson->mapel_id)
@@ -76,6 +77,7 @@ class RekapNilaiController extends Controller
                 })
                 ->where('is_admin', 1)
                 ->pluck('id');
+        file_put_contents('debug_valid_posts.txt', 'Lesson: ' . $lessonId . ', Class: ' . $classroomId . ', Count: ' . $validPostIds->count() . "\n");
 
         $validExerciseIds = $guruExerciseIds->concat($adminExerciseIds)->unique();
 
@@ -261,6 +263,7 @@ class RekapNilaiController extends Controller
         $guruExerciseIds = Exercise::where('lesson_id', $selectedLesson->id)
                 ->where('is_admin', 0)
                 ->pluck('id');
+        file_put_contents('debug_valid_posts.txt', 'Lesson: ' . $lessonId . ', Class: ' . $classroomId . ', Count: ' . $validPostIds->count() . "\n");
 
         $adminExerciseIds = Exercise::whereHas('lesson', function($q) use ($selectedLesson) {
                     $q->where('mapel_id', $selectedLesson->mapel_id)
@@ -268,6 +271,7 @@ class RekapNilaiController extends Controller
                 })
                 ->where('is_admin', 1)
                 ->pluck('id');
+        file_put_contents('debug_valid_posts.txt', 'Lesson: ' . $lessonId . ', Class: ' . $classroomId . ', Count: ' . $validPostIds->count() . "\n");
 
         $validExerciseIds = $guruExerciseIds->concat($adminExerciseIds)->unique();
 
