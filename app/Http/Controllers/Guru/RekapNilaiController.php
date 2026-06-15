@@ -419,7 +419,7 @@ class RekapNilaiController extends Controller
             'nilai_akhir' => $nilaiAkhir
         ];
 
-        return view('guru.rekap-nilai.show-student', compact('serial', 'classroom', 'student', 'rekapDetail'));
+        return view('guru.rekap-nilai.show-student', compact('serial', 'classroom', 'student', 'rekapDetail', 'lessonsForTasks'));
     }
 
         public function downloadStudentPdf($serial, $classroomId, $studentId)
@@ -509,7 +509,7 @@ class RekapNilaiController extends Controller
             'nilai_akhir' => $nilaiAkhir
         ];
 
-        $pdf = Pdf::loadView('guru.rekap-nilai.pdf.student', compact('serial', 'classroom', 'student', 'rekapDetail'));
+        $pdf = Pdf::loadView('guru.rekap-nilai.pdf.student', compact('serial', 'classroom', 'student', 'rekapDetail', 'lessonsForTasks'));
         $pdf->setPaper('a4', 'portrait');
         
         return $pdf->download('Rekap-Nilai-' . str_replace(' ', '-', $student->name) . '.pdf');
