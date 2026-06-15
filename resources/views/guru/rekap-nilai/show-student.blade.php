@@ -8,180 +8,240 @@
                 <span class="text-muted fw-light">{{ $serial->name }} / Rekap Nilai / {{ $classroom->name }} /</span> {{ $student->name }}
             </h4>
 
-            <div class="mb-3">
-                <a href="{{ route('guru.rekapnilai.kelas', ['serial' => $serial->id, 'classroom' => $classroom->id]) }}" 
-                   class="btn btn-secondary">
-                    <i class="bx bx-arrow-back me-1"></i>
-                    Kembali ke {{ $classroom->name }}
+            @php
+                if (!function_exists('getBadgeRekap')) {
+                    function getBadgeRekap($val) {
+                        if (is_null($val)) return '<span class="text-muted">-</span>';
+                        $val = (float)$val;
+                        if ($val >= 90) return '<span class="badge bg-success">'.$val.'</span>';
+                        if ($val >= 80) return '<span class="badge bg-primary">'.$val.'</span>';
+                        if ($val >= 70) return '<span class="badge bg-warning">'.$val.'</span>';
+                        return '<span class="badge bg-danger">'.$val.'</span>';
+                    }
+                }
+            @endphp
+
+            <div class="d-flex justify-content-between mb-4">
+                <a href="{{ route('guru.rekapnilai.kelas', ['serial' => $serial->id, 'classroom' => $classroom->id]) }}" class="btn btn-secondary">
+                    <i class="bx bx-arrow-back me-1"></i> Kembali ke Kelas
                 </a>
-                <a href="{{ route('guru.rekapnilai.siswa.pdf', ['serial' => $serial->id, 'classroom' => $classroom->id, 'student' => $student->id]) }}" 
-                   class="btn btn-success">
-                    <i class="bx bxs-file-pdf me-1"></i>
-                    Download PDF
+                <a href="{{ route('guru.rekapnilai.siswa.pdf', ['serial' => $serial->id, 'classroom' => $classroom->id, 'student' => $student->id]) }}" class="btn btn-success">
+                    <i class="bx bxs-file-pdf me-1"></i> Download PDF
                 </a>
             </div>
 
-            <!-- Student Info Card -->
+            <!-- Header Siswa -->
             <div class="card mb-4">
                 <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-lg bg-label-primary me-3">
-                            <span class="avatar-initial rounded-circle">{{ substr($student->name, 0, 2) }}</span>
+                    <div class="row">
+                        <div class="col-sm-3 mb-2 mb-sm-0">
+                            <span class="text-muted d-block">Nama Siswa</span>
+                            <strong class="fs-5">{{ $student->name }}</strong>
                         </div>
-                        <div>
-                            <h5 class="mb-0">{{ $student->name }}</h5>
-                            <p class="text-muted mb-0">{{ $classroom->name }}</p>
+                        <div class="col-sm-3 mb-2 mb-sm-0">
+                            <span class="text-muted d-block">NIS / NISN</span>
+                            <strong>{{ $student->nis ?? '-' }} / {{ $student->nisn ?? '-' }}</strong>
+                        </div>
+                        <div class="col-sm-3 mb-2 mb-sm-0">
+                            <span class="text-muted d-block">Kelas</span>
+                            <strong>{{ $classroom->name }}</strong>
+                        </div>
+                        <div class="col-sm-3">
+                            <span class="text-muted d-block">Mata Pelajaran Terkait</span>
+                            <strong>{{ $lessonsForTasks->implode(', ') ?: 'Semua' }}</strong>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Tasks Section -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bx bx-task me-2"></i>
-                        Nilai Tugas
-                    </h5>
+            <!-- Ringkasan Nilai Akhir -->
+            <div class="card mb-4 border-primary">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0 text-white"><i class='bx bx-bar-chart-alt-2 me-2'></i>Ringkasan Nilai Akhir</h5>
                 </div>
-                <div class="card-body">
-                    @if($tasks->isEmpty())
-                        <div class="alert alert-info mb-0">
-                            <i class="bx bx-info-circle me-2"></i>
-                            Belum ada nilai tugas.
+                <div class="card-body mt-3">
+                    <div class="row text-center g-4">
+                        <div class="col-6 col-md-2">
+                            <h6 class="text-muted mb-2">Tugas</h6>
+                            <div class="fs-4">{!! getBadgeRekap($rekapDetail['tugas']['avg']) !!}</div>
                         </div>
-                    @else
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 50px;">No</th>
-                                        <th>Paket Pembelajaran</th>
-                                        <th>Judul Tugas</th>
-                                        <th class="text-center" style="width: 100px;">Nilai</th>
-                                        <th style="width: 150px;">Tanggal</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($tasks as $index => $task)
-                                        <tr>
-                                            <td>{{ $index + 1 }}</td>
-                                            <td>
-                                                @php
-                                                    $cat = is_string($task->post->category) ? json_decode($task->post->category, true) : $task->post->category;
-                                                    $lessonId = $cat['lesson_id'] ?? null;
-                                                @endphp
-                                                {{ $lessonId && isset($lessonsForTasks[$lessonId]) ? $lessonsForTasks[$lessonId] : ($task->post->mapel->name ?? '-') }}
-                                            </td>
-                                            <td>{{ $task->post->title ?? '-' }}</td>
-                                            <td class="text-center">
-                                                @if($task->point)
-                                                    <span class="badge bg-primary">{{ $task->point }}</span>
-                                                @else
-                                                    <span class="text-muted">Belum dinilai</span>
-                                                @endif
-                                            </td>
-                                            <td>{{ $task->created_at->format('d M Y') }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                                <tfoot class="table-light">
-                                    <tr>
-                                        <td colspan="3" class="text-end"><strong>Rata-rata:</strong></td>
-                                        <td class="text-center">
-                                            <strong>
-                                                @php
-                                                    $avg = $tasks->where('point', '!=', null)->avg('point');
-                                                @endphp
-                                                @if($avg)
-                                                    <span class="badge bg-primary">{{ round($avg, 1) }}</span>
-                                                @else
-                                                    <span class="text-muted">-</span>
-                                                @endif
-                                            </strong>
-                                        </td>
-                                        <td></td>
-                                    </tr>
-                                </tfoot>
-                            </table>
+                        <div class="col-6 col-md-2">
+                            <h6 class="text-muted mb-2">AKM</h6>
+                            <div class="fs-4">{!! getBadgeRekap($rekapDetail['akm']['avg']) !!}</div>
                         </div>
-                    @endif
+                        <div class="col-6 col-md-2">
+                            <h6 class="text-muted mb-2">UH</h6>
+                            <div class="fs-4">{!! getBadgeRekap($rekapDetail['uh']['avg']) !!}</div>
+                        </div>
+                        <div class="col-6 col-md-2">
+                            <h6 class="text-muted mb-2">PTS</h6>
+                            <div class="fs-4">{!! getBadgeRekap($rekapDetail['pts']['avg']) !!}</div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <h6 class="text-primary fw-bold mb-2">NILAI AKHIR KESELURUHAN</h6>
+                            <div class="fs-3">{!! getBadgeRekap($rekapDetail['nilai_akhir']) !!}</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Exercise Points Section -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bx bx-edit me-2"></i>
-                        Nilai Soal/Ujian
-                    </h5>
-                </div>
-                <div class="card-body">
-                    @if($exercisePoints->isEmpty())
-                        <div class="alert alert-info mb-0">
-                            <i class="bx bx-info-circle me-2"></i>
-                            Belum ada nilai soal/ujian.
+            <div class="row">
+                <!-- TUGAS -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header border-bottom d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 text-primary">Detail Tugas</h6>
+                            <span>Rata-rata: <strong>{!! getBadgeRekap($rekapDetail['tugas']['avg']) !!}</strong></span>
                         </div>
-                    @else
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 50px;">No</th>
-                                        <th>Paket Pembelajaran</th>
-                                        <th>Kategori</th>
-                                        <th>Judul Soal</th>
-                                        <th class="text-center" style="width: 100px;">Nilai</th>
-                                        <th style="width: 150px;">Tanggal</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($exercisePoints as $index => $point)
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0">
+                                    <tbody>
+                                        @forelse($rekapDetail['tugas']['list'] as $idx => $item)
                                         <tr>
-                                            <td>{{ $index + 1 }}</td>
-                                            <td>{{ $point->exercise->lesson->name ?? ($point->exercise->lesson->mapel->name ?? '-') }}</td>
-                                            <td>
-                                                @if($point->exercise->exerciseType)
-                                                    <span class="badge bg-info">{{ $point->exercise->exerciseType->name }}</span>
-                                                @else
-                                                    <span class="text-muted">-</span>
-                                                @endif
+                                            <td class="px-3 py-2 text-muted" style="width: 30px;">{{ $idx + 1 }}</td>
+                                            <td class="py-2">
+                                                {{ $item['title'] }}
+                                                <small class="d-block text-muted">{{ $item['lesson'] }}</small>
                                             </td>
-                                            <td>{{ $point->exercise->title }}</td>
-                                            <td class="text-center">
-                                                @if($point->exercise_point)
-                                                    <span class="badge bg-success">{{ $point->exercise_point }}</span>
-                                                @else
-                                                    <span class="text-muted">Belum dinilai</span>
-                                                @endif
-                                            </td>
-                                            <td>{{ $point->created_at->format('d M Y') }}</td>
+                                            <td class="px-3 py-2 text-end fw-bold">{!! getBadgeRekap($item['point']) !!}</td>
                                         </tr>
-                                    @endforeach
-                                </tbody>
-                                <tfoot class="table-light">
-                                    <tr>
-                                        <td colspan="4" class="text-end"><strong>Rata-rata:</strong></td>
-                                        <td class="text-center">
-                                            <strong>
-                                                @php
-                                                    $avg = $exercisePoints->where('exercise_point', '!=', null)->avg('exercise_point');
-                                                @endphp
-                                                @if($avg)
-                                                    <span class="badge bg-success">{{ round($avg, 1) }}</span>
-                                                @else
-                                                    <span class="text-muted">-</span>
-                                                @endif
-                                            </strong>
-                                        </td>
-                                        <td></td>
-                                    </tr>
-                                </tfoot>
-                            </table>
+                                        @empty
+                                        <tr>
+                                            <td colspan="3" class="px-3 py-3 text-center text-muted">Belum ada nilai tugas</td>
+                                        </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    @endif
+                    </div>
                 </div>
+
+                <!-- AKM -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header border-bottom d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 text-primary">Detail AKM</h6>
+                            <span>Rata-rata: <strong>{!! getBadgeRekap($rekapDetail['akm']['avg']) !!}</strong></span>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0">
+                                    <tbody>
+                                        @forelse($rekapDetail['akm']['list'] as $idx => $item)
+                                        <tr>
+                                            <td class="px-3 py-2 text-muted" style="width: 30px;">{{ $idx + 1 }}</td>
+                                            <td class="py-2">
+                                                {{ $item['title'] }}
+                                            </td>
+                                            <td class="px-3 py-2 text-end fw-bold">{!! getBadgeRekap($item['point']) !!}</td>
+                                        </tr>
+                                        @empty
+                                        <tr>
+                                            <td colspan="3" class="px-3 py-3 text-center text-muted">Belum ada nilai AKM</td>
+                                        </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UH -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header border-bottom d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 text-primary">Detail Ulangan Harian</h6>
+                            <span>Rata-rata: <strong>{!! getBadgeRekap($rekapDetail['uh']['avg']) !!}</strong></span>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0">
+                                    <tbody>
+                                        @forelse($rekapDetail['uh']['list'] as $idx => $item)
+                                        <tr>
+                                            <td class="px-3 py-2 text-muted" style="width: 30px;">{{ $idx + 1 }}</td>
+                                            <td class="py-2">
+                                                {{ $item['title'] }}
+                                            </td>
+                                            <td class="px-3 py-2 text-end fw-bold">{!! getBadgeRekap($item['point']) !!}</td>
+                                        </tr>
+                                        @empty
+                                        <tr>
+                                            <td colspan="3" class="px-3 py-3 text-center text-muted">Belum ada nilai UH</td>
+                                        </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PTS -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header border-bottom d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 text-primary">Detail PTS</h6>
+                            <span>Rata-rata: <strong>{!! getBadgeRekap($rekapDetail['pts']['avg']) !!}</strong></span>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0">
+                                    <tbody>
+                                        @forelse($rekapDetail['pts']['list'] as $idx => $item)
+                                        <tr>
+                                            <td class="px-3 py-2 text-muted" style="width: 30px;">{{ $idx + 1 }}</td>
+                                            <td class="py-2">
+                                                {{ $item['title'] }}
+                                            </td>
+                                            <td class="px-3 py-2 text-end fw-bold">{!! getBadgeRekap($item['point']) !!}</td>
+                                        </tr>
+                                        @empty
+                                        <tr>
+                                            <td colspan="3" class="px-3 py-3 text-center text-muted">Belum ada nilai PTS</td>
+                                        </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAS -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header border-bottom d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 text-primary">Detail PAS</h6>
+                            <span>Rata-rata: <strong>{!! getBadgeRekap($rekapDetail['pas']['avg']) !!}</strong></span>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0">
+                                    <tbody>
+                                        @forelse($rekapDetail['pas']['list'] as $idx => $item)
+                                        <tr>
+                                            <td class="px-3 py-2 text-muted" style="width: 30px;">{{ $idx + 1 }}</td>
+                                            <td class="py-2">
+                                                {{ $item['title'] }}
+                                            </td>
+                                            <td class="px-3 py-2 text-end fw-bold">{!! getBadgeRekap($item['point']) !!}</td>
+                                        </tr>
+                                        @empty
+                                        <tr>
+                                            <td colspan="3" class="px-3 py-3 text-center text-muted">Belum ada nilai PAS</td>
+                                        </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>

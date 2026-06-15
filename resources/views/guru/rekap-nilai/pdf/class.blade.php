@@ -1,209 +1,80 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <meta charset="utf-8">
-    <title>Rekap Nilai - {{ $classroom->name }}</title>
+    <meta charset="UTF-8">
+    <title>Rekap Nilai {{ $classroom->name }}</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 8px;
-            margin: 15px;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #000;
-            padding-bottom: 8px;
-        }
-        .header h1 {
-            margin: 5px 0;
-            font-size: 14px;
-        }
-        .header h2 {
-            margin: 3px 0;
-            font-size: 11px;
-            font-weight: normal;
-        }
-        .info {
-            margin-bottom: 10px;
-            font-size: 9px;
-        }
-        .info table {
-            width: 40%;
-        }
-        .info td {
-            padding: 2px 5px;
-        }
-        .lesson-section {
-            margin-bottom: 20px;
-            page-break-inside: avoid;
-        }
-        .lesson-title {
-            font-size: 11px;
-            font-weight: bold;
-            margin: 10px 0 5px 0;
-            padding: 3px 5px;
-            background-color: #f0f0f0;
-            border-left: 4px solid #333;
-        }
-        table.grades {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 5px;
-        }
-        table.grades th,
-        table.grades td {
-            border: 1px solid #000;
-            padding: 3px;
-            text-align: center;
-            font-size: 8px;
-        }
-        table.grades th {
-            background-color: #f0f0f0;
-            font-weight: bold;
-        }
-        table.grades td.name {
-            text-align: left;
-        }
-        .footer {
-            margin-top: 20px;
-            font-size: 8px;
-            text-align: right;
-        }
+        body { font-family: sans-serif; font-size: 12px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        h3, h4, h5 { margin: 5px 0; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #000; padding: 6px; text-align: left; }
+        th { background-color: #f2f2f2; text-align: center; }
+        .text-center { text-align: center; }
+        .fw-bold { font-weight: bold; }
+        .bg-success { color: green; }
+        .bg-primary { color: blue; }
+        .bg-warning { color: orange; }
+        .bg-danger { color: red; }
     </style>
 </head>
 <body>
+    @php
+        if (!function_exists('formatScorePdf')) {
+            function formatScorePdf($val) {
+                if (is_null($val)) return '-';
+                $val = (float)$val;
+                if ($val >= 90) return '<span class="bg-success fw-bold">'.$val.'</span>';
+                if ($val >= 80) return '<span class="bg-primary fw-bold">'.$val.'</span>';
+                if ($val >= 70) return '<span class="bg-warning fw-bold">'.$val.'</span>';
+                return '<span class="bg-danger fw-bold">'.$val.'</span>';
+            }
+        }
+    @endphp
+
     <div class="header">
-        <h1>REKAP NILAI SISWA</h1>
-        <h2>{{ $serial->name }}</h2>
-        <h2>{{ $classroom->name }}</h2>
+        <h3>REKAPITULASI NILAI SISWA</h3>
+        <h4>Mata Pelajaran: {{ $selectedLesson->name }}</h4>
+        <h4>Kelas: {{ $classroom->name }}</h4>
     </div>
 
-    <div class="info">
-        <table>
+    <table>
+        <thead>
             <tr>
-                <td><strong>Kelas</strong></td>
-                <td>: {{ $classroom->name }}</td>
+                <th style="width: 30px;">NO</th>
+                <th style="min-width: 150px;">NAMA SISWA</th>
+                <th>TUGAS</th>
+                <th>AKM</th>
+                <th>UH</th>
+                <th>PTS</th>
+                <th>PAS</th>
+                <th>NILAI AKHIR</th>
             </tr>
+        </thead>
+        <tbody>
+            @foreach($rekapData as $index => $data)
             <tr>
-                <td><strong>Jumlah Siswa</strong></td>
-                <td>: {{ $students->count() }} orang</td>
+                <td class="text-center">{{ $index + 1 }}</td>
+                <td>{{ $data['student']->name }}</td>
+                <td class="text-center">{!! formatScorePdf($data['tugas']['avg']) !!}</td>
+                <td class="text-center">{!! formatScorePdf($data['akm']['avg']) !!}</td>
+                <td class="text-center">{!! formatScorePdf($data['uh']['avg']) !!}</td>
+                <td class="text-center">{!! formatScorePdf($data['pts']['avg']) !!}</td>
+                <td class="text-center">{!! formatScorePdf($data['pas']['avg']) !!}</td>
+                <td class="text-center">{!! formatScorePdf($data['nilai_akhir']) !!}</td>
             </tr>
-            <tr>
-                <td><strong>Tanggal Cetak</strong></td>
-                <td>: {{ now()->format('d F Y') }}</td>
-            </tr>
-        </table>
-    </div>
+            @endforeach
+        </tbody>
+    </table>
 
-    @if($students->isEmpty())
-        <p>Belum ada data siswa.</p>
-    @else
-        @foreach($lessons as $lesson)
-            @php
-                $taskCount = isset($allTasks[$lesson->id]) ? count($allTasks[$lesson->id]) : 0;
-                $exTypes = isset($allExercises[$lesson->id]) ? array_keys($allExercises[$lesson->id]) : [];
-                $totalExCols = 0;
-                foreach($exTypes as $type) {
-                    $totalExCols += count($allExercises[$lesson->id][$type]);
-                }
-            @endphp
-            
-            <div class="lesson-section">
-                <div class="lesson-title">{{ strtoupper($lesson->name) }}</div>
-                
-                @if($taskCount > 0 || $totalExCols > 0)
-                    <table class="grades">
-                        <thead>
-                            <tr>
-                                <th rowspan="2" style="width: 20px;">No</th>
-                                <th rowspan="2" style="min-width: 100px;">Nama Siswa</th>
-                                @if($taskCount > 0)
-                                    <th colspan="{{ $taskCount }}">Tugas</th>
-                                @endif
-                                @foreach($exTypes as $type)
-                                    @php $exCount = count($allExercises[$lesson->id][$type]); @endphp
-                                    <th colspan="{{ $exCount }}">
-                                        {{ $type == 'UH' ? 'Ulangan Harian' : ($type == 'Tambahan' ? 'Soal Tambahan' : $type) }}
-                                    </th>
-                                @endforeach
-                                <th rowspan="2">Rata-rata</th>
-                            </tr>
-                            <tr>
-                                @if(isset($allTasks[$lesson->id]))
-                                    @foreach($allTasks[$lesson->id] as $task)
-                                        <th style="width: 25px;">{{ $task['number'] }}</th>
-                                    @endforeach
-                                @endif
-                                @if(isset($allExercises[$lesson->id]))
-                                    @foreach($allExercises[$lesson->id] as $type => $exercises)
-                                        @foreach($exercises as $ex)
-                                            <th style="width: 25px;">{{ $ex['number'] }}</th>
-                                        @endforeach
-                                    @endforeach
-                                @endif
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($rekapData as $index => $data)
-                                <tr>
-                                    <td>{{ $index + 1 }}</td>
-                                    <td class="name">{{ $data['student']->name }}</td>
-                                    @php
-                                        $lessonData = $data['lessons'][$lesson->id];
-                                        $allPoints = [];
-                                    @endphp
-                                    
-                                    {{-- Display tasks --}}
-                                    @foreach($lessonData['tasks'] as $task)
-                                        <td>
-                                            @if($task['point'] !== null)
-                                                @php $allPoints[] = $task['point']; @endphp
-                                                {{ $task['point'] }}
-                                            @else
-                                                -
-                                            @endif
-                                        </td>
-                                    @endforeach
-                                    
-                                    {{-- Display exercises by type --}}
-                                    @foreach(['UH', 'PTS', 'PAS', 'Tambahan'] as $type)
-                                        @if(isset($lessonData['exercises'][$type]))
-                                            @foreach($lessonData['exercises'][$type] as $ex)
-                                                <td>
-                                                    @if($ex['point'] !== null)
-                                                        @php $allPoints[] = $ex['point']; @endphp
-                                                        {{ $ex['point'] }}
-                                                    @else
-                                                        -
-                                                    @endif
-                                                </td>
-                                            @endforeach
-                                        @endif
-                                    @endforeach
-                                    
-                                    {{-- Average --}}
-                                    <td>
-                                        @if(count($allPoints) > 0)
-                                            <strong>{{ round(array_sum($allPoints) / count($allPoints), 1) }}</strong>
-                                        @else
-                                            -
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                @else
-                    <p style="font-size: 9px; color: #666; margin: 5px 0;">Belum ada data untuk paket pembelajaran ini.</p>
-                @endif
-            </div>
-        @endforeach
-    @endif
-
-    <div class="footer">
-        <p>Dicetak pada: {{ now()->format('d F Y H:i') }}</p>
-        <p style="margin-top: 3px;"><em>Angka pada kolom header menunjukkan nomor urut tugas/soal per paket pembelajaran.</em></p>
+    <div style="font-size: 10px; color: #555;">
+        <p><strong>Keterangan Warna:</strong></p>
+        <p>
+            <span style="color: green;">Hijau</span> : 90 - 100 <br>
+            <span style="color: blue;">Biru</span> : 80 - 89 <br>
+            <span style="color: orange;">Kuning</span> : 70 - 79 <br>
+            <span style="color: red;">Merah</span> : < 70
+        </p>
     </div>
 </body>
 </html>

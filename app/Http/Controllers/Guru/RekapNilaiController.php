@@ -48,178 +48,126 @@ class RekapNilaiController extends Controller
         return view('guru.rekap-nilai.lessons', compact('serial', 'classroom', 'lessons'));
     }
 
-    public function showLesson($serial, $classroomId, $lessonId)
+        public function showLesson($serial, $classroomId, $lessonId)
     {
         $serial = Serial::with('product')->findOrFail($serial);
         $classroom = Classroom::findOrFail($classroomId);
         $selectedLesson = Lesson::findOrFail($lessonId);
         
-        // Get all students in this classroom
         $students = Student::where('classroom_id', $classroom->id)
             ->orderBy('name')
             ->get();
 
-        $lessons = collect([$selectedLesson]);
-
-        // Group posts (tugas) by lesson
-        $allTasks = [];
-        foreach ($lessons as $lesson) {
-            $posts = Post::where('serial_id', $serial->id)
-                ->where('category', 'like', '%"lesson_id":' . $lesson->id . '%')
+        $validPostIds = Post::where('serial_id', $serial->id)
+                ->where('category', 'like', '%"lesson_id":' . $selectedLesson->id . '%')
                 ->where('is_task', 1)
                 ->where(function($q) use ($classroom) {
                     $q->whereNull('classroom_id')
                       ->orWhere('classroom_id', $classroom->id);
-                })
-                ->orderBy('created_at')
-                ->get();
-            
-            foreach ($posts as $index => $post) {
-                $allTasks[$lesson->id][] = [
-                    'post' => $post,
-                    'title' => $post->title,
-                    'number' => $index + 1,
-                ];
-            }
-        }
+                })->pluck('id');
 
-        // Group exercises by lesson (Tambahan) and mapel (Admin)
-        $allExercises = [];
-        foreach ($lessons as $lesson) {
-            // Guru exercises (Tambahan)
-            $guruExercises = Exercise::where('lesson_id', $lesson->id)
+        $guruExerciseIds = Exercise::where('lesson_id', $selectedLesson->id)
                 ->where('is_admin', 0)
-                ->orderBy('created_at')
-                ->get();
-                
-            foreach ($guruExercises as $index => $exercise) {
-                $allExercises[$lesson->id]['Tambahan'][] = [
-                    'exercise' => $exercise,
-                    'title' => $exercise->title,
-                    'number' => $index + 1,
-                ];
-            }
+                ->pluck('id');
 
-            // Admin exercises for the same mapel
-            $adminExercises = Exercise::whereHas('lesson', function($q) use ($lesson) {
-                    $q->where('mapel_id', $lesson->mapel_id)
+        $adminExerciseIds = Exercise::whereHas('lesson', function($q) use ($selectedLesson) {
+                    $q->where('mapel_id', $selectedLesson->mapel_id)
                       ->where('category', Lesson::CATEGORY_SOAL);
                 })
                 ->where('is_admin', 1)
-                ->with(['lesson'])
-                ->orderBy('created_at')
-                ->get()
-                ->groupBy(function($item) {
-                    return $item->lesson->semester ?? 0;
-                });
-                
-            foreach ($adminExercises as $semester => $exList) {
-                $type = match($semester) {
-                    1 => 'UH',
-                    2 => 'PTS',
-                    3 => 'PAS',
-                    default => 'Soal'
-                };
-                
-                foreach ($exList as $index => $exercise) {
-                    $allExercises[$lesson->id][$type][] = [
-                        'exercise' => $exercise,
-                        'title' => $exercise->title,
-                        'number' => $index + 1,
-                    ];
-                }
-            }
-        }
+                ->pluck('id');
 
-        // Prepare rekap data per student
+        $validExerciseIds = $guruExerciseIds->concat($adminExerciseIds)->unique();
+
+        $allTasks = Task::whereIn('student_id', $students->pluck('id'))
+            ->whereIn('post_id', $validPostIds)
+            ->get()
+            ->groupBy('student_id');
+
+        $allExPoints = ExercisePoint::whereIn('student_id', $students->pluck('id'))
+            ->whereIn('exercise_id', $validExerciseIds)
+            ->with('exercise.exerciseType')
+            ->get()
+            ->groupBy('student_id');
+
         $rekapData = [];
         foreach ($students as $student) {
-            $studentData = [
+            $sTasks = $allTasks->get($student->id, collect());
+            $sExPoints = $allExPoints->get($student->id, collect());
+
+            $tugas = ['sum' => 0, 'count' => 0];
+            $akm = ['sum' => 0, 'count' => 0];
+            $uh = ['sum' => 0, 'count' => 0];
+            $pts = ['sum' => 0, 'count' => 0];
+            $pas = ['sum' => 0, 'count' => 0];
+
+            foreach ($sTasks as $task) {
+                if (!is_null($task->point)) {
+                    $tugas['sum'] += $task->point;
+                    $tugas['count']++;
+                }
+            }
+
+            foreach ($sExPoints as $ex) {
+                if (!is_null($ex->exercise_point)) {
+                    $typeName = $ex->exercise && $ex->exercise->exerciseType ? strtolower($ex->exercise->exerciseType->name) : '';
+                    if (str_contains($typeName, 'akm')) {
+                        $akm['sum'] += $ex->exercise_point;
+                        $akm['count']++;
+                    } elseif (str_contains($typeName, 'ulangan harian')) {
+                        $uh['sum'] += $ex->exercise_point;
+                        $uh['count']++;
+                    } elseif (str_contains($typeName, 'pts')) {
+                        $pts['sum'] += $ex->exercise_point;
+                        $pts['count']++;
+                    } elseif (str_contains($typeName, 'pas')) {
+                        $pas['sum'] += $ex->exercise_point;
+                        $pas['count']++;
+                    }
+                }
+            }
+
+            $rataTugas = $tugas['count'] > 0 ? round($tugas['sum'] / $tugas['count'], 1) : null;
+            $rataAKM = $akm['count'] > 0 ? round($akm['sum'] / $akm['count'], 1) : null;
+            $rataUH = $uh['count'] > 0 ? round($uh['sum'] / $uh['count'], 1) : null;
+            $rataPTS = $pts['count'] > 0 ? round($pts['sum'] / $pts['count'], 1) : null;
+            $rataPAS = $pas['count'] > 0 ? round($pas['sum'] / $pas['count'], 1) : null;
+
+            $categories = [$rataTugas, $rataAKM, $rataUH, $rataPTS, $rataPAS];
+            $filled = collect($categories)->filter(fn($v) => !is_null($v));
+            $nilaiAkhir = $filled->count() ? round($filled->avg(), 1) : null;
+
+            $rekapData[] = [
                 'student' => $student,
-                'lessons' => []
+                'tugas' => ['avg' => $rataTugas, 'count' => $tugas['count']],
+                'akm' => ['avg' => $rataAKM, 'count' => $akm['count']],
+                'uh' => ['avg' => $rataUH, 'count' => $uh['count']],
+                'pts' => ['avg' => $rataPTS, 'count' => $pts['count']],
+                'pas' => ['avg' => $rataPAS, 'count' => $pas['count']],
+                'nilai_akhir' => $nilaiAkhir
             ];
-
-            foreach ($lessons as $lesson) {
-                $lessonTasks = [];
-                $lessonExercises = [];
-
-                // Get individual task scores
-                if (isset($allTasks[$lesson->id])) {
-                    foreach ($allTasks[$lesson->id] as $taskInfo) {
-                        $task = Task::where('student_id', $student->id)
-                            ->where('post_id', $taskInfo['post']->id)
-                            ->first();
-                        
-                        $lessonTasks[] = [
-                            'number' => $taskInfo['number'],
-                            'title' => $taskInfo['title'],
-                            'point' => $task ? $task->point : null,
-                        ];
-                    }
-                }
-
-                // Get individual exercise scores
-                if (isset($allExercises[$lesson->id])) {
-                    foreach ($allExercises[$lesson->id] as $type => $exList) {
-                        foreach ($exList as $exInfo) {
-                            $exPoint = ExercisePoint::where('student_id', $student->id)
-                                ->where('exercise_id', $exInfo['exercise']->id)
-                                ->first();
-                            
-                            $lessonExercises[$type][] = [
-                                'number' => $exInfo['number'],
-                                'title' => $exInfo['title'],
-                                'point' => $exPoint ? $exPoint->point : null,
-                            ];
-                        }
-                    }
-                }
-
-                // Calculate averages
-                $taskSum = 0; $taskCount = 0;
-                foreach ($lessonTasks as $t) {
-                    if ($t['point'] !== null) { $taskSum += $t['point']; $taskCount++; }
-                }
-                $taskAvg = $taskCount > 0 ? round($taskSum / $taskCount, 1) : 0;
-
-                $exSum = 0; $exCount = 0;
-                foreach ($lessonExercises as $type => $list) {
-                    foreach ($list as $e) {
-                        if ($e['point'] !== null) { $exSum += $e['point']; $exCount++; }
-                    }
-                }
-                $exAvg = $exCount > 0 ? round($exSum / $exCount, 1) : 0;
-
-                $totalAvg = ($taskAvg + $exAvg) / 2;
-
-                $studentData['lessons'][$lesson->id] = [
-                    'tasks' => $lessonTasks,
-                    'exercises' => $lessonExercises,
-                    'task_avg' => $taskAvg,
-                    'ex_avg' => $exAvg,
-                    'total_avg' => $totalAvg
-                ];
-            }
-            $rekapData[] = $studentData;
         }
 
-        // Calculate class averages per lesson
-        $averages = [];
-        foreach ($lessons as $lesson) {
-            $sum = 0; $count = 0;
-            foreach ($rekapData as $data) {
-                if (isset($data['lessons'][$lesson->id]['total_avg']) && $data['lessons'][$lesson->id]['total_avg'] > 0) {
-                    $sum += $data['lessons'][$lesson->id]['total_avg'];
-                    $count++;
-                }
-            }
-            $averages[$lesson->id] = $count > 0 ? round($sum / $count, 1) : 0;
+        $stats = [
+            'total_siswa' => $students->count(),
+            'sudah_dinilai' => collect($rekapData)->filter(fn($s) => !is_null($s['nilai_akhir']))->count(),
+            'belum_dinilai' => collect($rekapData)->filter(fn($s) => is_null($s['nilai_akhir']))->count(),
+            'rata_kelas' => 0,
+            'tertinggi' => null,
+            'terendah' => null,
+        ];
+        
+        $validAkhir = collect($rekapData)->pluck('nilai_akhir')->filter(fn($v) => !is_null($v));
+        if ($validAkhir->count() > 0) {
+            $stats['rata_kelas'] = round($validAkhir->avg(), 1);
+            $stats['tertinggi'] = $validAkhir->max();
+            $stats['terendah'] = $validAkhir->min();
         }
 
-        return view('guru.rekap-nilai.show-class', compact('serial', 'classroom', 'students', 'lessons', 'allTasks', 'allExercises', 'rekapData', 'averages'));
+        return view('guru.rekap-nilai.show-class', compact('serial', 'classroom', 'students', 'selectedLesson', 'rekapData', 'stats'));
     }
 
-    public function downloadClassPdf($serial, $classroomId, $lessonId)
+        public function downloadClassPdf($serial, $classroomId, $lessonId)
     {
         $serial = Serial::findOrFail($serial);
         $classroom = Classroom::findOrFail($classroomId);
@@ -229,191 +177,280 @@ class RekapNilaiController extends Controller
             ->orderBy('name')
             ->get();
             
-        $lessons = collect([$selectedLesson]);
-
-        // Group posts (tugas) by lesson
-        $allTasks = [];
-        foreach ($lessons as $lesson) {
-            $posts = Post::where('serial_id', $serial->id)
-                ->where('category', 'like', '%"lesson_id":' . $lesson->id . '%')
+        $validPostIds = Post::where('serial_id', $serial->id)
+                ->where('category', 'like', '%"lesson_id":' . $selectedLesson->id . '%')
                 ->where('is_task', 1)
                 ->where(function($q) use ($classroom) {
                     $q->whereNull('classroom_id')
                       ->orWhere('classroom_id', $classroom->id);
-                })
-                ->orderBy('created_at')
-                ->get();
-            
-            foreach ($posts as $index => $post) {
-                $allTasks[$lesson->id][] = [
-                    'post' => $post,
-                    'title' => $post->title,
-                    'number' => $index + 1,
-                ];
-            }
-        }
+                })->pluck('id');
 
-        // Group exercises by lesson
-        $allExercises = [];
-        foreach ($lessons as $lesson) {
-            // Guru exercises
-            $guruExercises = Exercise::where('lesson_id', $lesson->id)
+        $guruExerciseIds = Exercise::where('lesson_id', $selectedLesson->id)
                 ->where('is_admin', 0)
-                ->orderBy('created_at')
-                ->get();
-                
-            foreach ($guruExercises as $index => $exercise) {
-                $allExercises[$lesson->id]['Tambahan'][] = [
-                    'exercise' => $exercise,
-                    'title' => $exercise->title,
-                    'number' => $index + 1,
-                ];
-            }
+                ->pluck('id');
 
-            // Admin exercises
-            $adminExercises = Exercise::whereHas('lesson', function($q) use ($lesson) {
-                    $q->where('mapel_id', $lesson->mapel_id)
+        $adminExerciseIds = Exercise::whereHas('lesson', function($q) use ($selectedLesson) {
+                    $q->where('mapel_id', $selectedLesson->mapel_id)
                       ->where('category', Lesson::CATEGORY_SOAL);
                 })
                 ->where('is_admin', 1)
-                ->with(['lesson'])
-                ->orderBy('created_at')
-                ->get()
-                ->groupBy(function($item) {
-                    return $item->lesson->semester ?? 0;
-                });
-                
-            foreach ($adminExercises as $semester => $exList) {
-                $type = match($semester) {
-                    1 => 'UH',
-                    2 => 'PTS',
-                    3 => 'PAS',
-                    default => 'Soal'
-                };
-                
-                foreach ($exList as $index => $exercise) {
-                    $allExercises[$lesson->id][$type][] = [
-                        'exercise' => $exercise,
-                        'title' => $exercise->title,
-                        'number' => $index + 1,
-                    ];
-                }
-            }
-        }
+                ->pluck('id');
 
-        // Prepare rekap data per student
+        $validExerciseIds = $guruExerciseIds->concat($adminExerciseIds)->unique();
+
+        $allTasks = Task::whereIn('student_id', $students->pluck('id'))
+            ->whereIn('post_id', $validPostIds)
+            ->get()
+            ->groupBy('student_id');
+
+        $allExPoints = ExercisePoint::whereIn('student_id', $students->pluck('id'))
+            ->whereIn('exercise_id', $validExerciseIds)
+            ->with('exercise.exerciseType')
+            ->get()
+            ->groupBy('student_id');
+
         $rekapData = [];
         foreach ($students as $student) {
-            $studentData = [
-                'student' => $student,
-                'lessons' => []
-            ];
+            $sTasks = $allTasks->get($student->id, collect());
+            $sExPoints = $allExPoints->get($student->id, collect());
 
-            foreach ($lessons as $lesson) {
-                $lessonTasks = [];
-                $lessonExercises = [];
+            $tugas = ['sum' => 0, 'count' => 0];
+            $akm = ['sum' => 0, 'count' => 0];
+            $uh = ['sum' => 0, 'count' => 0];
+            $pts = ['sum' => 0, 'count' => 0];
+            $pas = ['sum' => 0, 'count' => 0];
 
-                // Get individual task scores
-                if (isset($allTasks[$lesson->id])) {
-                    foreach ($allTasks[$lesson->id] as $taskInfo) {
-                        $task = Task::where('student_id', $student->id)
-                            ->where('post_id', $taskInfo['post']->id)
-                            ->first();
-                        
-                        $lessonTasks[] = [
-                            'number' => $taskInfo['number'],
-                            'title' => $taskInfo['title'],
-                            'point' => $task ? $task->point : null,
-                        ];
-                    }
+            foreach ($sTasks as $task) {
+                if (!is_null($task->point)) {
+                    $tugas['sum'] += $task->point;
+                    $tugas['count']++;
                 }
-
-                // Get individual exercise scores by type
-                if (isset($allExercises[$lesson->id])) {
-                    foreach ($allExercises[$lesson->id] as $type => $exList) {
-                        foreach ($exList as $exInfo) {
-                            $exPoint = ExercisePoint::where('student_id', $student->id)
-                                ->where('exercise_id', $exInfo['exercise']->id)
-                                ->first();
-                            
-                            $lessonExercises[$type][] = [
-                                'number' => $exInfo['number'],
-                                'title' => $exInfo['title'],
-                                'point' => $exPoint ? $exPoint->exercise_point : null,
-                            ];
-                        }
-                    }
-                }
-
-                $studentData['lessons'][$lesson->id] = [
-                    'tasks' => $lessonTasks,
-                    'exercises' => $lessonExercises,
-                ];
             }
 
-            $rekapData[] = $studentData;
+            foreach ($sExPoints as $ex) {
+                if (!is_null($ex->exercise_point)) {
+                    $typeName = $ex->exercise && $ex->exercise->exerciseType ? strtolower($ex->exercise->exerciseType->name) : '';
+                    if (str_contains($typeName, 'akm')) {
+                        $akm['sum'] += $ex->exercise_point;
+                        $akm['count']++;
+                    } elseif (str_contains($typeName, 'ulangan harian')) {
+                        $uh['sum'] += $ex->exercise_point;
+                        $uh['count']++;
+                    } elseif (str_contains($typeName, 'pts')) {
+                        $pts['sum'] += $ex->exercise_point;
+                        $pts['count']++;
+                    } elseif (str_contains($typeName, 'pas')) {
+                        $pas['sum'] += $ex->exercise_point;
+                        $pas['count']++;
+                    }
+                }
+            }
+
+            $rataTugas = $tugas['count'] > 0 ? round($tugas['sum'] / $tugas['count'], 1) : null;
+            $rataAKM = $akm['count'] > 0 ? round($akm['sum'] / $akm['count'], 1) : null;
+            $rataUH = $uh['count'] > 0 ? round($uh['sum'] / $uh['count'], 1) : null;
+            $rataPTS = $pts['count'] > 0 ? round($pts['sum'] / $pts['count'], 1) : null;
+            $rataPAS = $pas['count'] > 0 ? round($pas['sum'] / $pas['count'], 1) : null;
+
+            $categories = [$rataTugas, $rataAKM, $rataUH, $rataPTS, $rataPAS];
+            $filled = collect($categories)->filter(fn($v) => !is_null($v));
+            $nilaiAkhir = $filled->count() ? round($filled->avg(), 1) : null;
+
+            $rekapData[] = [
+                'student' => $student,
+                'tugas' => ['avg' => $rataTugas, 'count' => $tugas['count']],
+                'akm' => ['avg' => $rataAKM, 'count' => $akm['count']],
+                'uh' => ['avg' => $rataUH, 'count' => $uh['count']],
+                'pts' => ['avg' => $rataPTS, 'count' => $pts['count']],
+                'pas' => ['avg' => $rataPAS, 'count' => $pas['count']],
+                'nilai_akhir' => $nilaiAkhir
+            ];
         }
 
-        $pdf = Pdf::loadView('guru.rekap-nilai.pdf.class', compact('serial', 'classroom', 'students', 'lessons', 'allTasks', 'allExercises', 'rekapData', 'averages'))
+        $pdf = Pdf::loadView('guru.rekap-nilai.pdf.class', compact('serial', 'classroom', 'students', 'selectedLesson', 'rekapData'))
             ->setPaper('a4', 'landscape');
             
         return $pdf->download('rekap_nilai_'.$classroom->name.'_'.\Str::slug($selectedLesson->name).'.pdf');
     }
 
-    public function showStudent($serial, $classroomId, $studentId)
+        public function showStudent($serial, $classroomId, $studentId)
     {
         $serial = Serial::findOrFail($serial);
         $classroom = Classroom::findOrFail($classroomId);
         $student = Student::findOrFail($studentId);
 
-        // Get all tasks with points
         $tasks = Task::where('student_id', $student->id)
             ->with(['post.mapel'])
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Get all exercise points
         $exercisePoints = ExercisePoint::where('student_id', $student->id)
             ->with(['exercise.lesson.mapel', 'exercise.exerciseType'])
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Get lessons for tasks to map lesson_id to lesson name
         $lessonIds = $tasks->map(function($task) {
             $cat = is_string($task->post->category) ? json_decode($task->post->category, true) : $task->post->category;
             return $cat['lesson_id'] ?? null;
         })->filter()->unique()->toArray();
         $lessonsForTasks = \App\Models\Lesson::whereIn('id', $lessonIds)->pluck('name', 'id');
 
-        return view('guru.rekap-nilai.show-student', compact('serial', 'classroom', 'student', 'tasks', 'exercisePoints', 'lessonsForTasks'));
+        $tugasList = []; $tugasSum = 0; $tugasCount = 0;
+        foreach ($tasks as $task) {
+            $cat = is_string($task->post->category) ? json_decode($task->post->category, true) : $task->post->category;
+            $lessonId = $cat['lesson_id'] ?? null;
+            $lessonName = $lessonId && isset($lessonsForTasks[$lessonId]) ? $lessonsForTasks[$lessonId] : '';
+            $tugasList[] = [
+                'title' => $task->post->title ?? 'Tugas',
+                'lesson' => $lessonName,
+                'point' => $task->point,
+                'date' => $task->created_at,
+            ];
+            if (!is_null($task->point)) {
+                $tugasSum += $task->point;
+                $tugasCount++;
+            }
+        }
+        $rataTugas = $tugasCount > 0 ? round($tugasSum / $tugasCount, 1) : null;
+
+        $akmList = []; $akmSum = 0; $akmCount = 0;
+        $uhList = []; $uhSum = 0; $uhCount = 0;
+        $ptsList = []; $ptsSum = 0; $ptsCount = 0;
+        $pasList = []; $pasSum = 0; $pasCount = 0;
+
+        foreach ($exercisePoints as $ex) {
+            $typeName = $ex->exercise && $ex->exercise->exerciseType ? strtolower($ex->exercise->exerciseType->name) : '';
+            $item = [
+                'title' => $ex->exercise->title ?? 'Soal',
+                'lesson' => $ex->exercise->lesson->name ?? '',
+                'point' => $ex->exercise_point,
+                'date' => $ex->created_at,
+            ];
+            
+            if (str_contains($typeName, 'akm')) {
+                $akmList[] = $item;
+                if (!is_null($ex->exercise_point)) { $akmSum += $ex->exercise_point; $akmCount++; }
+            } elseif (str_contains($typeName, 'ulangan harian')) {
+                $uhList[] = $item;
+                if (!is_null($ex->exercise_point)) { $uhSum += $ex->exercise_point; $uhCount++; }
+            } elseif (str_contains($typeName, 'pts')) {
+                $ptsList[] = $item;
+                if (!is_null($ex->exercise_point)) { $ptsSum += $ex->exercise_point; $ptsCount++; }
+            } elseif (str_contains($typeName, 'pas')) {
+                $pasList[] = $item;
+                if (!is_null($ex->exercise_point)) { $pasSum += $ex->exercise_point; $pasCount++; }
+            }
+        }
+
+        $rataAKM = $akmCount > 0 ? round($akmSum / $akmCount, 1) : null;
+        $rataUH = $uhCount > 0 ? round($uhSum / $uhCount, 1) : null;
+        $rataPTS = $ptsCount > 0 ? round($ptsSum / $ptsCount, 1) : null;
+        $rataPAS = $pasCount > 0 ? round($pasSum / $pasCount, 1) : null;
+
+        $categories = [$rataTugas, $rataAKM, $rataUH, $rataPTS, $rataPAS];
+        $filled = collect($categories)->filter(fn($v) => !is_null($v));
+        $nilaiAkhir = $filled->count() ? round($filled->avg(), 1) : null;
+
+        $rekapDetail = [
+            'tugas' => ['list' => $tugasList, 'avg' => $rataTugas],
+            'akm' => ['list' => $akmList, 'avg' => $rataAKM],
+            'uh' => ['list' => $uhList, 'avg' => $rataUH],
+            'pts' => ['list' => $ptsList, 'avg' => $rataPTS],
+            'pas' => ['list' => $pasList, 'avg' => $rataPAS],
+            'nilai_akhir' => $nilaiAkhir
+        ];
+
+        return view('guru.rekap-nilai.show-student', compact('serial', 'classroom', 'student', 'rekapDetail'));
     }
 
-    public function downloadStudentPdf($serial, $classroomId, $studentId)
+        public function downloadStudentPdf($serial, $classroomId, $studentId)
     {
         $serial = Serial::findOrFail($serial);
         $classroom = Classroom::findOrFail($classroomId);
         $student = Student::findOrFail($studentId);
 
-        // Get all tasks with points
         $tasks = Task::where('student_id', $student->id)
             ->with(['post.mapel'])
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Get all exercise points
         $exercisePoints = ExercisePoint::where('student_id', $student->id)
             ->with(['exercise.lesson.mapel', 'exercise.exerciseType'])
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Get lessons for tasks to map lesson_id to lesson name
         $lessonIds = $tasks->map(function($task) {
             $cat = is_string($task->post->category) ? json_decode($task->post->category, true) : $task->post->category;
             return $cat['lesson_id'] ?? null;
         })->filter()->unique()->toArray();
         $lessonsForTasks = \App\Models\Lesson::whereIn('id', $lessonIds)->pluck('name', 'id');
 
-        $pdf = Pdf::loadView('guru.rekap-nilai.pdf.student', compact('serial', 'classroom', 'student', 'tasks', 'exercisePoints', 'lessonsForTasks'));
+        $tugasList = []; $tugasSum = 0; $tugasCount = 0;
+        foreach ($tasks as $task) {
+            $cat = is_string($task->post->category) ? json_decode($task->post->category, true) : $task->post->category;
+            $lessonId = $cat['lesson_id'] ?? null;
+            $lessonName = $lessonId && isset($lessonsForTasks[$lessonId]) ? $lessonsForTasks[$lessonId] : '';
+            $tugasList[] = [
+                'title' => $task->post->title ?? 'Tugas',
+                'lesson' => $lessonName,
+                'point' => $task->point,
+                'date' => $task->created_at,
+            ];
+            if (!is_null($task->point)) {
+                $tugasSum += $task->point;
+                $tugasCount++;
+            }
+        }
+        $rataTugas = $tugasCount > 0 ? round($tugasSum / $tugasCount, 1) : null;
+
+        $akmList = []; $akmSum = 0; $akmCount = 0;
+        $uhList = []; $uhSum = 0; $uhCount = 0;
+        $ptsList = []; $ptsSum = 0; $ptsCount = 0;
+        $pasList = []; $pasSum = 0; $pasCount = 0;
+
+        foreach ($exercisePoints as $ex) {
+            $typeName = $ex->exercise && $ex->exercise->exerciseType ? strtolower($ex->exercise->exerciseType->name) : '';
+            $item = [
+                'title' => $ex->exercise->title ?? 'Soal',
+                'lesson' => $ex->exercise->lesson->name ?? '',
+                'point' => $ex->exercise_point,
+                'date' => $ex->created_at,
+            ];
+            
+            if (str_contains($typeName, 'akm')) {
+                $akmList[] = $item;
+                if (!is_null($ex->exercise_point)) { $akmSum += $ex->exercise_point; $akmCount++; }
+            } elseif (str_contains($typeName, 'ulangan harian')) {
+                $uhList[] = $item;
+                if (!is_null($ex->exercise_point)) { $uhSum += $ex->exercise_point; $uhCount++; }
+            } elseif (str_contains($typeName, 'pts')) {
+                $ptsList[] = $item;
+                if (!is_null($ex->exercise_point)) { $ptsSum += $ex->exercise_point; $ptsCount++; }
+            } elseif (str_contains($typeName, 'pas')) {
+                $pasList[] = $item;
+                if (!is_null($ex->exercise_point)) { $pasSum += $ex->exercise_point; $pasCount++; }
+            }
+        }
+
+        $rataAKM = $akmCount > 0 ? round($akmSum / $akmCount, 1) : null;
+        $rataUH = $uhCount > 0 ? round($uhSum / $uhCount, 1) : null;
+        $rataPTS = $ptsCount > 0 ? round($ptsSum / $ptsCount, 1) : null;
+        $rataPAS = $pasCount > 0 ? round($pasSum / $pasCount, 1) : null;
+
+        $categories = [$rataTugas, $rataAKM, $rataUH, $rataPTS, $rataPAS];
+        $filled = collect($categories)->filter(fn($v) => !is_null($v));
+        $nilaiAkhir = $filled->count() ? round($filled->avg(), 1) : null;
+
+        $rekapDetail = [
+            'tugas' => ['list' => $tugasList, 'avg' => $rataTugas],
+            'akm' => ['list' => $akmList, 'avg' => $rataAKM],
+            'uh' => ['list' => $uhList, 'avg' => $rataUH],
+            'pts' => ['list' => $ptsList, 'avg' => $rataPTS],
+            'pas' => ['list' => $pasList, 'avg' => $rataPAS],
+            'nilai_akhir' => $nilaiAkhir
+        ];
+
+        $pdf = Pdf::loadView('guru.rekap-nilai.pdf.student', compact('serial', 'classroom', 'student', 'rekapDetail'));
         $pdf->setPaper('a4', 'portrait');
         
         return $pdf->download('Rekap-Nilai-' . str_replace(' ', '-', $student->name) . '.pdf');
