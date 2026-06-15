@@ -143,7 +143,7 @@
     </div>
 </div>
 
-@section('page-script')
+@section('scripts')
 <script>
     // Tahap 2 - Verifikasi JSON
     window.studentDetails = @json($rekapData);
