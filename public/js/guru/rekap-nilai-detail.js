@@ -1,25 +1,34 @@
+console.log("HELLO FROM NEW REKAP NILAI JS! Event delegation attached.");
+
 document.body.addEventListener('click', function(e) {
     const btn = e.target.closest('.btn-detail-siswa');
     if (!btn) return;
+    
+    console.log("BUTTON CLICKED! Target student:", btn.getAttribute('data-student-id'));
 
     const modalBody = document.getElementById('studentDetailContentNew');
-    if (!modalBody) return;
+    if (!modalBody) {
+        console.error("CRITICAL ERROR: modalBody (#studentDetailContentNew) not found in DOM!");
+        return;
+    }
 
-    // Tahap 7: Render nama & nilai akhir (Tahap Dasar)
-    // Tampilkan Loading (kalau ada DOM yang belum siap, tapi tidak disarankan pakai delay spinner, cukup skeleton cepat)
-    modalBody.innerHTML = '<div class="p-5 text-center text-muted">Memuat data...</div>';
+    // Tampilkan Loading
+    modalBody.innerHTML = '<div class="p-5 text-center text-muted"><h4>Memuat data...</h4></div>';
+    console.log("Loading skeleton injected into modal.");
 
-    // Parse JSON murni dari HTML DOM secara aman
     const dataElement = document.getElementById('student-data');
     if (!dataElement) {
-        modalBody.innerHTML = '<div class="alert alert-danger m-4">Gagal memuat struktur data.</div>';
+        console.error("CRITICAL ERROR: <script id='student-data'> not found in DOM!");
+        modalBody.innerHTML = '<div class="alert alert-danger m-4">Gagal memuat struktur data (student-data missing).</div>';
         return;
     }
 
     let students;
     try {
         students = JSON.parse(dataElement.textContent);
+        console.log("JSON parsed successfully. Students count:", students.length);
     } catch (err) {
+        console.error("JSON Parse Error:", err);
         modalBody.innerHTML = '<div class="alert alert-danger m-4">Format data rusak.</div>';
         return;
     }
@@ -27,11 +36,13 @@ document.body.addEventListener('click', function(e) {
     const studentId = parseInt(btn.getAttribute('data-student-id'));
     const student = students.find(s => parseInt(s.id) === studentId);
 
-    // Tahap 9: Data tidak ditemukan
     if (!student) {
-        modalBody.innerHTML = '<div class="alert alert-danger m-4">Data siswa tidak ditemukan</div>';
+        console.warn("Student not found in JSON data! ID:", studentId);
+        modalBody.innerHTML = '<div class="alert alert-danger m-4">Data siswa tidak ditemukan di dalam Array.</div>';
         return;
     }
+
+    console.log("Student found:", student);
 
     if (student.nilai_akhir === null) {
         modalBody.innerHTML = `
@@ -48,8 +59,6 @@ document.body.addEventListener('click', function(e) {
         return;
     }
 
-    // Tahap 7 & 8: Render Komplit tapi bertahap.
-    
     function renderCategory(catId, catName, icon, color) {
         const catData = student[catId] || {};
         const entries = Object.values(catData);
@@ -152,4 +161,5 @@ document.body.addEventListener('click', function(e) {
             </div>
         </div>
     `;
+    console.log("Modal HTML successfully injected!");
 });

@@ -180,6 +180,19 @@ class RekapNilaiController extends Controller
             $filled = collect($categories)->filter(fn($v) => !is_null($v));
             $nilaiAkhir = $filled->count() ? round($filled->avg(), 1) : null;
 
+                        // Populate cleanStudentDetails
+            $cleanStudentDetails[] = [
+                'id' => $student->id,
+                'name' => $student->name,
+                'nis' => $student->nis,
+                'nilai_akhir' => $nilaiAkhir,
+                'tugas' => $studentDetails['tasks'] ?? [],
+                'akm' => $studentDetails['akm'] ?? [],
+                'uh' => $studentDetails['uh'] ?? [],
+                'pts' => $studentDetails['pts'] ?? [],
+                'pas' => $studentDetails['pas'] ?? []
+            ];
+
             $rekapData[] = [
                 'student' => $student,
                 'tugas' => ['avg' => $rataTugas, 'count' => $tugas['count']],
@@ -316,6 +329,19 @@ class RekapNilaiController extends Controller
             $categories = [$rataTugas, $rataAKM, $rataUH, $rataPTS, $rataPAS];
             $filled = collect($categories)->filter(fn($v) => !is_null($v));
             $nilaiAkhir = $filled->count() ? round($filled->avg(), 1) : null;
+
+                        // Populate cleanStudentDetails
+            $cleanStudentDetails[] = [
+                'id' => $student->id,
+                'name' => $student->name,
+                'nis' => $student->nis,
+                'nilai_akhir' => $nilaiAkhir,
+                'tugas' => $studentDetails['tasks'] ?? [],
+                'akm' => $studentDetails['akm'] ?? [],
+                'uh' => $studentDetails['uh'] ?? [],
+                'pts' => $studentDetails['pts'] ?? [],
+                'pas' => $studentDetails['pas'] ?? []
+            ];
 
             $rekapData[] = [
                 'student' => $student,
