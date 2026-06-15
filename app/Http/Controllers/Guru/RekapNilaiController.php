@@ -120,6 +120,7 @@ class RekapNilaiController extends Controller
             ->groupBy('student_id');
 
         $rekapData = [];
+        $cleanStudentDetails = [];
         foreach ($students as $student) {
             $sTasks = $allTasks->get($student->id, collect());
             $sExPoints = $allExPoints->get($student->id, collect());
@@ -223,7 +224,7 @@ class RekapNilaiController extends Controller
             }
         }
 
-        return view('guru.rekap-nilai.show-class', compact('serial', 'classroom', 'students', 'selectedLesson', 'rekapData', 'stats', 'detailColumns', 'detailAverages'));
+        return view('guru.rekap-nilai.show-class', compact('serial', 'classroom', 'students', 'selectedLesson', 'rekapData', 'stats', 'detailColumns', 'detailAverages', 'cleanStudentDetails'));
     }
 
     public function downloadClassPdf($serial, $classroomId, $lessonId)
@@ -269,6 +270,7 @@ class RekapNilaiController extends Controller
             ->groupBy('student_id');
 
         $rekapData = [];
+        $cleanStudentDetails = [];
         foreach ($students as $student) {
             $sTasks = $allTasks->get($student->id, collect());
             $sExPoints = $allExPoints->get($student->id, collect());
