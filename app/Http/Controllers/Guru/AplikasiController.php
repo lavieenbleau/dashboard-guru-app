@@ -108,22 +108,21 @@ class AplikasiController extends Controller
     {
         $serial = Serial::with('product')->findOrFail($serial);
         
+        $materiAdminCount = \App\Models\LessonItem::whereIn('lesson_id', json_decode($serial->product->lesson_id ?? '[]', true) ?? [])->count();
+        $materiGuruCount = \App\Models\Post::where('serial_id', $serial->id)
+            ->where('is_task', 0)
+            ->count();
+
         // Get statistics - using Posts for Materi & Tugas, Exercises for Soal
         $stats = [
             // Materi Admin: lesson items from product's assigned lessons
-            'materi_admin' => \App\Models\LessonItem::whereIn('lesson_id', json_decode($serial->product->lesson_id ?? '[]', true) ?? [])->count(),
+            'materi_admin' => $materiAdminCount,
             
             // Materi Guru: custom posts from teacher
-            'materi_guru' => \App\Models\Post::where('serial_id', $serial->id)
-                ->where('is_task', 0)
-                ->count(),
+            'materi_guru' => $materiGuruCount,
             
             // Total Materi
-            'materi' => (\App\Models\Post::where('serial_id', $serial->id)
-                ->where('is_task', 0)
-                ->count()) + (\App\Models\LessonItem::whereHas('lesson', function($q) {
-                    $q->where('category', \App\Models\Lesson::CATEGORY_MATERI);
-                })->count()),
+            'materi' => $materiAdminCount + $materiGuruCount,
             
             // Tugas: posts with is_task = 1
             'tugas' => \App\Models\Post::where('serial_id', $serial->id)
