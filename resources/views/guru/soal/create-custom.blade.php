@@ -463,7 +463,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('createExerciseForm').addEventListener('submit', function(e) {
         if (typeof $ !== 'undefined' && $.fn.summernote) {
             $('.summernote-option, .summernote-question, .summernote-answer').each(function() {
-                if ($(this).data('summernote')) {
+                if ($(this).next('.note-editor').length > 0) {
                     $(this).val($(this).summernote('code'));
                 }
             });
