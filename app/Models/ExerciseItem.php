@@ -22,8 +22,6 @@ class ExerciseItem extends Model
     ];
 
     protected $casts = [
-        'selection' => 'array',
-        'answer' => 'array',
     ];
 
     public function exercise()
