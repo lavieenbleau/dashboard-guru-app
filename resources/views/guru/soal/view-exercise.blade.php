@@ -150,15 +150,21 @@
                                             $selection = is_array($selectionRaw) ? $selectionRaw : [];
                                         @endphp
                                         @if(!empty($selection))
+                                            <style>
+                                                .option-content p:last-child { margin-bottom: 0; }
+                                                .option-content p { margin-top: 0; }
+                                            </style>
                                             <div class="options-list">
                                                 @foreach($letters as $index => $letter)
                                                     @if(isset($selection[$index]) && $selection[$index])
-                                                        <div class="option-item mb-2 {{ in_array($letter, $answers) || in_array((string)$index, $answers) ? 'text-success fw-bold' : '' }}">
-                                                            <strong>{{ $letter }}.</strong> {!! $selection[$index] !!}
+                                                        <div class="option-item mb-2 d-flex align-items-start {{ in_array($letter, $answers) || in_array((string)$index, $answers) ? 'text-success fw-bold' : '' }}">
+                                                            <strong class="me-2">{{ $letter }}.</strong> 
+                                                            <div class="option-content">{!! $selection[$index] !!}</div>
                                                         </div>
                                                     @elseif(isset($selection[$letter]) && $selection[$letter])
-                                                        <div class="option-item mb-2 {{ in_array($letter, $answers) || in_array((string)$index, $answers) ? 'text-success fw-bold' : '' }}">
-                                                            <strong>{{ $letter }}.</strong> {!! $selection[$letter] !!}
+                                                        <div class="option-item mb-2 d-flex align-items-start {{ in_array($letter, $answers) || in_array((string)$index, $answers) ? 'text-success fw-bold' : '' }}">
+                                                            <strong class="me-2">{{ $letter }}.</strong> 
+                                                            <div class="option-content">{!! $selection[$letter] !!}</div>
                                                         </div>
                                                     @endif
                                                 @endforeach
