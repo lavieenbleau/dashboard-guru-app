@@ -62,19 +62,24 @@ class RekapNilaiController extends Controller
                 ->where('is_task', 1)
                 ->whereRaw('IF(JSON_VALID(category) = 1, JSON_UNQUOTE(JSON_EXTRACT(category, "$.lesson_id")), NULL) = ?', [$selectedLesson->id])
                 ->where(function($q) use ($classroom) {
-                    $q->whereNull('classroom_id')
-                      ->orWhere('classroom_id', $classroom->id);
+                    $q->where('classroom_id', $classroom->id)
+                      ->orWhereHas('classrooms', function($sq) use ($classroom) {
+                          $sq->where('classrooms.id', $classroom->id);
+                      });
                 })->pluck('id');
 
         $guruExerciseIds = Exercise::where('lesson_id', $selectedLesson->id)
                 ->where('is_admin', 0)
                 ->pluck('id');
         
-        $adminExerciseIds = Exercise::whereHas('lesson', function($q) use ($selectedLesson) {
-                    $q->where('mapel_id', $selectedLesson->mapel_id)
-                      ->where('category', Lesson::CATEGORY_SOAL);
+        $adminExerciseIds = Exercise::where('is_admin', 1)
+                ->where(function($query) use ($selectedLesson) {
+                    $query->where('lesson_id', $selectedLesson->id)
+                          ->orWhereHas('lesson', function($q) use ($selectedLesson) {
+                              $q->where('mapel_id', $selectedLesson->mapel_id)
+                                ->where('category', \App\Models\Lesson::CATEGORY_SOAL);
+                          });
                 })
-                ->where('is_admin', 1)
                 ->pluck('id');
         
         $validExerciseIds = $guruExerciseIds->concat($adminExerciseIds)->unique();
@@ -254,19 +259,24 @@ class RekapNilaiController extends Controller
                 ->where('category', 'like', '%"lesson_id":' . $selectedLesson->id . '%')
                 ->where('is_task', 1)
                 ->where(function($q) use ($classroom) {
-                    $q->whereNull('classroom_id')
-                      ->orWhere('classroom_id', $classroom->id);
+                    $q->where('classroom_id', $classroom->id)
+                      ->orWhereHas('classrooms', function($sq) use ($classroom) {
+                          $sq->where('classrooms.id', $classroom->id);
+                      });
                 })->pluck('id');
 
         $guruExerciseIds = Exercise::where('lesson_id', $selectedLesson->id)
                 ->where('is_admin', 0)
                 ->pluck('id');
         
-        $adminExerciseIds = Exercise::whereHas('lesson', function($q) use ($selectedLesson) {
-                    $q->where('mapel_id', $selectedLesson->mapel_id)
-                      ->where('category', Lesson::CATEGORY_SOAL);
+        $adminExerciseIds = Exercise::where('is_admin', 1)
+                ->where(function($query) use ($selectedLesson) {
+                    $query->where('lesson_id', $selectedLesson->id)
+                          ->orWhereHas('lesson', function($q) use ($selectedLesson) {
+                              $q->where('mapel_id', $selectedLesson->mapel_id)
+                                ->where('category', \App\Models\Lesson::CATEGORY_SOAL);
+                          });
                 })
-                ->where('is_admin', 1)
                 ->pluck('id');
         
         $validExerciseIds = $guruExerciseIds->concat($adminExerciseIds)->unique();
@@ -366,3 +376,5 @@ class RekapNilaiController extends Controller
 
         
 }
+
+

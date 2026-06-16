@@ -42,6 +42,11 @@ class Post extends Model
         return $this->belongsTo(Classroom::class, 'classroom_id');
     }
 
+    public function classrooms()
+    {
+        return $this->belongsToMany(Classroom::class, 'post_classrooms', 'post_id', 'classroom_id');
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
