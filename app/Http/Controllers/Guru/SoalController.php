@@ -123,7 +123,10 @@ class SoalController extends Controller
             
             // All exercises (Admin only) for this type
             $query = Exercise::where('lesson_id', $lesson->id)
-                ->where('serial_id', $serial->id)
+                ->where(function ($q) use ($serial) {
+                    $q->where('serial_id', $serial->id)
+                      ->orWhereNull('serial_id');
+                })
                 ->where('is_admin', 1);
             
             if ($exerciseTypeId) {
@@ -733,7 +736,13 @@ class SoalController extends Controller
         $exerciseType = ExerciseType::findOrFail($exerciseTypeId);
         
         // Get exercises filtered by is_admin
-        $exercises = Exercise::where('serial_id', $serial->id)
+        $exercises = Exercise::where(function($q) use ($serial, $type) {
+                if ($type === 'admin') {
+                    $q->where('serial_id', $serial->id)->orWhereNull('serial_id');
+                } else {
+                    $q->where('serial_id', $serial->id);
+                }
+            })
             ->where('exercise_type_id', $exerciseTypeId)
             ->where('is_admin', $type === 'admin' ? 1 : 0)
             ->with(['lesson', 'exerciseItems.competence'])
