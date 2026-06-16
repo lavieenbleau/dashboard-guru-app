@@ -460,6 +460,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Init the very first question item on load if visible
     initSummernote(document.querySelectorAll('.summernote-question'));
     updateQuestionNumbers();
+    document.getElementById('createExerciseForm').addEventListener('submit', function(e) {
+        if (typeof $ !== 'undefined' && $.fn.summernote) {
+            $('.summernote-option, .summernote-question, .summernote-answer').each(function() {
+                if ($(this).data('summernote')) {
+                    $(this).val($(this).summernote('code'));
+                }
+            });
+        }
+    });
 });
 </script>
 @include('guru.soal.partials.model-rule-script')

@@ -216,9 +216,7 @@ class SoalController extends Controller
             $selection = [];
             if (in_array($exerciseModelId, [1, 2]) && isset($questionData['selection'])) {
                 // Ambil semua opsi yang tidak kosong
-                $selection = array_values(array_filter($questionData['selection'], function($opt) {
-                    return trim(strip_tags($opt)) !== '';
-                }));
+                $selection = array_values($questionData['selection']);
             }
             $selectionJson = empty($selection) ? json_encode([]) : json_encode($selection);
 
@@ -332,9 +330,7 @@ class SoalController extends Controller
             $selection = [];
             if (in_array($itemData['question_type'], [1, 2, 'pilihan_ganda']) && isset($itemData['selection'])) {
                 // Ambil semua opsi yang tidak kosong
-                $selection = array_values(array_filter($itemData['selection'], function($opt) {
-                    return trim(strip_tags($opt)) !== '';
-                }));
+                $selection = array_values($itemData['selection']);
             }
             $selectionJson = empty($selection) ? json_encode([]) : json_encode($selection);
 
@@ -436,9 +432,7 @@ class SoalController extends Controller
         // Format Options / Selection
         $selection = [];
         if (in_array($exerciseModelId, [1, 2]) && $request->has('selection')) {
-            $selection = array_values(array_filter($request->selection, function($opt) {
-                return trim(strip_tags($opt)) !== '';
-            }));
+            $selection = array_values($request->selection);
         }
         $selectionJson = empty($selection) ? json_encode([]) : json_encode($selection);
 
