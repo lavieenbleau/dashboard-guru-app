@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Serial;
 use App\Models\Student;
 use App\Models\Classroom;
+use App\Services\ScoreCategoryResolver;
 use Illuminate\Support\Facades\DB;
 
 class LaporanHarianController extends Controller
@@ -66,6 +67,7 @@ class LaporanHarianController extends Controller
                 'students.nis as student_nis',
                 'classrooms.name as classroom_name',
                 'exercises.title as task_title',
+                'exercises.exercise_type_id',
                 'lessons.category as lesson_category',
                 'lessons.semester as lesson_semester',
                 'lessons.name as lesson_name',
@@ -80,34 +82,8 @@ class LaporanHarianController extends Controller
         $activities = $taskActivities->merge($exerciseActivities)
             ->sortByDesc('created_at')
             ->map(function($item) {
-                if ($item->source_type === 'task') {
-                    $item->activity_type = 'Tugas';
-                    $item->badge_color = 'success';
-                } elseif ($item->source_type === 'exercise') {
-                    if ($item->lesson_category == 3) {
-                        // Admin Soal
-                        if ($item->lesson_semester == 1) {
-                            $item->activity_type = 'Ulangan Harian';
-                            $item->badge_color = 'primary';
-                        } elseif ($item->lesson_semester == 2) {
-                            $item->activity_type = 'PTS';
-                            $item->badge_color = 'warning';
-                        } elseif ($item->lesson_semester == 3) {
-                            $item->activity_type = 'PAS';
-                            $item->badge_color = 'danger';
-                        } else {
-                            $item->activity_type = 'Soal';
-                            $item->badge_color = 'secondary';
-                        }
-                    } else {
-                        // Guru Soal (Tambahan)
-                        $item->activity_type = 'Soal Tambahan';
-                        $item->badge_color = 'info';
-                    }
-                } else {
-                    $item->activity_type = 'Lainnya';
-                    $item->badge_color = 'secondary';
-                }
+                $item->activity_type = ScoreCategoryResolver::resolve($item);
+                $item->badge_color = ScoreCategoryResolver::resolveColor($item->activity_type);
                 return $item;
             })
             ->values();
@@ -199,6 +175,7 @@ class LaporanHarianController extends Controller
                 'students.nis as student_nis',
                 'classrooms.name as classroom_name',
                 'exercises.title as task_title',
+                'exercises.exercise_type_id',
                 'lessons.category as lesson_category',
                 'lessons.semester as lesson_semester',
                 'lessons.name as lesson_name',
@@ -213,34 +190,8 @@ class LaporanHarianController extends Controller
         $activities = $taskActivities->merge($exerciseActivities)
             ->sortByDesc('created_at')
             ->map(function($item) {
-                if ($item->source_type === 'task') {
-                    $item->activity_type = 'Tugas';
-                    $item->badge_color = 'success';
-                } elseif ($item->source_type === 'exercise') {
-                    if ($item->lesson_category == 3) {
-                        // Admin Soal
-                        if ($item->lesson_semester == 1) {
-                            $item->activity_type = 'Ulangan Harian';
-                            $item->badge_color = 'primary';
-                        } elseif ($item->lesson_semester == 2) {
-                            $item->activity_type = 'PTS';
-                            $item->badge_color = 'warning';
-                        } elseif ($item->lesson_semester == 3) {
-                            $item->activity_type = 'PAS';
-                            $item->badge_color = 'danger';
-                        } else {
-                            $item->activity_type = 'Soal';
-                            $item->badge_color = 'secondary';
-                        }
-                    } else {
-                        // Guru Soal (Tambahan)
-                        $item->activity_type = 'Soal Tambahan';
-                        $item->badge_color = 'info';
-                    }
-                } else {
-                    $item->activity_type = 'Lainnya';
-                    $item->badge_color = 'secondary';
-                }
+                $item->activity_type = ScoreCategoryResolver::resolve($item);
+                $item->badge_color = ScoreCategoryResolver::resolveColor($item->activity_type);
                 return $item;
             })
             ->values();
@@ -326,3 +277,5 @@ class LaporanHarianController extends Controller
     }
 
 }
+
+

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Serial;
 use App\Models\Classroom;
+use App\Services\ScoreCategoryResolver;
 use App\Models\Student;
 use App\Models\Mapel;
 use App\Models\Lesson;
@@ -98,15 +99,15 @@ class RekapNilaiController extends Controller
             $detailColumns['tasks']->push(['id' => $p->id, 'title' => $p->title]);
         }
         foreach ($uniqueExercises as $ex) {
-            $typeName = strtolower($ex->exerciseType->name ?? '');
+            $cat = ScoreCategoryResolver::resolve($ex);
             $item = ['id' => $ex->id, 'title' => $ex->title];
-            if (str_contains($typeName, 'akm')) {
+            if ($cat === 'AKM') {
                 $detailColumns['akm']->push($item);
-            } elseif (str_contains($typeName, 'ulangan harian')) {
+            } elseif ($cat === 'Ulangan Harian') {
                 $detailColumns['uh']->push($item);
-            } elseif (str_contains($typeName, 'pts')) {
+            } elseif ($cat === 'PTS') {
                 $detailColumns['pts']->push($item);
-            } elseif (str_contains($typeName, 'pas')) {
+            } elseif ($cat === 'PAS') {
                 $detailColumns['pas']->push($item);
             }
         }
@@ -152,20 +153,20 @@ class RekapNilaiController extends Controller
 
             foreach ($sExPoints as $ex) {
                 if (!is_null($ex->exercise_point)) {
-                    $typeName = $ex->exercise && $ex->exercise->exerciseType ? strtolower($ex->exercise->exerciseType->name) : '';
-                    if (str_contains($typeName, 'akm')) {
+                    $cat = ScoreCategoryResolver::resolve($ex->exercise);
+                    if ($cat === 'AKM') {
                         $akm['sum'] += $ex->exercise_point;
                         $akm['count']++;
                         $studentDetails['akm'][$ex->exercise_id] = $ex->exercise_point;
-                    } elseif (str_contains($typeName, 'ulangan harian')) {
+                    } elseif ($cat === 'Ulangan Harian') {
                         $uh['sum'] += $ex->exercise_point;
                         $uh['count']++;
                         $studentDetails['uh'][$ex->exercise_id] = $ex->exercise_point;
-                    } elseif (str_contains($typeName, 'pts')) {
+                    } elseif ($cat === 'PTS') {
                         $pts['sum'] += $ex->exercise_point;
                         $pts['count']++;
                         $studentDetails['pts'][$ex->exercise_id] = $ex->exercise_point;
-                    } elseif (str_contains($typeName, 'pas')) {
+                    } elseif ($cat === 'PAS') {
                         $pas['sum'] += $ex->exercise_point;
                         $pas['count']++;
                         $studentDetails['pas'][$ex->exercise_id] = $ex->exercise_point;
@@ -309,17 +310,17 @@ class RekapNilaiController extends Controller
 
             foreach ($sExPoints as $ex) {
                 if (!is_null($ex->exercise_point)) {
-                    $typeName = $ex->exercise && $ex->exercise->exerciseType ? strtolower($ex->exercise->exerciseType->name) : '';
-                    if (str_contains($typeName, 'akm')) {
+                    $cat = ScoreCategoryResolver::resolve($ex->exercise);
+                    if ($cat === 'AKM') {
                         $akm['sum'] += $ex->exercise_point;
                         $akm['count']++;
-                    } elseif (str_contains($typeName, 'ulangan harian')) {
+                    } elseif ($cat === 'Ulangan Harian') {
                         $uh['sum'] += $ex->exercise_point;
                         $uh['count']++;
-                    } elseif (str_contains($typeName, 'pts')) {
+                    } elseif ($cat === 'PTS') {
                         $pts['sum'] += $ex->exercise_point;
                         $pts['count']++;
-                    } elseif (str_contains($typeName, 'pas')) {
+                    } elseif ($cat === 'PAS') {
                         $pas['sum'] += $ex->exercise_point;
                         $pas['count']++;
                     }
@@ -372,6 +373,7 @@ class RekapNilaiController extends Controller
 
         
 }
+
 
 
 
