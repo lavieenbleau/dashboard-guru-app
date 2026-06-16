@@ -62,10 +62,8 @@ class RekapNilaiController extends Controller
                 ->where('is_task', 1)
                 ->whereRaw('IF(JSON_VALID(category) = 1, JSON_UNQUOTE(JSON_EXTRACT(category, "$.lesson_id")), NULL) = ?', [$selectedLesson->id])
                 ->where(function($q) use ($classroom) {
-                    $q->where('classroom_id', $classroom->id)
-                      ->orWhereHas('classrooms', function($sq) use ($classroom) {
-                          $sq->where('classrooms.id', $classroom->id);
-                      });
+                    $q->whereNull('classroom_id')
+                      ->orWhere('classroom_id', $classroom->id);
                 })->pluck('id');
 
         $guruExerciseIds = Exercise::where('lesson_id', $selectedLesson->id)
@@ -259,10 +257,8 @@ class RekapNilaiController extends Controller
                 ->where('category', 'like', '%"lesson_id":' . $selectedLesson->id . '%')
                 ->where('is_task', 1)
                 ->where(function($q) use ($classroom) {
-                    $q->where('classroom_id', $classroom->id)
-                      ->orWhereHas('classrooms', function($sq) use ($classroom) {
-                          $sq->where('classrooms.id', $classroom->id);
-                      });
+                    $q->whereNull('classroom_id')
+                      ->orWhere('classroom_id', $classroom->id);
                 })->pluck('id');
 
         $guruExerciseIds = Exercise::where('lesson_id', $selectedLesson->id)
@@ -376,5 +372,6 @@ class RekapNilaiController extends Controller
 
         
 }
+
 
 
