@@ -3,7 +3,7 @@
 @section('content')
 <div class="container-xxl py-4">
     <style>
-        .exercise-item-container img {
+        .card-body img {
             max-width: 100%;
             max-height: 400px;
             object-fit: contain;
