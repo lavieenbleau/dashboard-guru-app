@@ -212,31 +212,23 @@ class SoalController extends Controller
         $createdCount = 0;
         foreach ($request->questions as $index => $questionData) {
             
-            // Format Options / Selection (seperti Admin: flat array, tanpa key A/B/C)
-            $selection = [];
-            if (in_array($exerciseModelId, [1, 2]) && isset($questionData['selection'])) {
-                // Ambil semua opsi yang tidak kosong
-                $selection = array_values($questionData['selection']);
+            // Format Options / Selection (Acuan Admin)
+            $selectionData = $questionData['selection'] ?? null;
+            if (is_string($selectionData)) {
+                $decoded = json_decode($selectionData, true);
+                $selectionJson = is_array($decoded) ? json_encode($decoded) : json_encode([]);
+            } elseif (is_array($selectionData)) {
+                $selectionJson = json_encode(array_values($selectionData));
+            } else {
+                $selectionJson = json_encode([]);
             }
-            $selectionJson = empty($selection) ? json_encode([]) : json_encode($selection);
 
-            // Format Answer (seperti Admin: selalu JSON Array)
-            $answerJson = json_encode([]);
-            if (isset($questionData['answer'])) {
-                if (is_array($questionData['answer'])) {
-                    $answerJson = json_encode($questionData['answer']);
-                } else {
-                    $answerVal = trim($questionData['answer']);
-                    if ($answerVal !== '') {
-                        if (str_contains($answerVal, ',')) {
-                            // Untuk PG banyak jika dipisah koma
-                            $ansArr = array_values(array_filter(array_map('trim', explode(',', $answerVal))));
-                            $answerJson = json_encode($ansArr);
-                        } else {
-                            $answerJson = json_encode([$answerVal]);
-                        }
-                    }
-                }
+            // Format Answer (Acuan Admin)
+            $answerData = $questionData['answer'] ?? null;
+            if (is_array($answerData)) {
+                $answerJson = json_encode($answerData);
+            } else {
+                $answerJson = json_encode([$answerData]);
             }
 
             $exerciseItemData = [
@@ -247,7 +239,7 @@ class SoalController extends Controller
                 'exercise_type_id' => $request->exercise_type_id,
                 'exercise_model_id' => $exerciseModelId,
                 'competence_id' => null,
-                'exercise_choice' => empty($selection) ? 0 : 1, // 1 jika ada opsi
+                'exercise_choice' => $selectionJson !== '[]' ? 1 : 0, // 1 jika ada opsi
                 'exercise_number' => $index + 1,
                 'question' => $questionData['question'],
                 'selection' => $selectionJson, // Menggunakan JSON Array murni
@@ -326,31 +318,23 @@ class SoalController extends Controller
         // Update each exercise item
         foreach ($request->items as $itemData) {
             
-            // Format Options / Selection (seperti Admin: flat array)
-            $selection = [];
-            if (in_array($itemData['question_type'], [1, 2, 'pilihan_ganda']) && isset($itemData['selection'])) {
-                // Ambil semua opsi yang tidak kosong
-                $selection = array_values($itemData['selection']);
+            // Format Options / Selection (Acuan Admin)
+            $selectionData = $itemData['selection'] ?? null;
+            if (is_string($selectionData)) {
+                $decoded = json_decode($selectionData, true);
+                $selectionJson = is_array($decoded) ? json_encode($decoded) : json_encode([]);
+            } elseif (is_array($selectionData)) {
+                $selectionJson = json_encode(array_values($selectionData));
+            } else {
+                $selectionJson = json_encode([]);
             }
-            $selectionJson = empty($selection) ? json_encode([]) : json_encode($selection);
 
-            // Format Answer (seperti Admin: selalu JSON Array)
-            $answerJson = json_encode([]);
-            if (isset($itemData['answer'])) {
-                if (is_array($itemData['answer'])) {
-                    $answerJson = json_encode($itemData['answer']);
-                } else {
-                    $answerVal = trim($itemData['answer']);
-                    if ($answerVal !== '') {
-                        if (str_contains($answerVal, ',')) {
-                            // Untuk PG banyak jika dipisah koma
-                            $ansArr = array_values(array_filter(array_map('trim', explode(',', $answerVal))));
-                            $answerJson = json_encode($ansArr);
-                        } else {
-                            $answerJson = json_encode([$answerVal]);
-                        }
-                    }
-                }
+            // Format Answer (Acuan Admin)
+            $answerData = $itemData['answer'] ?? null;
+            if (is_array($answerData)) {
+                $answerJson = json_encode($answerData);
+            } else {
+                $answerJson = json_encode([$answerData]);
             }
 
             // Map question_type to exercise_model_id (If it's passed as string in legacy code, we handle it)
@@ -369,7 +353,7 @@ class SoalController extends Controller
                 'question' => $itemData['question'],
                 'selection' => $selectionJson,
                 'answer' => $answerJson,
-                'exercise_choice' => empty($selection) ? 0 : 1,
+                'exercise_choice' => $selectionJson !== '[]' ? 1 : 0,
             ];
 
             if (str_starts_with((string)$itemData['id'], 'new_')) {
@@ -386,6 +370,18 @@ class SoalController extends Controller
                 ExerciseItem::create($newData);
             } else {
                 $exerciseItem = ExerciseItem::findOrFail($itemData['id']);
+
+                // Hapus gambar lama yang tidak ada di konten baru
+                preg_match_all('/storage\/soal\/([^\s"]+)/', (string) $exerciseItem->question, $oldMatches);
+                $oldFiles = $oldMatches[1] ?? [];
+
+                preg_match_all('/storage\/soal\/([^\s"]+)/', (string) $itemData['question'], $newMatches);
+                $newFiles = $newMatches[1] ?? [];
+
+                foreach (array_diff($oldFiles, $newFiles) as $filename) {
+                    \Storage::disk('public')->delete('soal/' . $filename);
+                }
+
                 $exerciseItem->update($updateData);
             }
         }
@@ -429,29 +425,23 @@ class SoalController extends Controller
 
         $exerciseModelId = (int) $request->question_type;
 
-        // Format Options / Selection
-        $selection = [];
-        if (in_array($exerciseModelId, [1, 2]) && $request->has('selection')) {
-            $selection = array_values($request->selection);
+        // Format Options / Selection (Acuan Admin)
+        $selectionData = $request->input('selection');
+        if (is_string($selectionData)) {
+            $decoded = json_decode($selectionData, true);
+            $selectionJson = is_array($decoded) ? json_encode($decoded) : json_encode([]);
+        } elseif (is_array($selectionData)) {
+            $selectionJson = json_encode(array_values($selectionData));
+        } else {
+            $selectionJson = json_encode([]);
         }
-        $selectionJson = empty($selection) ? json_encode([]) : json_encode($selection);
 
-        // Format Answer
-        $answerJson = json_encode([]);
-        if ($request->has('answer')) {
-            if (is_array($request->answer)) {
-                $answerJson = json_encode($request->answer);
-            } else {
-                $answerVal = trim($request->answer);
-                if ($answerVal !== '') {
-                    if (str_contains($answerVal, ',')) {
-                        $ansArr = array_values(array_filter(array_map('trim', explode(',', $answerVal))));
-                        $answerJson = json_encode($ansArr);
-                    } else {
-                        $answerJson = json_encode([$answerVal]);
-                    }
-                }
-            }
+        // Format Answer (Acuan Admin)
+        $answerData = $request->input('answer');
+        if (is_array($answerData)) {
+            $answerJson = json_encode($answerData);
+        } else {
+            $answerJson = json_encode([$answerData]);
         }
 
         $maxNumber = ExerciseItem::where('exercise_id', $exercise->id)->max('exercise_number') ?? 0;
@@ -467,7 +457,7 @@ class SoalController extends Controller
             'question' => $request->question,
             'selection' => $selectionJson,
             'answer' => $answerJson,
-            'exercise_choice' => empty($selection) ? 0 : 1,
+            'exercise_choice' => $selectionJson !== '[]' ? 1 : 0,
         ]);
 
         return back()->with('success', 'Soal berhasil ditambahkan.');
