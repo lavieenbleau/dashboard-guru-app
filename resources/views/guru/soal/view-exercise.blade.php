@@ -2,6 +2,13 @@
 
 @section('content')
 <div class="container-xxl py-4">
+    <style>
+        .exercise-item-container img {
+            max-width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+        }
+    </style>
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
