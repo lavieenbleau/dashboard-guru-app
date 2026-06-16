@@ -123,20 +123,35 @@
                                         <h6 class="fw-bold mb-2">Pilihan Jawaban:</h6>
                                         @php
                                             $letters = ['A', 'B', 'C', 'D', 'E'];
-                                            $selection = is_array($item->selection) ? $item->selection : json_decode($item->selection, true) ?? [];
+                                            $selectionRaw = $item->selection;
+                                            
+                                            // Robust decoding for selection (handles legacy double encoding)
+                                            if (is_string($selectionRaw)) {
+                                                $decoded = json_decode($selectionRaw, true);
+                                                if (json_last_error() === JSON_ERROR_NONE) {
+                                                    $selectionRaw = $decoded;
+                                                }
+                                            }
+                                            // Second pass for double encoding
+                                            if (is_string($selectionRaw)) {
+                                                $decoded = json_decode($selectionRaw, true);
+                                                if (json_last_error() === JSON_ERROR_NONE) {
+                                                    $selectionRaw = $decoded;
+                                                }
+                                            }
+                                            
+                                            $selection = is_array($selectionRaw) ? $selectionRaw : [];
                                         @endphp
                                         @if(!empty($selection))
                                             <div class="options-list">
                                                 @foreach($letters as $index => $letter)
                                                     @if(isset($selection[$index]) && $selection[$index])
-                                                        <div class="option-item mb-2 d-flex align-items-start {{ in_array($letter, $answers) || in_array((string)$index, $answers) ? 'text-success fw-bold' : '' }}">
-                                                            <strong class="me-2">{{ $letter }}.</strong> 
-                                                            <div class="option-content">{!! $selection[$index] !!}</div>
+                                                        <div class="option-item mb-2 {{ in_array($letter, $answers) || in_array((string)$index, $answers) ? 'text-success fw-bold' : '' }}">
+                                                            <strong>{{ $letter }}.</strong> {!! $selection[$index] !!}
                                                         </div>
                                                     @elseif(isset($selection[$letter]) && $selection[$letter])
-                                                        <div class="option-item mb-2 d-flex align-items-start {{ in_array($letter, $answers) || in_array((string)$index, $answers) ? 'text-success fw-bold' : '' }}">
-                                                            <strong class="me-2">{{ $letter }}.</strong> 
-                                                            <div class="option-content">{!! $selection[$letter] !!}</div>
+                                                        <div class="option-item mb-2 {{ in_array($letter, $answers) || in_array((string)$index, $answers) ? 'text-success fw-bold' : '' }}">
+                                                            <strong>{{ $letter }}.</strong> {!! $selection[$letter] !!}
                                                         </div>
                                                     @endif
                                                 @endforeach

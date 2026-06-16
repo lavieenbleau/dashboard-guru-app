@@ -157,7 +157,7 @@
                                             <!-- Pertanyaan -->
                                             <div class="mb-3">
                                                 <label class="form-label fw-bold">Pertanyaan/Soal <span class="text-danger">*</span></label>
-                                                <textarea class="form-control summernote-question" name="questions[{{ $index }}][question]" required>{!! isset($question['question']) ? '<p>' . nl2br(htmlspecialchars($question['question'])) . '</p>' : '' !!}</textarea>
+                                                <textarea class="form-control summernote-question" name="questions[{{ $index }}][question]" required>{{ $question['question'] ?? '' }}</textarea>
                                             </div>
 
                                             @if(in_array($aiData['exercise_model_id'], [1, 2]))
@@ -169,7 +169,7 @@
                                                         @foreach(['A', 'B', 'C', 'D'] as $optIndex => $optLabel)
                                                             <div class="mb-3">
                                                                 <label class="fw-bold">Pilihan {{ $optLabel }}</label>
-                                                                <textarea class="form-control summernote-option" name="questions[{{ $index }}][selection][]" placeholder="Opsi {{ $optLabel }}">{!! isset($options[$optIndex]) ? '<p>' . nl2br(htmlspecialchars($options[$optIndex])) . '</p>' : '' !!}</textarea>
+                                                                <textarea class="form-control summernote-option" name="questions[{{ $index }}][selection][]" placeholder="Opsi {{ $optLabel }}">{{ $options[$optIndex] ?? '' }}</textarea>
                                                             </div>
                                                         @endforeach
                                                     </div>
@@ -183,7 +183,7 @@
                                                     <input type="text" class="form-control" name="questions[{{ $index }}][answer]" value="{{ is_array($question['correct_answer'] ?? null) ? implode(', ', $question['correct_answer']) : ($question['correct_answer'] ?? '') }}">
                                                     <small class="text-muted">Tulis huruf jawaban yang benar (A/B/C/D)</small>
                                                 @else
-                                                    <textarea class="form-control summernote-answer" name="questions[{{ $index }}][answer]">{!! isset($question['correct_answer']) ? '<p>' . nl2br(htmlspecialchars(is_array($question['correct_answer']) ? implode(', ', $question['correct_answer']) : $question['correct_answer'])) . '</p>' : '' !!}</textarea>
+                                                    <textarea class="form-control summernote-answer" name="questions[{{ $index }}][answer]">{{ is_array($question['correct_answer'] ?? null) ? implode(', ', $question['correct_answer']) : ($question['correct_answer'] ?? '') }}</textarea>
                                                     <small class="text-muted">Tulis poin-poin kunci jawaban untuk panduan penilaian</small>
                                                 @endif
                                             </div>
