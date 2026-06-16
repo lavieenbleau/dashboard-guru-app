@@ -1,5 +1,24 @@
 @extends('layouts.sneat')
 
+@section('styles')
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+<style>
+    /* Typography & Color System Fix */
+    h5, h6, .card-header h5, .card-header h6 { color: #1e293b !important; font-weight: 700 !important; }
+    label, .form-label, .fw-bold, .card-body label, .card-body .fw-bold { color: #334155 !important; font-weight: 600 !important; }
+    .form-control, .form-select, .form-control[readonly] { color: #1e293b !important; }
+    .form-control::placeholder { color: #94a3b8 !important; opacity: 1 !important; }
+    .text-muted, small.text-muted { color: #64748b !important; font-size: 0.875rem !important; }
+    
+    /* Summernote Editor */
+    .note-editor .note-toolbar, .note-editor .note-statusbar, .note-editor .note-btn { color: #334155 !important; background-color: #ffffff !important; border-bottom: 1px solid #e2e8f0; }
+    .note-editor, .note-editor.note-frame, .note-editor .note-editing-area, .note-editor .note-editable { color: #1e293b !important; background-color: #ffffff !important; }
+    .note-editor.note-frame { border-color: #cbd5e1 !important; box-shadow: none !important; }
+    .note-editor.note-frame .note-statusbar { background-color: #ffffff !important; border-top: 1px solid #e2e8f0; }
+    .note-editor .note-dropzone { opacity: 0 !important; }
+</style>
+@endsection
+
 @section('content')
 <div class="container-xxl py-4">
     <!-- Breadcrumb -->
@@ -138,7 +157,7 @@
                                             <!-- Pertanyaan -->
                                             <div class="mb-3">
                                                 <label class="form-label fw-bold">Pertanyaan/Soal <span class="text-danger">*</span></label>
-                                                <textarea class="form-control" name="questions[{{ $index }}][question]" rows="4" required>{{ $question['question'] ?? '' }}</textarea>
+                                                <textarea class="form-control summernote-question" name="questions[{{ $index }}][question]" required>{{ $question['question'] ?? '' }}</textarea>
                                             </div>
 
                                             @if(in_array($aiData['exercise_model_id'], [1, 2]))
@@ -148,9 +167,9 @@
                                                     <div class="options-container">
                                                         @php $options = $question['selection'] ?? $question['options'] ?? []; @endphp
                                                         @foreach(['A', 'B', 'C', 'D'] as $optIndex => $optLabel)
-                                                            <div class="input-group mb-2">
-                                                                <span class="input-group-text">{{ $optLabel }}</span>
-                                                                <input type="text" class="form-control" name="questions[{{ $index }}][selection][]" value="{{ $options[$optIndex] ?? '' }}" placeholder="Opsi {{ $optLabel }}">
+                                                            <div class="mb-3">
+                                                                <label class="fw-bold">Pilihan {{ $optLabel }}</label>
+                                                                <textarea class="form-control summernote-option" name="questions[{{ $index }}][selection][]" placeholder="Opsi {{ $optLabel }}">{{ $options[$optIndex] ?? '' }}</textarea>
                                                             </div>
                                                         @endforeach
                                                     </div>
@@ -160,14 +179,13 @@
                                             <!-- Kunci Jawaban -->
                                             <div class="mb-3">
                                                 <label class="form-label fw-bold">Kunci Jawaban</label>
-                                                <textarea class="form-control" name="questions[{{ $index }}][answer]" rows="2">{{ is_array($question['correct_answer'] ?? null) ? implode(', ', $question['correct_answer']) : ($question['correct_answer'] ?? '') }}</textarea>
-                                                <small class="text-muted">
-                                                    @if(in_array($aiData['exercise_model_id'], [1, 2]))
-                                                        Tulis huruf jawaban yang benar (A/B/C/D)
-                                                    @else
-                                                        Tulis poin-poin kunci jawaban untuk panduan penilaian
-                                                    @endif
-                                                </small>
+                                                @if(in_array($aiData['exercise_model_id'], [1, 2]))
+                                                    <input type="text" class="form-control" name="questions[{{ $index }}][answer]" value="{{ is_array($question['correct_answer'] ?? null) ? implode(', ', $question['correct_answer']) : ($question['correct_answer'] ?? '') }}">
+                                                    <small class="text-muted">Tulis huruf jawaban yang benar (A/B/C/D)</small>
+                                                @else
+                                                    <textarea class="form-control summernote-answer" name="questions[{{ $index }}][answer]">{{ is_array($question['correct_answer'] ?? null) ? implode(', ', $question['correct_answer']) : ($question['correct_answer'] ?? '') }}</textarea>
+                                                    <small class="text-muted">Tulis poin-poin kunci jawaban untuk panduan penilaian</small>
+                                                @endif
                                             </div>
 
                                             @if(isset($question['explanation']))
@@ -298,6 +316,15 @@ document.addEventListener('DOMContentLoaded', function() {
             noQuestionsAlert.style.display = 'block';
             window.scrollTo(0, 0);
         } else {
+            // Sync summernote to textarea
+            if (typeof $ !== 'undefined' && $.fn.summernote) {
+                $('.summernote-question, .summernote-option, .summernote-answer').each(function() {
+                    if ($(this).next('.note-editor').length > 0) {
+                        $(this).val($(this).summernote('code'));
+                    }
+                });
+            }
+
             // Prevent double submission
             const submitBtn = this.querySelector('button[type="submit"]');
             if (submitBtn) {
@@ -308,4 +335,45 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+@section('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+<script>
+    if (typeof $ !== 'undefined' && $.fn.summernote) {
+        const toolbar = [
+            ['style', ['style']],
+            ['font', ['bold', 'italic', 'underline', 'clear']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['insert', ['picture', 'link']],
+            ['view', ['fullscreen', 'codeview']]
+        ];
+
+        $('.summernote-question').summernote({
+            height: 150,
+            toolbar: toolbar,
+            callbacks: {
+                onImageUpload: function(files) { uploadImage(files[0], 'soal', this); }
+            }
+        });
+
+        $('.summernote-option').summernote({
+            height: 100,
+            toolbar: toolbar,
+            callbacks: {
+                onImageUpload: function(files) { uploadImage(files[0], 'soal', this); }
+            }
+        });
+
+        $('.summernote-answer').summernote({
+            height: 120,
+            toolbar: toolbar,
+            callbacks: {
+                onImageUpload: function(files) { uploadImage(files[0], 'soal', this); }
+            }
+        });
+    }
+</script>
+@endsection
+
 @endsection
