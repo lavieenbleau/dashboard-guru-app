@@ -686,6 +686,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    const editForm = document.querySelector('form[action*="update-custom"]');
+    if (editForm) {
+        editForm.addEventListener('submit', function(e) {
+            if (typeof $ !== 'undefined' && $.fn.summernote) {
+                $('.summernote').each(function() {
+                    if ($(this).next('.note-editor').length > 0) {
+                        $(this).val($(this).summernote('code'));
+                    }
+                });
+            }
+        });
+    }
+
+    const addForm = document.querySelector('form[action*="store-custom-item"]');
+    if (addForm) {
+        addForm.addEventListener('submit', function(e) {
+            if (typeof $ !== 'undefined' && $.fn.summernote) {
+                $('.summernote-modal-option, .summernote-modal-answer, .summernote-modal').each(function() {
+                    if ($(this).next('.note-editor').length > 0) {
+                        $(this).val($(this).summernote('code'));
+                    }
+                });
+            }
+        });
+    }
 });
 </script>
 @endsection
