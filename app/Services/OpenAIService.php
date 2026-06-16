@@ -44,7 +44,7 @@ class OpenAIService
      * @return array Array of generated questions
      * @throws Exception
      */
-    public function generateQuestions(string $illustration, string $questionType, string $difficulty, int $count): array
+    public function generateQuestions(string $illustration, string $questionType, string $difficulty, int $count, string $mapelName = 'Pelajaran Umum'): array
     {
         $attempt = 0;
         $lastException = null;
@@ -63,7 +63,7 @@ class OpenAIService
                     'messages' => [
                         [
                             'role' => 'system',
-                            'content' => 'Anda adalah seorang guru berpengalaman yang ahli dalam membuat soal-soal berkualitas untuk siswa. Anda harus menghasilkan soal dalam format JSON yang valid.'
+                            'content' => "Anda adalah seorang guru berpengalaman yang ahli dalam membuat soal-soal berkualitas untuk siswa. Spesialisasi Anda adalah mata pelajaran {$mapelName}. Anda harus menghasilkan soal dalam format JSON yang valid. Jika materi (prompt) yang diberikan sama sekali tidak berhubungan dengan pendidikan atau tidak relevan dengan mata pelajaran Anda, tolak dengan mengembalikan JSON berisi key success: false dan berikan alasan penolakan di dalam key message."
                         ],
                         [
                             'role' => 'user',
@@ -79,6 +79,10 @@ class OpenAIService
 
                 if (json_last_error() !== JSON_ERROR_NONE) {
                     throw new Exception('Failed to parse OpenAI response: ' . json_last_error_msg());
+                }
+
+                if (isset($data['success']) && $data['success'] === false) {
+                    throw new \InvalidArgumentException($data['message'] ?? 'Materi tidak relevan dengan mata pelajaran.');
                 }
 
                 return $this->formatQuestions($data, $questionType);
@@ -221,3 +225,4 @@ PROMPT;
         return $formatted;
     }
 }
+

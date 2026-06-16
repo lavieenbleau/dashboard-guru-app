@@ -997,6 +997,8 @@ class SoalController extends Controller
      */
     public function generateWithAI(Request $request, $serial, $lesson)
     {
+        $lessonModel = \App\Models\Lesson::with('mapel')->findOrFail($lesson);
+        $mapelName = $lessonModel->mapel->name ?? 'Pelajaran Umum';
         $request->validate([
             'illustration' => 'required|string|min:20',
             'exercise_model_id' => 'required|exists:exercise_models,id',
@@ -1028,7 +1030,8 @@ class SoalController extends Controller
                 $request->illustration,
                 $questionType,
                 $request->difficulty,
-                $request->count
+                $request->count,
+                $mapelName
             );
 
             // Store questions in session for preview
@@ -1045,6 +1048,10 @@ class SoalController extends Controller
 
             return redirect()->route('guru.soal.ai-preview', ['serial' => $serial, 'lesson' => $lesson]);
 
+        } catch (\InvalidArgumentException $e) {
+            return back()
+                ->withInput()
+                ->with('error', $e->getMessage());
         } catch (\Exception $e) {
             return back()
                 ->withInput()
@@ -1198,6 +1205,10 @@ class SoalController extends Controller
             return redirect()->route('guru.soal.list-direct', [$serialModel->id, $lessonModel->id, 'tambahan'])
                 ->with('success', "Berhasil menyimpan " . count($validQuestions) . " soal dengan jenis '" . $exerciseModel->name . "'!");
                 
+        } catch (\InvalidArgumentException $e) {
+            return back()
+                ->withInput()
+                ->with('error', $e->getMessage());
         } catch (\Exception $e) {
             DB::rollBack();
             return back()
@@ -1339,4 +1350,5 @@ class SoalController extends Controller
         return mb_substr($clean, 0, 2000);
     }
 }
+
 
