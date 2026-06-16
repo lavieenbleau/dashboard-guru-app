@@ -1,15 +1,13 @@
 <?php
-require __DIR__.'/vendor/autoload.php';
-$app = require_once __DIR__.'/bootstrap/app.php';
-$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+require 'vendor/autoload.php';
+$app = require_once 'bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
+$response = $kernel->handle(
+    $request = Illuminate\Http\Request::capture()
+);
 
-$tables = ['exercise_items', 'exercise_models', 'exercise_points', 'exercise_types', 'exercises', 'quiz_activity_logs', 'share_exercises'];
-
-foreach($tables as $table) {
-    try {
-        $schema = \Illuminate\Support\Facades\DB::select('SHOW CREATE TABLE ' . $table)[0]->{'Create Table'};
-        echo "\n--- Table: $table ---\n$schema\n";
-    } catch(\Exception $e) {
-        echo "\n--- Table: $table ---\nNot Found\n";
-    }
-}
+$latestItem = \App\Models\ExerciseItem::orderBy('id', 'desc')->first();
+echo "Latest ID: " . $latestItem->id . "\n";
+echo "Question: " . $latestItem->question . "\n";
+echo "Selection: " . $latestItem->selection . "\n";
+echo "Answer: " . $latestItem->answer . "\n";
