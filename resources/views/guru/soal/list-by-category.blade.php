@@ -64,9 +64,9 @@
                                 <div class="d-flex align-items-center gap-2 mb-2">
                                     <h5 class="mb-0">{{ $exercise->title }}</h5>
                                     @if($type === 'admin')
-                                        <span class="badge bg-primary ms-2" style="font-size: 0.75em; vertical-align: middle;">Soal Admin</span>
+                                        <span class="badge bg-primary ms-2" style="font-size: 0.75em; vertical-align: middle;">Admin - {{ $exercise->exerciseType->name ?? 'Lainnya' }}</span>
                                     @else
-                                        <span class="badge bg-success ms-2" style="font-size: 0.75em; vertical-align: middle;">Soal Guru</span>
+                                        <span class="badge bg-success ms-2" style="font-size: 0.75em; vertical-align: middle;">{{ $exercise->exerciseType->name ?? 'Soal Guru' }}</span>
                                     @endif
                                 </div>
                                 
