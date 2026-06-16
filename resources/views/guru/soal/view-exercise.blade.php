@@ -123,7 +123,11 @@
                                         <h6 class="fw-bold mb-2">Pilihan Jawaban:</h6>
                                         @php
                                             $letters = ['A', 'B', 'C', 'D', 'E'];
-                                            $selectionRaw = $item->selection;
+                                            
+                                            // Fallback to legacy options column if selection is empty
+                                            $selectionRaw = (!empty($item->selection) && $item->selection !== '[]' && $item->selection !== '"[]"') 
+                                                ? $item->selection 
+                                                : $item->options;
                                             
                                             // Robust decoding for selection (handles legacy double encoding)
                                             if (is_string($selectionRaw)) {
@@ -135,6 +139,9 @@
                                             // Second pass for double encoding
                                             if (is_string($selectionRaw)) {
                                                 $decoded = json_decode($selectionRaw, true);
+                                                if (json_last_error() !== JSON_ERROR_NONE) {
+                                                    $decoded = json_decode(stripslashes($selectionRaw), true);
+                                                }
                                                 if (json_last_error() === JSON_ERROR_NONE) {
                                                     $selectionRaw = $decoded;
                                                 }
