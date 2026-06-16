@@ -1147,35 +1147,27 @@ class SoalController extends Controller
 
             // Create exercise items (questions) for this single exercise
             foreach ($validQuestions as $index => $questionData) {
-                // Format Options / Selection
-                $selection = [];
-                if (in_array($exerciseModel->id, [1, 2]) && isset($questionData['selection'])) {
-                    $selection = array_values(array_filter($questionData['selection'], function($opt) {
-                        return trim(strip_tags(is_array($opt) ? ($opt['text'] ?? '') : $opt)) !== '';
-                    }));
-                    // AI sometimes returns {"key": "A", "text": "value"}, let's extract text if so
-                    $selection = array_map(function($opt) {
+                // Format Options / Selection (Acuan Admin)
+                $selectionData = $questionData['selection'] ?? null;
+                if (is_string($selectionData)) {
+                    $decoded = json_decode($selectionData, true);
+                    $selectionJson = is_array($decoded) ? json_encode($decoded) : json_encode([]);
+                } elseif (is_array($selectionData)) {
+                    // Extract text if array has 'text' keys (from AI structure)
+                    $mappedSelection = array_map(function($opt) {
                         return is_array($opt) ? ($opt['text'] ?? '') : $opt;
-                    }, $selection);
+                    }, $selectionData);
+                    $selectionJson = json_encode(array_values($mappedSelection));
+                } else {
+                    $selectionJson = json_encode([]);
                 }
-                $selectionJson = empty($selection) ? json_encode([]) : json_encode($selection);
 
-                // Format Answer
-                $answerJson = json_encode([]);
-                if (isset($questionData['answer'])) {
-                    if (is_array($questionData['answer'])) {
-                        $answerJson = json_encode($questionData['answer']);
-                    } else {
-                        $answerVal = trim($questionData['answer']);
-                        if ($answerVal !== '') {
-                            if (str_contains($answerVal, ',')) {
-                                $ansArr = array_values(array_filter(array_map('trim', explode(',', $answerVal))));
-                                $answerJson = json_encode($ansArr);
-                            } else {
-                                $answerJson = json_encode([$answerVal]);
-                            }
-                        }
-                    }
+                // Format Answer (Acuan Admin)
+                $answerData = $questionData['answer'] ?? null;
+                if (is_array($answerData)) {
+                    $answerJson = json_encode($answerData);
+                } else {
+                    $answerJson = json_encode([$answerData]);
                 }
 
                 $itemData = [
@@ -1186,7 +1178,7 @@ class SoalController extends Controller
                     'exercise_type_id' => $request->exercise_type_id,
                     'exercise_model_id' => $request->exercise_model_id,
                     'competence_id' => null,
-                    'exercise_choice' => empty($selection) ? 0 : 1,
+                    'exercise_choice' => $selectionJson !== '[]' ? 1 : 0,
                     'exercise_number' => $index + 1,
                     'question' => $questionData['question'],
                     'selection' => $selectionJson,
